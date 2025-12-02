@@ -33,9 +33,9 @@ const Index = () => {
               className="space-y-6"
             >
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                Xojalik Mollari -{" "}
-                <span className="text-primary">Arzon, Sifatli</span> va{" "}
-                <span className="text-accent">Tez Yetkazib Beramiz</span>
+                O'zbekistonning yetakchi{" "}
+                <span className="text-primary">xo'jalik mollari</span>{" "}
+                <span className="text-accent">ishlab chiqaruvchisi</span>
               </h1>
               <p className="text-lg text-muted-foreground">
                 Uyingiz uchun kerakli barcha mahsulotlar bir joyda. 200+ turdagi sifatli mahsulotlar va hamyonbop narxlar.
