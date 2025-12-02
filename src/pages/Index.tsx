@@ -38,7 +38,7 @@ const Index = () => {
                 <span className="text-accent">ishlab chiqaruvchisi</span>
               </h1>
               <p className="text-lg text-muted-foreground">
-                Uyingiz uchun kerakli barcha mahsulotlar bir joyda. 200+ turdagi sifatli mahsulotlar va hamyonbop narxlar.
+                Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
