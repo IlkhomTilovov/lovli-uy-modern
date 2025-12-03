@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -11,6 +11,7 @@ import { useSiteContent } from "@/hooks/useSiteContent";
 import { useSEO } from "@/hooks/useSEO";
 import heroBanner from "@/assets/hero-banner-new.jpg";
 import { motion } from "framer-motion";
+import { HeroSkeleton, CategoryGridSkeleton, ProductGridSkeleton } from "@/components/skeletons";
 
 const Index = () => {
   // SEO with Open Graph
@@ -127,10 +128,8 @@ const Index = () => {
             </p>
           </motion.div>
 
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+          {categoriesLoading ? (
+            <CategoryGridSkeleton count={4} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {activeCategories.map((category, index) => (
@@ -167,10 +166,8 @@ const Index = () => {
             </p>
           </motion.div>
 
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+          {productsLoading ? (
+            <ProductGridSkeleton count={4} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product, index) => (
