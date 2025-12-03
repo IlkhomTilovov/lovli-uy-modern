@@ -42,6 +42,11 @@ const Product = () => {
       { name: "Katalog", url: `${window.location.origin}/catalog` },
       ...(category ? [{ name: category.name, url: `${window.location.origin}/category/${category.slug}` }] : []),
       { name: product.title, url: `${window.location.origin}/product/${product.id}` }
+    ] : undefined,
+    faq: product ? [
+      { question: "Yetkazib berish qancha vaqt oladi?", answer: "Buyurtmangiz 1-2 ish kuni ichida yetkazib beriladi." },
+      { question: "Qaytarish mumkinmi?", answer: "Ha, 14 kun ichida mahsulotni qaytarishingiz mumkin." },
+      { question: "To'lov usullari qanday?", answer: "Naqd pul, bank kartasi va onlayn to'lov usullari mavjud." }
     ] : undefined
   });
 
