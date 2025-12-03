@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useErp } from '@/contexts/ErpContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Search, Package, DollarSign, Image, Tag, FileText, Settings } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Package, DollarSign, Image as ImageIcon, Tag, FileText, Settings, Upload, X, Loader2 } from 'lucide-react';
 import { Product } from '@/types/erp';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminProducts = () => {
   const { products, categories, addProduct, updateProduct, deleteProduct } = useErp();
@@ -36,11 +37,61 @@ const AdminProducts = () => {
     metaTitle: '',
     metaDescription: '',
   });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProducts = products.filter(p => 
     p.title.toLowerCase().includes(search.toLowerCase()) ||
     p.sku.toLowerCase().includes(search.toLowerCase())
   );
+
+  const uploadImages = async (files: FileList) => {
+    setUploading(true);
+    const uploadedUrls: string[] = [];
+    
+    try {
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file);
+        
+        if (error) {
+          console.error('Upload error:', error);
+          toast({ title: 'Xato', description: `Rasm yuklashda xato: ${file.name}`, variant: 'destructive' });
+          continue;
+        }
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+        
+        uploadedUrls.push(publicUrl);
+      }
+      
+      if (uploadedUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images.filter(img => img.trim() !== ''), ...uploadedUrls]
+        }));
+        toast({ title: 'Muvaffaqiyatli!', description: `${uploadedUrls.length} ta rasm yuklandi` });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({ title: 'Xato', description: 'Rasm yuklashda xato yuz berdi', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
 
   const resetForm = () => {
     setFormData({
@@ -53,7 +104,7 @@ const AdminProducts = () => {
       discountActive: false,
       sku: '',
       stock: 0,
-      images: [''],
+      images: [],
       status: 'active',
       metaTitle: '',
       metaDescription: '',
@@ -73,7 +124,7 @@ const AdminProducts = () => {
       discountActive: product.discountActive,
       sku: product.sku,
       stock: product.stock,
-      images: product.images.length > 0 ? product.images : [''],
+      images: product.images.length > 0 ? product.images : [],
       status: product.status,
       metaTitle: product.metaTitle || '',
       metaDescription: product.metaDescription || '',
@@ -316,20 +367,64 @@ const AdminProducts = () => {
                 <Card className="border-purple-500/20">
                   <CardContent className="pt-4 space-y-4">
                     <div className="flex items-center gap-2 text-purple-600 mb-2">
-                      <Image className="w-4 h-4" />
+                      <ImageIcon className="w-4 h-4" />
                       <span className="font-semibold text-sm">Rasmlar</span>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label className="text-muted-foreground text-sm">Rasm URL manzillari</Label>
-                      <Textarea 
-                        value={formData.images.join('\n')} 
-                        onChange={(e) => setFormData({ ...formData, images: e.target.value.split('\n') })}
-                        placeholder="Har bir qatorga bitta rasm URL manzilini kiriting&#10;Masalan: https://example.com/image.jpg"
-                        rows={3}
-                        className="resize-none font-mono text-sm"
+                    {/* Image Upload Area */}
+                    <div className="space-y-4">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => e.target.files && uploadImages(e.target.files)}
                       />
-                      <p className="text-xs text-muted-foreground">Har bir rasm URL manzilini alohida qatorga yozing</p>
+                      
+                      <div 
+                        onClick={() => !uploading && fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50/50 transition-colors"
+                      >
+                        {uploading ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+                            <p className="text-sm text-muted-foreground">Yuklanmoqda...</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            <Upload className="w-8 h-8 text-purple-500" />
+                            <p className="text-sm font-medium">Rasmlarni yuklash uchun bosing</p>
+                            <p className="text-xs text-muted-foreground">Bir nechta rasm tanlash mumkin</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Image Previews */}
+                      {formData.images.length > 0 && formData.images.some(img => img.trim() !== '') && (
+                        <div className="grid grid-cols-4 gap-3">
+                          {formData.images.filter(img => img.trim() !== '').map((img, index) => (
+                            <div key={index} className="relative group">
+                              <img 
+                                src={img} 
+                                alt={`Rasm ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <p className="text-xs text-muted-foreground">
+                        {formData.images.filter(img => img.trim() !== '').length} ta rasm yuklangan
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
