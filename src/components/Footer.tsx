@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
-import { Phone, MapPin, Mail, Facebook, Instagram, Send } from "lucide-react";
+import { Phone, MapPin, Mail, Facebook, Instagram, Send, Youtube, MessageCircle } from "lucide-react";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 export const Footer = () => {
+  const { contact, social, footer } = useSiteContent();
+
   return (
     <footer className="bg-secondary border-t border-border mt-20">
       <div className="container mx-auto px-4 py-12">
@@ -12,10 +15,10 @@ export const Footer = () => {
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-xl">XM</span>
               </div>
-              <span className="font-bold text-lg">Xojalik Mollari</span>
+              <span className="font-bold text-lg">{footer?.companyName || "Xojalik Mollari"}</span>
             </div>
             <p className="text-muted-foreground text-sm">
-              Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar.
+              {footer?.description || "Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar."}
             </p>
           </div>
 
@@ -53,17 +56,17 @@ export const Footer = () => {
               <li className="flex items-start space-x-3 text-sm text-muted-foreground">
                 <Phone className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <p>+998 90 123 45 67</p>
-                  <p>+998 91 234 56 78</p>
+                  <p>{contact?.phone || "+998 90 123 45 67"}</p>
+                  {contact?.phone2 && <p>{contact.phone2}</p>}
                 </div>
               </li>
               <li className="flex items-start space-x-3 text-sm text-muted-foreground">
                 <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>Toshkent sh., Chilonzor tumani, Kichik halqa yo'li 1-uy</span>
+                <span>{contact?.address || "Toshkent sh., Chilonzor tumani"}</span>
               </li>
               <li className="flex items-start space-x-3 text-sm text-muted-foreground">
                 <Mail className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>info@xojalikmollari.uz</span>
+                <span>{contact?.email || "info@xojalikmollari.uz"}</span>
               </li>
             </ul>
           </div>
@@ -72,41 +75,68 @@ export const Footer = () => {
           <div>
             <h3 className="font-semibold text-lg mb-4">Ish Vaqti</h3>
             <p className="text-muted-foreground text-sm mb-6">
-              Dushanba - Shanba: 9:00 - 20:00<br />
-              Yakshanba: 10:00 - 18:00
+              Dushanba - Juma: {contact?.workingHours?.weekdays || "9:00 - 18:00"}<br />
+              Shanba: {contact?.workingHours?.saturday || "10:00 - 16:00"}<br />
+              Yakshanba: {contact?.workingHours?.sunday || "Dam olish"}
             </p>
             <h4 className="font-semibold mb-3">Ijtimoiy Tarmoqlar</h4>
             <div className="flex space-x-3">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://t.me"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-              >
-                <Send className="h-5 w-5" />
-              </a>
+              {social?.facebook && (
+                <a
+                  href={social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              )}
+              {social?.instagram && (
+                <a
+                  href={social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+              )}
+              {social?.telegram && (
+                <a
+                  href={social.telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Send className="h-5 w-5" />
+                </a>
+              )}
+              {social?.youtube && (
+                <a
+                  href={social.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+              )}
+              {social?.whatsapp && (
+                <a
+                  href={`https://wa.me/${social.whatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </a>
+              )}
             </div>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.</p>
+          <p>{footer?.copyright || `© ${new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.`}</p>
         </div>
       </div>
     </footer>

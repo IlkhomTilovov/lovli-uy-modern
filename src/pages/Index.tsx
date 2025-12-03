@@ -7,13 +7,14 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { useSiteContent } from "@/hooks/useSiteContent";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { motion } from "framer-motion";
 
 const Index = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  
+  const { banner, isLoading: contentLoading } = useSiteContent();
   // Get active products and map to ProductCard format
   const featuredProducts = products
     .filter(p => p.status === 'active')
@@ -42,7 +43,7 @@ const Index = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  const isLoading = productsLoading || categoriesLoading;
+  const isLoading = productsLoading || categoriesLoading || contentLoading;
 
   return (
     <div className="min-h-screen">
@@ -60,17 +61,15 @@ const Index = () => {
               className="space-y-6"
             >
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-                O'zbekistonning yetakchi{" "}
-                <span className="text-primary">xo'jalik mollari</span>{" "}
-                <span className="text-accent">ishlab chiqaruvchisi</span>
+                {banner?.title || "O'zbekistonning yetakchi xo'jalik mollari ishlab chiqaruvchisi"}
               </h1>
               <p className="text-lg text-muted-foreground">
-                Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar.
+                {banner?.subtitle || "Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar."}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
                   <Link to="/catalog">
-                    Katalogni Ko'rish
+                    {banner?.buttonText || "Katalogni Ko'rish"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
@@ -88,7 +87,7 @@ const Index = () => {
             >
               <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src={heroBanner}
+                  src={banner?.image || heroBanner}
                   alt="Xojalik Mollari"
                   className="w-full h-full object-cover"
                 />
