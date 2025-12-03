@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { useErp } from '@/contexts/ErpContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   Package,
@@ -10,7 +10,6 @@ import {
   Users,
   FolderTree,
   LogOut,
-  Settings,
   Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,13 +26,13 @@ const menuItems = [
 
 const AdminSidebar = () => {
   const location = useLocation();
-  const { currentUser, logout } = useErp();
+  const { user, signOut } = useAuth();
 
   return (
     <aside className="w-64 bg-card border-r border-border min-h-screen flex flex-col">
       <div className="p-6 border-b border-border">
         <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
-        <p className="text-sm text-muted-foreground mt-1">{currentUser?.name}</p>
+        <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
       </div>
       
       <nav className="flex-1 p-4 space-y-1">
@@ -69,7 +68,7 @@ const AdminSidebar = () => {
         <Button 
           variant="ghost" 
           className="w-full justify-start gap-3 text-destructive hover:text-destructive"
-          onClick={logout}
+          onClick={signOut}
         >
           <LogOut className="w-4 h-4" />
           Chiqish
