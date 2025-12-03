@@ -14,7 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          discount_active: boolean
+          discount_price: number | null
+          id: string
+          images: string[] | null
+          meta_description: string | null
+          meta_title: string | null
+          retail_price: number
+          sku: string
+          status: string
+          stock: number
+          title: string
+          updated_at: string
+          wholesale_price: number
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          discount_active?: boolean
+          discount_price?: number | null
+          id?: string
+          images?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          retail_price?: number
+          sku: string
+          status?: string
+          stock?: number
+          title: string
+          updated_at?: string
+          wholesale_price?: number
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          discount_active?: boolean
+          discount_price?: number | null
+          id?: string
+          images?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          retail_price?: number
+          sku?: string
+          status?: string
+          stock?: number
+          title?: string
+          updated_at?: string
+          wholesale_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
