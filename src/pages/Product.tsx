@@ -36,7 +36,13 @@ const Product = () => {
       price: displayPrice,
       currency: 'UZS',
       availability: product.stock > 0 ? 'InStock' : 'OutOfStock'
-    } : undefined
+    } : undefined,
+    breadcrumbs: product ? [
+      { name: "Bosh sahifa", url: window.location.origin },
+      { name: "Katalog", url: `${window.location.origin}/catalog` },
+      ...(category ? [{ name: category.name, url: `${window.location.origin}/category/${category.slug}` }] : []),
+      { name: product.title, url: `${window.location.origin}/product/${product.id}` }
+    ] : undefined
   });
 
   const fadeInUp = {

@@ -11,6 +11,11 @@ interface ProductSchema {
   brand?: string;
 }
 
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
 interface SEOProps {
   title: string;
   description: string;
@@ -18,9 +23,10 @@ interface SEOProps {
   url?: string;
   type?: 'website' | 'article' | 'product';
   product?: ProductSchema;
+  breadcrumbs?: BreadcrumbItem[];
 }
 
-export const useSEO = ({ title, description, image, url, type = 'website', product }: SEOProps) => {
+export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs }: SEOProps) => {
   useEffect(() => {
     // Update title
     document.title = title;
@@ -130,6 +136,20 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       });
     }
 
+    // BreadcrumbList schema
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      schemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: item.url
+        }))
+      });
+    }
+
     jsonLdScript.textContent = JSON.stringify(schemas.length === 1 ? schemas[0] : schemas);
     document.head.appendChild(jsonLdScript);
 
@@ -138,5 +158,5 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       const script = document.querySelector('script[type="application/ld+json"][data-seo]');
       if (script) script.remove();
     };
-  }, [title, description, image, url, type, product]);
+  }, [title, description, image, url, type, product, breadcrumbs]);
 };

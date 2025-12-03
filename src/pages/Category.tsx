@@ -41,7 +41,12 @@ const Category = () => {
     description: category?.meta_description || category?.description || "Sifatli mahsulotlar arzon narxlarda",
     image: category?.image || undefined,
     url: category ? `${window.location.origin}/kategoriya/${category.slug}` : undefined,
-    type: 'website'
+    type: 'website',
+    breadcrumbs: category ? [
+      { name: "Bosh sahifa", url: window.location.origin },
+      { name: "Katalog", url: `${window.location.origin}/catalog` },
+      { name: category.name, url: `${window.location.origin}/kategoriya/${category.slug}` }
+    ] : undefined
   });
 
   const fadeInUp = {
