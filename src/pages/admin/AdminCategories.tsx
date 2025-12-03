@@ -1,40 +1,42 @@
 import { useState } from 'react';
-import { useErp } from '@/contexts/ErpContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { Category } from '@/types/erp';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { useCategories, useAddCategory, useUpdateCategory, useDeleteCategory, DbCategory } from '@/hooks/useCategories';
+import { useProducts } from '@/hooks/useProducts';
 
 const AdminCategories = () => {
-  const { categories, products, addCategory, updateCategory, deleteCategory } = useErp();
   const { toast } = useToast();
+  const { data: categories = [], isLoading } = useCategories();
+  const { data: products = [] } = useProducts();
+  const addCategoryMutation = useAddCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<DbCategory | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'active' as 'active' | 'inactive',
   });
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', status: 'active' });
+    setFormData({ name: '', description: '' });
     setEditingCategory(null);
   };
 
-  const openEdit = (category: Category) => {
+  const openEdit = (category: DbCategory) => {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      description: category.description,
-      status: category.status,
+      description: category.description || '',
     });
     setIsOpen(true);
   };
@@ -43,11 +45,16 @@ const AdminCategories = () => {
     e.preventDefault();
 
     if (editingCategory) {
-      updateCategory(editingCategory.id, formData);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Kategoriya yangilandi' });
+      updateCategoryMutation.mutate({ 
+        id: editingCategory.id, 
+        name: formData.name,
+        description: formData.description 
+      });
     } else {
-      addCategory(formData);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Kategoriya qo\'shildi' });
+      addCategoryMutation.mutate({
+        name: formData.name,
+        description: formData.description
+      });
     }
 
     setIsOpen(false);
@@ -55,7 +62,7 @@ const AdminCategories = () => {
   };
 
   const handleDelete = (id: string) => {
-    const hasProducts = products.some(p => p.categoryId === id);
+    const hasProducts = products.some(p => p.category_id === id);
     if (hasProducts) {
       toast({ 
         title: 'Xatolik!', 
@@ -65,14 +72,23 @@ const AdminCategories = () => {
       return;
     }
     if (confirm('Rostdan ham o\'chirmoqchimisiz?')) {
-      deleteCategory(id);
-      toast({ title: 'O\'chirildi', description: 'Kategoriya o\'chirildi' });
+      deleteCategoryMutation.mutate(id);
     }
   };
 
   const getProductCount = (categoryId: string) => {
-    return products.filter(p => p.categoryId === categoryId).length;
+    return products.filter(p => p.category_id === categoryId).length;
   };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -112,25 +128,14 @@ const AdminCategories = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select 
-                    value={formData.status} 
-                    onValueChange={(value: 'active' | 'inactive') => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Faol</SelectItem>
-                      <SelectItem value="inactive">Nofaol</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="flex justify-end gap-3">
                   <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Bekor qilish</Button>
-                  <Button type="submit">{editingCategory ? 'Saqlash' : 'Qo\'shish'}</Button>
+                  <Button type="submit" disabled={addCategoryMutation.isPending || updateCategoryMutation.isPending}>
+                    {(addCategoryMutation.isPending || updateCategoryMutation.isPending) && (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    )}
+                    {editingCategory ? 'Saqlash' : 'Qo\'shish'}
+                  </Button>
                 </div>
               </form>
             </DialogContent>
@@ -144,7 +149,6 @@ const AdminCategories = () => {
                 <TableHead>Nomi</TableHead>
                 <TableHead>Tavsif</TableHead>
                 <TableHead>Mahsulotlar</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Amallar</TableHead>
               </TableRow>
             </TableHeader>
@@ -158,17 +162,18 @@ const AdminCategories = () => {
                   <TableCell>
                     <Badge variant="secondary">{getProductCount(category.id)} ta</Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant={category.status === 'active' ? 'default' : 'outline'}>
-                      {category.status === 'active' ? 'Faol' : 'Nofaol'}
-                    </Badge>
-                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(category)}>
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDelete(category.id)}>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="text-destructive" 
+                        onClick={() => handleDelete(category.id)}
+                        disabled={deleteCategoryMutation.isPending}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>

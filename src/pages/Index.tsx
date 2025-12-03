@@ -1,46 +1,48 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
-import { useErp } from "@/contexts/ErpContext";
+import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { motion } from "framer-motion";
 
 const Index = () => {
-  const { products, categories } = useErp();
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   
   // Get active products and map to ProductCard format
   const featuredProducts = products
     .filter(p => p.status === 'active')
     .slice(0, 4)
     .map(product => {
-      const category = categories.find(c => c.id === product.categoryId);
+      const category = categories.find(c => c.id === product.category_id);
       return {
         id: product.id,
         name: product.title,
-        price: product.discountActive && product.discountPrice ? product.discountPrice : product.retailPrice,
-        image: product.images[0] || '/placeholder.svg',
+        price: product.discount_active && product.discount_price ? product.discount_price : product.retail_price,
+        image: product.images?.[0] || '/placeholder.svg',
         category: category?.name || 'Boshqa'
       };
     });
 
   // Map categories to CategoryCard format
-  const activeCategories = categories
-    .filter(c => c.status === 'active')
-    .map(category => ({
-      name: category.name,
-      slug: category.id,
-      image: '/placeholder.svg',
-      productCount: products.filter(p => p.categoryId === category.id && p.status === 'active').length
-    }));
+  const activeCategories = categories.map(category => ({
+    name: category.name,
+    slug: category.id,
+    image: category.image || '/placeholder.svg',
+    productCount: products.filter(p => p.category_id === category.id && p.status === 'active').length
+  }));
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
   };
+
+  const isLoading = productsLoading || categoriesLoading;
 
   return (
     <div className="min-h-screen">
@@ -117,20 +119,26 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {activeCategories.map((category, index) => (
-              <motion.div
-                key={category.slug}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <CategoryCard {...category} />
-              </motion.div>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {activeCategories.map((category, index) => (
+                <motion.div
+                  key={category.slug}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeInUp}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <CategoryCard {...category} />
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -151,20 +159,26 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <ProductCard {...product} />
-              </motion.div>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeInUp}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <ProductCard {...product} />
+                </motion.div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-12">
             <Button asChild size="lg" variant="outline">
