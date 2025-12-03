@@ -1,142 +1,277 @@
 import { Link } from "react-router-dom";
-import { Phone, MapPin, Mail, Facebook, Instagram, Send, Youtube, MessageCircle } from "lucide-react";
+import { Phone, MapPin, Mail, Facebook, Instagram, Send, Youtube, MessageCircle, Clock, ArrowRight } from "lucide-react";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { Button } from "@/components/ui/button";
 
 export const Footer = () => {
   const { contact, social, footer } = useSiteContent();
 
+  const hasSocialLinks = social?.facebook || social?.instagram || social?.telegram || social?.youtube || social?.whatsapp;
+
   return (
-    <footer className="bg-secondary border-t border-border mt-20">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">XM</span>
-              </div>
-              <span className="font-bold text-lg">{footer?.companyName || "Xojalik Mollari"}</span>
+    <footer className="relative bg-gradient-to-b from-secondary to-secondary/80 border-t border-border mt-20 overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      
+      <div className="container mx-auto px-4 py-12 lg:py-16 relative">
+        {/* Top Section - CTA */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 sm:p-8 mb-12 text-primary-foreground">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">Savollaringiz bormi?</h3>
+              <p className="text-primary-foreground/80 text-sm sm:text-base">Biz bilan bog'laning - yordam berishdan mamnunmiz!</p>
             </div>
-            <p className="text-muted-foreground text-sm">
+            <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+              <Link to="/contact">
+                Bog'lanish
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Footer Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          {/* Company Info */}
+          <div className="col-span-2 sm:col-span-2 lg:col-span-1 space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="text-primary-foreground font-bold text-2xl">XM</span>
+              </div>
+              <div>
+                <span className="font-bold text-lg block">{footer?.companyName || "Xojalik Mollari"}</span>
+                <span className="text-xs text-muted-foreground">Sifat va ishonch</span>
+              </div>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               {footer?.description || "Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar."}
             </p>
+            
+            {/* Social Links - Mobile visible here */}
+            {hasSocialLinks && (
+              <div className="lg:hidden">
+                <h4 className="font-semibold text-sm mb-3">Ijtimoiy Tarmoqlar</h4>
+                <div className="flex flex-wrap gap-2">
+                  {social?.telegram && (
+                    <a
+                      href={social.telegram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                    >
+                      <Send className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.instagram && (
+                    <a
+                      href={social.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                    >
+                      <Instagram className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.facebook && (
+                    <a
+                      href={social.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                    >
+                      <Facebook className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.youtube && (
+                    <a
+                      href={social.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                    >
+                      <Youtube className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.whatsapp && (
+                    <a
+                      href={`https://wa.me/${social.whatsapp.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Tezkor Linklar</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Bosh Sahifa
-                </Link>
-              </li>
-              <li>
-                <Link to="/catalog" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Katalog
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Biz Haqimizda
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Aloqa
-                </Link>
-              </li>
+            <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+              <div className="w-1 h-5 bg-primary rounded-full" />
+              Sahifalar
+            </h3>
+            <ul className="space-y-3">
+              {[
+                { to: "/", label: "Bosh Sahifa" },
+                { to: "/catalog", label: "Katalog" },
+                { to: "/about", label: "Biz Haqimizda" },
+                { to: "/contact", label: "Aloqa" },
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link 
+                    to={link.to} 
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center gap-2 group"
+                  >
+                    <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                    <span className="group-hover:translate-x-1 transition-transform">{link.label}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Aloqa</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start space-x-3 text-sm text-muted-foreground">
-                <Phone className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <p>{contact?.phone || "+998 90 123 45 67"}</p>
-                  {contact?.phone2 && <p>{contact.phone2}</p>}
+            <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+              <div className="w-1 h-5 bg-primary rounded-full" />
+              Aloqa
+            </h3>
+            <ul className="space-y-4">
+              <li>
+                <a 
+                  href={`tel:${contact?.phone || "+998901234567"}`}
+                  className="flex items-start gap-3 text-sm text-muted-foreground hover:text-primary transition-colors group"
+                >
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{contact?.phone || "+998 90 123 45 67"}</p>
+                    {contact?.phone2 && <p className="text-xs">{contact.phone2}</p>}
+                  </div>
+                </a>
+              </li>
+              <li>
+                <a 
+                  href={`mailto:${contact?.email || "info@xojalikmollari.uz"}`}
+                  className="flex items-start gap-3 text-sm text-muted-foreground hover:text-primary transition-colors group"
+                >
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <span className="break-all">{contact?.email || "info@xojalikmollari.uz"}</span>
+                </a>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-muted-foreground">
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <MapPin className="h-4 w-4 text-primary" />
                 </div>
-              </li>
-              <li className="flex items-start space-x-3 text-sm text-muted-foreground">
-                <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <span>{contact?.address || "Toshkent sh., Chilonzor tumani"}</span>
-              </li>
-              <li className="flex items-start space-x-3 text-sm text-muted-foreground">
-                <Mail className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>{contact?.email || "info@xojalikmollari.uz"}</span>
               </li>
             </ul>
           </div>
 
-          {/* Working Hours & Social */}
+          {/* Working Hours & Social (Desktop) */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Ish Vaqti</h3>
-            <p className="text-muted-foreground text-sm mb-6">
-              Dushanba - Juma: {contact?.workingHours?.weekdays || "9:00 - 18:00"}<br />
-              Shanba: {contact?.workingHours?.saturday || "10:00 - 16:00"}<br />
-              Yakshanba: {contact?.workingHours?.sunday || "Dam olish"}
-            </p>
-            <h4 className="font-semibold mb-3">Ijtimoiy Tarmoqlar</h4>
-            <div className="flex space-x-3">
-              {social?.facebook && (
-                <a
-                  href={social.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Facebook className="h-5 w-5" />
-                </a>
-              )}
-              {social?.instagram && (
-                <a
-                  href={social.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Instagram className="h-5 w-5" />
-                </a>
-              )}
-              {social?.telegram && (
-                <a
-                  href={social.telegram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Send className="h-5 w-5" />
-                </a>
-              )}
-              {social?.youtube && (
-                <a
-                  href={social.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Youtube className="h-5 w-5" />
-                </a>
-              )}
-              {social?.whatsapp && (
-                <a
-                  href={`https://wa.me/${social.whatsapp.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-background rounded-full flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </a>
-              )}
+            <h3 className="font-bold text-base mb-4 flex items-center gap-2">
+              <div className="w-1 h-5 bg-primary rounded-full" />
+              Ish Vaqti
+            </h3>
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-muted-foreground">
+                  <p><span className="font-medium text-foreground">Du-Ju:</span> {contact?.workingHours?.weekdays || "9:00 - 18:00"}</p>
+                  <p><span className="font-medium text-foreground">Sha:</span> {contact?.workingHours?.saturday || "10:00 - 16:00"}</p>
+                  <p><span className="font-medium text-foreground">Yak:</span> {contact?.workingHours?.sunday || "Dam olish"}</p>
+                </div>
+              </div>
             </div>
+            
+            {/* Social Links - Desktop */}
+            {hasSocialLinks && (
+              <div className="hidden lg:block">
+                <h4 className="font-semibold text-sm mb-3">Ijtimoiy Tarmoqlar</h4>
+                <div className="flex flex-wrap gap-2">
+                  {social?.telegram && (
+                    <a
+                      href={social.telegram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                      aria-label="Telegram"
+                    >
+                      <Send className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.instagram && (
+                    <a
+                      href={social.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                      aria-label="Instagram"
+                    >
+                      <Instagram className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.facebook && (
+                    <a
+                      href={social.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                      aria-label="Facebook"
+                    >
+                      <Facebook className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.youtube && (
+                    <a
+                      href={social.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                      aria-label="YouTube"
+                    >
+                      <Youtube className="h-5 w-5" />
+                    </a>
+                  )}
+                  {social?.whatsapp && (
+                    <a
+                      href={`https://wa.me/${social.whatsapp.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-xl flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                      aria-label="WhatsApp"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>{footer?.copyright || `© ${new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.`}</p>
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <p className="text-center sm:text-left">
+              {footer?.copyright || `© ${new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.`}
+            </p>
+            <div className="flex items-center gap-4 text-xs">
+              <Link to="/about" className="hover:text-primary transition-colors">Maxfiylik siyosati</Link>
+              <span className="text-border">•</span>
+              <Link to="/about" className="hover:text-primary transition-colors">Foydalanish shartlari</Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
