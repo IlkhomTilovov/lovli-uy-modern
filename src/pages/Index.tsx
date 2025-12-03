@@ -8,10 +8,19 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { useSEO } from "@/hooks/useSEO";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { motion } from "framer-motion";
 
 const Index = () => {
+  // SEO with Open Graph
+  useSEO({
+    title: "Do'kon - O'zbekistonning yetakchi xo'jalik mollari",
+    description: "Sifatli xo'jalik mollari - vallerlar, cho'tkalar, supurgilar va boshqa mahsulotlar arzon narxlarda",
+    image: heroBanner,
+    url: window.location.origin,
+    type: 'website'
+  });
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   const { banner, isLoading: contentLoading } = useSiteContent();
