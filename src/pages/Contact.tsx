@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Phone, MapPin, Mail, Clock, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/useSEO";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -15,6 +16,32 @@ const Contact = () => {
     phone: "",
     email: "",
     message: ""
+  });
+
+  useSEO({
+    title: "Aloqa | Do'kon - Biz Bilan Bog'laning",
+    description: "Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz! Telefon, email yoki formadan bog'laning.",
+    url: `${window.location.origin}/contact`,
+    type: 'website',
+    breadcrumbs: [
+      { name: "Bosh sahifa", url: window.location.origin },
+      { name: "Aloqa", url: `${window.location.origin}/contact` }
+    ],
+    localBusiness: {
+      name: "Do'kon - Xojalik Mollari",
+      description: "Sifatli va arzon xojalik mahsulotlari do'koni. Tozalash, gigiena, kir yuvish va uy-ro'zg'or mollari.",
+      telephone: "+998-90-123-45-67",
+      email: "info@xojalikmollari.uz",
+      priceRange: "$$",
+      address: {
+        streetAddress: "Kichik halqa yo'li 1-uy, Chilonzor tumani",
+        addressLocality: "Toshkent",
+        addressRegion: "Toshkent",
+        postalCode: "100000",
+        addressCountry: "UZ"
+      },
+      openingHours: ["Mo-Sa 09:00-20:00", "Su 10:00-18:00"]
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
