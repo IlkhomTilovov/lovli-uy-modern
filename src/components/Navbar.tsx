@@ -215,7 +215,7 @@ export const Navbar = () => {
         )}
       </div>
 
-      {/* Premium Mega Menu */}
+      {/* Premium Mega Menu - Two Column Layout */}
       {catalogOpen && (
         <div className="hidden md:block absolute left-0 right-0 top-full w-full animate-fade-in z-50">
           {/* Backdrop with blur */}
@@ -225,99 +225,81 @@ export const Navbar = () => {
           />
           
           {/* Mega Menu Content */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5 border-b-2 border-primary/20 shadow-2xl">
-            {/* Decorative Elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-            
-            <div className="container mx-auto px-4 py-10 relative">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-8">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
-                    <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                      Kategoriyalar
-                    </h3>
+          <div className="relative overflow-hidden bg-background border-b border-border shadow-2xl">
+            <div className="container mx-auto px-4 py-8 relative">
+              <div className="flex gap-8">
+                {/* Left Side - Categories List */}
+                <div className="w-56 shrink-0">
+                  <h3 className="text-xs font-semibold text-primary uppercase tracking-wider mb-4">
+                    KATEGORIYALAR
+                  </h3>
+                  <div className="space-y-1">
+                    {activeCategories.map((category) => (
+                      <Link
+                        key={category.id}
+                        to={`/kategoriya/${category.id}`}
+                        className="group flex items-center justify-between py-2.5 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <span className="text-sm font-medium">{category.name}</span>
+                        <ChevronDown className="h-4 w-4 -rotate-90 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                      </Link>
+                    ))}
+                    <Link
+                      to="/catalog"
+                      className="group flex items-center justify-between py-2.5 text-primary font-medium"
+                    >
+                      <span className="text-sm">Barcha mahsulotlar</span>
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </div>
-                  <p className="text-muted-foreground ml-4">
-                    Sizga kerak bo'lgan barcha mahsulotlar
-                  </p>
                 </div>
-                <Link 
-                  to="/catalog" 
-                  className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-semibold overflow-hidden"
-                >
-                  <span className="relative z-10">Barcha mahsulotlar</span>
-                  <ArrowRight className="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-                </Link>
-              </div>
 
-              {/* Categories Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                {activeCategories.map((category, index) => (
-                  <Link
-                    key={category.id}
-                    to={`/kategoriya/${category.id}`}
-                    className="group relative overflow-hidden rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    {/* Card Gradient Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    {/* Shine Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    
-                    <div className="relative p-5">
-                      {/* Category Image */}
-                      <div className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-muted via-muted/80 to-muted/50 shadow-inner">
+                {/* Right Side - Category Cards */}
+                <div className="flex-1">
+                  <div className="grid grid-cols-3 gap-4">
+                    {activeCategories.slice(0, 3).map((category) => (
+                      <Link
+                        key={category.id}
+                        to={`/kategoriya/${category.id}`}
+                        className="group relative overflow-hidden rounded-2xl aspect-[4/3]"
+                      >
+                        {/* Background Image */}
                         {category.image ? (
                           <img 
                             src={category.image} 
                             alt={category.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
-                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/40" />
                         )}
                         
-                        {/* Image Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-
-                      {/* Category Info */}
-                      <div className="space-y-2">
-                        <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors duration-300">
-                          {category.name}
-                        </h4>
-                        {category.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                            {category.description}
+                        {/* Dark Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+                        
+                        {/* Content */}
+                        <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                          <h4 className="text-xl font-bold text-white mb-1">
+                            {category.name}
+                          </h4>
+                          <p className="text-sm text-white/80 mb-3 line-clamp-1">
+                            {category.description || "Mahsulotlarni ko'ring"}
                           </p>
-                        )}
-                        
-                        {/* View Link */}
-                        <div className="flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 pt-1">
-                          <span>Ko'rish</span>
-                          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          <div className="flex items-center gap-2 text-white group-hover:translate-x-1 transition-transform">
+                            <ArrowRight className="h-5 w-5" />
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Empty State */}
               {activeCategories.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
-                    <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
-                  </div>
-                  <p className="text-lg font-medium text-muted-foreground">Hozircha kategoriyalar yo'q</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">Tez orada yangi kategoriyalar qo'shiladi</p>
+                <div className="text-center py-12">
+                  <FolderOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+                  <p className="text-muted-foreground">Hozircha kategoriyalar yo'q</p>
                 </div>
               )}
             </div>
