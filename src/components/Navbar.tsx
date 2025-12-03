@@ -191,7 +191,7 @@ export const Navbar = () => {
                   {activeCategories.slice(0, 4).map((category) => (
                     <Link
                       key={category.id}
-                      to={`/kategoriya/${category.id}`}
+                      to={`/kategoriya/${category.slug}`}
                       onClick={() => setIsOpen(false)}
                       className="group relative overflow-hidden rounded-xl aspect-[4/3]"
                     >
@@ -228,7 +228,7 @@ export const Navbar = () => {
                     {activeCategories.slice(4).map((category) => (
                       <Link
                         key={category.id}
-                        to={`/kategoriya/${category.id}`}
+                        to={`/kategoriya/${category.slug}`}
                         onClick={() => setIsOpen(false)}
                         className="flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
@@ -286,7 +286,8 @@ export const Navbar = () => {
                     {activeCategories.map((category) => (
                       <Link
                         key={category.id}
-                        to={`/kategoriya/${category.id}`}
+                        to={`/kategoriya/${category.slug}`}
+                        onClick={() => setCatalogOpen(false)}
                         className="group flex items-center justify-between py-2.5 text-muted-foreground hover:text-primary transition-colors"
                       >
                         <span className="text-sm font-medium">{category.name}</span>
@@ -295,6 +296,7 @@ export const Navbar = () => {
                     ))}
                     <Link
                       to="/catalog"
+                      onClick={() => setCatalogOpen(false)}
                       className="group flex items-center justify-between py-2.5 text-primary font-medium"
                     >
                       <span className="text-sm">Barcha mahsulotlar</span>
@@ -309,7 +311,8 @@ export const Navbar = () => {
                     {activeCategories.slice(0, 3).map((category) => (
                       <Link
                         key={category.id}
-                        to={`/kategoriya/${category.id}`}
+                        to={`/kategoriya/${category.slug}`}
+                        onClick={() => setCatalogOpen(false)}
                         className="group relative overflow-hidden rounded-2xl aspect-[4/3]"
                       >
                         {/* Background Image */}
