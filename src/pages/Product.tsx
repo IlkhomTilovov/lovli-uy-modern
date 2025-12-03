@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -7,6 +6,7 @@ import { ShoppingCart, ArrowLeft, Package, Shield, Truck, Loader2 } from "lucide
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 
 const Product = () => {
@@ -17,24 +17,14 @@ const Product = () => {
   const product = products.find(p => p.id === id);
   const category = product ? categories.find(c => c.id === product.category_id) : null;
 
-  // SEO: Update meta tags based on product
-  useEffect(() => {
-    if (product) {
-      document.title = product.meta_title || `${product.title} | Do'kon`;
-      
-      let metaDescription = document.querySelector('meta[name="description"]');
-      if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.setAttribute('name', 'description');
-        document.head.appendChild(metaDescription);
-      }
-      metaDescription.setAttribute('content', product.meta_description || product.description || `${product.title} - sifatli mahsulot arzon narxda`);
-    }
-
-    return () => {
-      document.title = "Do'kon";
-    };
-  }, [product]);
+  // SEO with Open Graph
+  useSEO({
+    title: product?.meta_title || `${product?.title || 'Mahsulot'} | Do'kon`,
+    description: product?.meta_description || product?.description || "Sifatli mahsulot arzon narxda",
+    image: product?.images?.[0],
+    url: product ? `${window.location.origin}/product/${product.id}` : undefined,
+    type: 'product'
+  });
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },

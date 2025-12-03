@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight, Home } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 
 const Category = () => {
@@ -34,24 +35,14 @@ const Category = () => {
       }));
   }, [category, products]);
 
-  // SEO: Update meta tags
-  useEffect(() => {
-    if (category) {
-      document.title = category.meta_title || `${category.name} | Do'kon`;
-      
-      let metaDescription = document.querySelector('meta[name="description"]');
-      if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.setAttribute('name', 'description');
-        document.head.appendChild(metaDescription);
-      }
-      metaDescription.setAttribute('content', category.meta_description || category.description || `${category.name} - sifatli mahsulotlar arzon narxlarda`);
-    }
-
-    return () => {
-      document.title = "Do'kon";
-    };
-  }, [category]);
+  // SEO with Open Graph
+  useSEO({
+    title: category?.meta_title || `${category?.name || 'Kategoriya'} | Do'kon`,
+    description: category?.meta_description || category?.description || "Sifatli mahsulotlar arzon narxlarda",
+    image: category?.image || undefined,
+    url: category ? `${window.location.origin}/kategoriya/${category.slug}` : undefined,
+    type: 'website'
+  });
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
