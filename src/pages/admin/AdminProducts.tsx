@@ -13,15 +13,21 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Search, Package, DollarSign, Image as ImageIcon, Tag, FileText, Settings, Upload, X, Loader2 } from 'lucide-react';
-import { Product } from '@/types/erp';
 import { supabase } from '@/integrations/supabase/client';
+import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, DbProduct } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 
 const AdminProducts = () => {
-  const { products, categories, addProduct, updateProduct, deleteProduct } = useErp();
   const { toast } = useToast();
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const addProductMutation = useAddProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+  
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -32,7 +38,7 @@ const AdminProducts = () => {
     discountActive: false,
     sku: '',
     stock: 0,
-    images: [''],
+    images: [] as string[],
     status: 'active' as 'active' | 'inactive',
     metaTitle: '',
     metaDescription: '',
@@ -54,7 +60,7 @@ const AdminProducts = () => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from('product-images')
           .upload(fileName, file);
         
@@ -74,7 +80,7 @@ const AdminProducts = () => {
       if (uploadedUrls.length > 0) {
         setFormData(prev => ({
           ...prev,
-          images: [...prev.images.filter(img => img.trim() !== ''), ...uploadedUrls]
+          images: [...prev.images, ...uploadedUrls]
         }));
         toast({ title: 'Muvaffaqiyatli!', description: `${uploadedUrls.length} ta rasm yuklandi` });
       }
@@ -112,41 +118,49 @@ const AdminProducts = () => {
     setEditingProduct(null);
   };
 
-  const openEdit = (product: Product) => {
+  const openEdit = (product: DbProduct) => {
     setEditingProduct(product);
     setFormData({
       title: product.title,
-      description: product.description,
-      categoryId: product.categoryId,
-      retailPrice: product.retailPrice,
-      wholesalePrice: product.wholesalePrice,
-      discountPrice: product.discountPrice || 0,
-      discountActive: product.discountActive,
+      description: product.description || '',
+      categoryId: product.category_id || '',
+      retailPrice: product.retail_price,
+      wholesalePrice: product.wholesale_price,
+      discountPrice: product.discount_price || 0,
+      discountActive: product.discount_active,
       sku: product.sku,
       stock: product.stock,
-      images: product.images.length > 0 ? product.images : [],
-      status: product.status,
-      metaTitle: product.metaTitle || '',
-      metaDescription: product.metaDescription || '',
+      images: product.images || [],
+      status: product.status as 'active' | 'inactive',
+      metaTitle: product.meta_title || '',
+      metaDescription: product.meta_description || '',
     });
     setIsOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const productData = {
-      ...formData,
-      discountPrice: formData.discountActive ? formData.discountPrice : null,
-      images: formData.images.filter(img => img.trim() !== ''),
+      title: formData.title,
+      description: formData.description || undefined,
+      category_id: formData.categoryId || undefined,
+      retail_price: formData.retailPrice,
+      wholesale_price: formData.wholesalePrice,
+      discount_price: formData.discountActive ? formData.discountPrice : null,
+      discount_active: formData.discountActive,
+      sku: formData.sku,
+      stock: formData.stock,
+      images: formData.images,
+      status: formData.status,
+      meta_title: formData.metaTitle || undefined,
+      meta_description: formData.metaDescription || undefined,
     };
 
     if (editingProduct) {
-      updateProduct(editingProduct.id, productData);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Mahsulot yangilandi' });
+      updateProductMutation.mutate({ id: editingProduct.id, ...productData });
     } else {
-      addProduct(productData);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Mahsulot qo\'shildi' });
+      addProductMutation.mutate(productData);
     }
 
     setIsOpen(false);
@@ -155,14 +169,24 @@ const AdminProducts = () => {
 
   const handleDelete = (id: string) => {
     if (confirm('Rostdan ham o\'chirmoqchimisiz?')) {
-      deleteProduct(id);
-      toast({ title: 'O\'chirildi', description: 'Mahsulot o\'chirildi' });
+      deleteProductMutation.mutate(id);
     }
   };
 
-  const getCategoryName = (id: string) => {
+  const getCategoryName = (id: string | null) => {
+    if (!id) return '-';
     return categories.find(c => c.id === id)?.name || '-';
   };
+
+  if (productsLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -371,7 +395,6 @@ const AdminProducts = () => {
                       <span className="font-semibold text-sm">Rasmlar</span>
                     </div>
                     
-                    {/* Image Upload Area */}
                     <div className="space-y-4">
                       <input
                         type="file"
@@ -400,20 +423,15 @@ const AdminProducts = () => {
                         )}
                       </div>
 
-                      {/* Image Previews */}
-                      {formData.images.length > 0 && formData.images.some(img => img.trim() !== '') && (
+                      {formData.images.length > 0 && (
                         <div className="grid grid-cols-4 gap-3">
-                          {formData.images.filter(img => img.trim() !== '').map((img, index) => (
-                            <div key={index} className="relative group">
-                              <img 
-                                src={img} 
-                                alt={`Rasm ${index + 1}`}
-                                className="w-full h-24 object-cover rounded-lg border"
-                              />
+                          {formData.images.map((img, index) => (
+                            <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border">
+                              <img src={img} alt={`Rasm ${index + 1}`} className="w-full h-full object-cover" />
                               <button
                                 type="button"
                                 onClick={() => removeImage(index)}
-                                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -421,10 +439,6 @@ const AdminProducts = () => {
                           ))}
                         </div>
                       )}
-                      
-                      <p className="text-xs text-muted-foreground">
-                        {formData.images.filter(img => img.trim() !== '').length} ta rasm yuklangan
-                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -434,38 +448,39 @@ const AdminProducts = () => {
                   <CardContent className="pt-4 space-y-4">
                     <div className="flex items-center gap-2 text-blue-600 mb-2">
                       <FileText className="w-4 h-4" />
-                      <span className="font-semibold text-sm">SEO sozlamalari</span>
+                      <span className="font-semibold text-sm">SEO (Qidiruv uchun)</span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-muted-foreground text-sm">Meta Title</Label>
+                        <Label className="text-muted-foreground text-sm">Meta sarlavha</Label>
                         <Input 
                           value={formData.metaTitle} 
                           onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                          placeholder="Qidiruv tizimlari uchun sarlavha"
+                          placeholder="Qidiruv tizimlarida ko'rinadigan sarlavha"
                           className="h-11"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-muted-foreground text-sm">Meta Description</Label>
-                        <Input 
+                        <Label className="text-muted-foreground text-sm">Meta tavsif</Label>
+                        <Textarea 
                           value={formData.metaDescription} 
                           onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                          placeholder="Qidiruv tizimlari uchun tavsif"
-                          className="h-11"
+                          placeholder="Qidiruv tizimlarida ko'rinadigan qisqa tavsif"
+                          rows={2}
+                          className="resize-none"
                         />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Form Actions */}
                 <div className="flex justify-end gap-3 pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="px-6">
-                    Bekor qilish
-                  </Button>
-                  <Button type="submit" className="px-8 shadow-lg">
+                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Bekor qilish</Button>
+                  <Button type="submit" disabled={addProductMutation.isPending || updateProductMutation.isPending}>
+                    {(addProductMutation.isPending || updateProductMutation.isPending) && (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    )}
                     {editingProduct ? 'Saqlash' : 'Qo\'shish'}
                   </Button>
                 </div>
@@ -475,25 +490,25 @@ const AdminProducts = () => {
         </div>
 
         {/* Search */}
-        <div className="relative">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
             placeholder="Qidirish..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 max-w-sm"
+            className="pl-10"
           />
         </div>
 
         {/* Products Table */}
-        <Card>
+        <div className="border rounded-lg">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="w-16">Rasm</TableHead>
+              <TableRow>
+                <TableHead className="w-[80px]">Rasm</TableHead>
                 <TableHead>Nomi</TableHead>
-                <TableHead>SKU</TableHead>
                 <TableHead>Kategoriya</TableHead>
+                <TableHead>SKU</TableHead>
                 <TableHead>Narx</TableHead>
                 <TableHead>Zaxira</TableHead>
                 <TableHead>Status</TableHead>
@@ -501,87 +516,61 @@ const AdminProducts = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                    <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>Mahsulotlar topilmadi</p>
+              {filteredProducts.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                      {product.images && product.images.length > 0 ? (
+                        <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">{product.title}</TableCell>
+                  <TableCell className="text-muted-foreground">{getCategoryName(product.category_id)}</TableCell>
+                  <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">{product.retail_price.toLocaleString()} so'm</div>
+                      {product.discount_active && product.discount_price && (
+                        <div className="text-xs text-green-600">Chegirma: {product.discount_price.toLocaleString()} so'm</div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={product.stock > 0 ? 'secondary' : 'destructive'}>
+                      {product.stock} dona
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={product.status === 'active' ? 'default' : 'outline'}>
+                      {product.status === 'active' ? 'Faol' : 'Nofaol'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(product)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="text-destructive" 
+                        onClick={() => handleDelete(product.id)}
+                        disabled={deleteProductMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ) : (
-                filteredProducts.map((product) => (
-                  <TableRow key={product.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell>
-                      <img 
-                        src={product.images[0] || '/placeholder.svg'} 
-                        alt={product.title}
-                        className="w-12 h-12 object-cover rounded-lg border"
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{product.title}</TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-sm">{product.sku}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-normal">
-                        {getCategoryName(product.categoryId)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {product.discountActive ? (
-                        <div className="space-y-0.5">
-                          <span className="line-through text-muted-foreground text-xs">
-                            {product.retailPrice.toLocaleString()} so'm
-                          </span>
-                          <br />
-                          <span className="font-semibold text-green-600">
-                            {product.discountPrice?.toLocaleString()} so'm
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="font-medium">{product.retailPrice.toLocaleString()} so'm</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={product.stock < 20 ? 'destructive' : 'secondary'}
-                        className="font-normal"
-                      >
-                        {product.stock} dona
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={product.status === 'active' ? 'default' : 'outline'}
-                        className={product.status === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}
-                      >
-                        {product.status === 'active' ? 'Faol' : 'Nofaol'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          onClick={() => openEdit(product)}
-                          className="hover:bg-primary/10 hover:text-primary"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="hover:bg-destructive/10 text-destructive" 
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
-        </Card>
+        </div>
       </div>
     </AdminLayout>
   );

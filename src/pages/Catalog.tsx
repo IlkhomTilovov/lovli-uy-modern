@@ -5,32 +5,35 @@ import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { useErp } from "@/contexts/ErpContext";
+import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import { motion } from "framer-motion";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const selectedCategory = searchParams.get("category") || "all";
-  const { products, categories } = useErp();
+  
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   const filteredProducts = useMemo(() => {
     return products
       .filter(product => product.status === 'active')
       .filter(product => {
-        const matchesCategory = selectedCategory === "all" || product.categoryId === selectedCategory;
+        const matchesCategory = selectedCategory === "all" || product.category_id === selectedCategory;
         const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                             product.description.toLowerCase().includes(searchQuery.toLowerCase());
+                             (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
         return matchesCategory && matchesSearch;
       })
       .map(product => {
-        const category = categories.find(c => c.id === product.categoryId);
+        const category = categories.find(c => c.id === product.category_id);
         return {
           id: product.id,
           name: product.title,
-          price: product.discountActive && product.discountPrice ? product.discountPrice : product.retailPrice,
-          image: product.images[0] || '/placeholder.svg',
+          price: product.discount_active && product.discount_price ? product.discount_price : product.retail_price,
+          image: product.images?.[0] || '/placeholder.svg',
           category: category?.name || 'Boshqa'
         };
       });
@@ -49,6 +52,8 @@ const Catalog = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
+
+  const isLoading = productsLoading || categoriesLoading;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -113,7 +118,7 @@ const Catalog = () => {
                       >
                         Barcha mahsulotlar
                       </Button>
-                      {categories.filter(c => c.status === 'active').map((category) => (
+                      {categories.map((category) => (
                         <Button
                           key={category.id}
                           variant={selectedCategory === category.id ? "default" : "ghost"}
@@ -131,7 +136,11 @@ const Catalog = () => {
 
             {/* Products Grid */}
             <div>
-              {filteredProducts.length === 0 ? (
+              {isLoading ? (
+                <div className="flex justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-muted-foreground text-lg">
                     Mahsulot topilmadi. Boshqa kategoriyani tanlang yoki qidiruv so'zini o'zgartiring.
