@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Shield, User as UserIcon, Warehouse } from 'lucide-react';
+import { Plus, Pencil, Trash2, Shield, User as UserIcon, Warehouse, Eye, EyeOff } from 'lucide-react';
 import { User, UserRole } from '@/types/erp';
+import { supabase } from '@/integrations/supabase/client';
 
 const roleLabels: Record<UserRole, { label: string; icon: React.ElementType; color: string }> = {
   admin: { label: 'Admin', icon: Shield, color: 'bg-red-500' },
@@ -26,12 +27,16 @@ const AdminUsers = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     role: 'manager' as UserRole,
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', role: 'manager' });
+    setFormData({ name: '', email: '', password: '', role: 'manager' });
     setEditingUser(null);
+    setShowPassword(false);
   };
 
   const openEdit = (user: User) => {
@@ -39,24 +44,87 @@ const AdminUsers = () => {
     setFormData({
       name: user.name,
       email: user.email,
+      password: '',
       role: user.role,
     });
     setIsOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    if (editingUser) {
-      updateUser(editingUser.id, formData);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Foydalanuvchi yangilandi' });
-    } else {
-      addUser(formData);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Foydalanuvchi qo\'shildi' });
+    try {
+      if (editingUser) {
+        updateUser(editingUser.id, { name: formData.name, email: formData.email, role: formData.role });
+        toast({ title: 'Muvaffaqiyatli!', description: 'Foydalanuvchi yangilandi' });
+      } else {
+        // Yangi foydalanuvchi yaratish - Supabase Auth orqali
+        if (formData.password.length < 6) {
+          toast({ 
+            title: 'Xatolik!', 
+            description: 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak',
+            variant: 'destructive'
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              name: formData.name,
+            }
+          }
+        });
+
+        if (error) {
+          toast({ 
+            title: 'Xatolik!', 
+            description: error.message,
+            variant: 'destructive'
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        if (data.user) {
+          // Rol qo'shish
+          const appRole = formData.role === 'admin' ? 'admin' : formData.role === 'manager' ? 'moderator' : 'user';
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({ user_id: data.user.id, role: appRole as 'admin' | 'moderator' | 'user' });
+
+          if (roleError) {
+            console.error('Role error:', roleError);
+          }
+
+          // Local state ga qo'shish
+          addUser({
+            name: formData.name,
+            email: formData.email,
+            role: formData.role,
+          });
+        }
+
+        toast({ title: 'Muvaffaqiyatli!', description: 'Foydalanuvchi qo\'shildi' });
+      }
+
+      setIsOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error:', error);
+      toast({ 
+        title: 'Xatolik!', 
+        description: 'Nimadir xato ketdi',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsOpen(false);
-    resetForm();
   };
 
   const handleDelete = (id: string) => {
@@ -118,8 +186,34 @@ const AdminUsers = () => {
                     value={formData.email} 
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required 
+                    disabled={!!editingUser}
                   />
                 </div>
+
+                {!editingUser && (
+                  <div className="space-y-2">
+                    <Label>Parol</Label>
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password} 
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                        minLength={6}
+                        placeholder="Kamida 6 ta belgi"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label>Rol</Label>
@@ -153,8 +247,12 @@ const AdminUsers = () => {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Bekor qilish</Button>
-                  <Button type="submit">{editingUser ? 'Saqlash' : 'Qo\'shish'}</Button>
+                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
+                    Bekor qilish
+                  </Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Yuklanmoqda...' : (editingUser ? 'Saqlash' : 'Qo\'shish')}
+                  </Button>
                 </div>
               </form>
             </DialogContent>
