@@ -31,9 +31,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
+      <main className="ml-64 flex-1 overflow-auto">
         <div className="p-8">
           {!isAdmin && (
             <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded-md text-yellow-800">
