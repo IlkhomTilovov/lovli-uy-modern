@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -17,6 +17,45 @@ const Catalog = () => {
   
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
+  // Find selected category for SEO
+  const selectedCategoryData = useMemo(() => {
+    if (selectedCategory === "all") return null;
+    return categories.find(c => c.id === selectedCategory);
+  }, [selectedCategory, categories]);
+
+  // SEO: Update meta tags based on selected category
+  useEffect(() => {
+    const defaultTitle = "Mahsulotlar Katalogi | Do'kon";
+    const defaultDescription = "Barcha mahsulotlar katalogi - sifatli va arzon narxlarda";
+
+    if (selectedCategoryData) {
+      document.title = selectedCategoryData.meta_title || `${selectedCategoryData.name} | Do'kon`;
+      
+      // Update meta description
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', selectedCategoryData.meta_description || selectedCategoryData.description || defaultDescription);
+    } else {
+      document.title = defaultTitle;
+      
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', defaultDescription);
+    }
+
+    return () => {
+      document.title = "Do'kon";
+    };
+  }, [selectedCategoryData]);
 
   const filteredProducts = useMemo(() => {
     return products
