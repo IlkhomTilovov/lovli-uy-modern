@@ -20,8 +20,12 @@ export type Database = {
           description: string | null
           id: string
           image: string | null
+          meta_description: string | null
+          meta_title: string | null
           name: string
           slug: string
+          sort_order: number
+          status: string
           updated_at: string
         }
         Insert: {
@@ -29,8 +33,12 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           name: string
           slug: string
+          sort_order?: number
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -38,8 +46,12 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
           name?: string
           slug?: string
+          sort_order?: number
+          status?: string
           updated_at?: string
         }
         Relationships: []

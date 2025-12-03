@@ -8,6 +8,10 @@ export interface DbCategory {
   slug: string;
   description: string | null;
   image: string | null;
+  status: string;
+  sort_order: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -17,6 +21,10 @@ export interface CategoryInput {
   slug?: string;
   description?: string;
   image?: string;
+  status?: string;
+  sort_order?: number;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 const generateSlug = (name: string) => {
@@ -35,7 +43,7 @@ export const useCategories = () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('sort_order', { ascending: true });
       
       if (error) throw error;
       return data as DbCategory[];
@@ -58,6 +66,10 @@ export const useAddCategory = () => {
           slug,
           description: category.description || null,
           image: category.image || null,
+          status: category.status || 'active',
+          sort_order: category.sort_order || 0,
+          meta_title: category.meta_title || null,
+          meta_description: category.meta_description || null,
         })
         .select()
         .single();
@@ -89,6 +101,10 @@ export const useUpdateCategory = () => {
       }
       if (category.description !== undefined) updateData.description = category.description;
       if (category.image !== undefined) updateData.image = category.image;
+      if (category.status !== undefined) updateData.status = category.status;
+      if (category.sort_order !== undefined) updateData.sort_order = category.sort_order;
+      if (category.meta_title !== undefined) updateData.meta_title = category.meta_title;
+      if (category.meta_description !== undefined) updateData.meta_description = category.meta_description;
 
       const { data, error } = await supabase
         .from('categories')
