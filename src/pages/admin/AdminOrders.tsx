@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useErp } from '@/contexts/ErpContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, Package } from 'lucide-react';
+import { 
+  Eye, Package, Search, Download, FileSpreadsheet, FileText, Plus,
+  ShoppingCart, DollarSign, TrendingUp, Users, Calendar
+} from 'lucide-react';
 import { Order, OrderStatus } from '@/types/erp';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { startOfDay, startOfWeek, startOfMonth, isAfter, format, subDays } from 'date-fns';
 
 const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
   new: { label: 'Yangi', color: 'bg-yellow-500' },
@@ -19,14 +27,96 @@ const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
 };
 
 const AdminOrders = () => {
-  const { orders, orderItems, products, updateOrderStatus } = useErp();
+  const { orders, orderItems, products, updateOrderStatus, addOrder } = useErp();
   const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
+  const [newOrder, setNewOrder] = useState({
+    customerName: '',
+    phone: '',
+    address: '',
+    totalPrice: 0
+  });
 
-  const filteredOrders = filterStatus === 'all' 
-    ? orders 
-    : orders.filter(o => o.status === filterStatus);
+  // Date filtering
+  const getDateFilterStart = () => {
+    const now = new Date();
+    switch (dateFilter) {
+      case 'today': return startOfDay(now);
+      case 'week': return startOfWeek(now, { weekStartsOn: 1 });
+      case 'month': return startOfMonth(now);
+      default: return null;
+    }
+  };
+
+  // Filtered orders
+  const filteredOrders = useMemo(() => {
+    let result = [...orders];
+    
+    // Status filter
+    if (filterStatus !== 'all') {
+      result = result.filter(o => o.status === filterStatus);
+    }
+    
+    // Date filter
+    const dateStart = getDateFilterStart();
+    if (dateStart) {
+      result = result.filter(o => isAfter(new Date(o.createdAt), dateStart));
+    }
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(o => 
+        o.customerName.toLowerCase().includes(query) ||
+        o.phone.includes(query) ||
+        o.address.toLowerCase().includes(query)
+      );
+    }
+    
+    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [orders, filterStatus, dateFilter, searchQuery]);
+
+  // Statistics
+  const stats = useMemo(() => {
+    const total = filteredOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+    const avgCheck = filteredOrders.length > 0 ? total / filteredOrders.length : 0;
+    const delivered = filteredOrders.filter(o => o.status === 'delivered').length;
+    const newOrders = filteredOrders.filter(o => o.status === 'new').length;
+    
+    return { total, avgCheck, delivered, newOrders, count: filteredOrders.length };
+  }, [filteredOrders]);
+
+  // Chart data - last 7 days
+  const chartData = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const dayStart = startOfDay(date);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayEnd.getDate() + 1);
+      
+      const dayOrders = orders.filter(o => {
+        const orderDate = new Date(o.createdAt);
+        return orderDate >= dayStart && orderDate < dayEnd;
+      });
+      
+      const delivered = dayOrders.filter(o => o.status === 'delivered').length;
+      const cancelled = dayOrders.filter(o => o.status === 'cancelled').length;
+      
+      days.push({
+        name: format(date, 'dd/MM'),
+        buyurtmalar: dayOrders.length,
+        summa: dayOrders.reduce((sum, o) => sum + o.totalPrice, 0) / 1000,
+        yetkazildi: delivered,
+        bekor: cancelled
+      });
+    }
+    return days;
+  }, [orders]);
 
   const getOrderItems = (orderId: string) => {
     return orderItems.filter(item => item.orderId === orderId);
@@ -51,17 +141,271 @@ const AdminOrders = () => {
     });
   };
 
+  // Export functions
+  const exportToExcel = () => {
+    const headers = ['ID', 'Mijoz', 'Telefon', 'Manzil', 'Summa', 'Status', 'Sana'];
+    const rows = filteredOrders.map(o => [
+      o.id.slice(0, 8),
+      o.customerName,
+      o.phone,
+      o.address,
+      o.totalPrice,
+      statusLabels[o.status].label,
+      formatDate(o.createdAt)
+    ]);
+    
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `buyurtmalar_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    toast({ title: 'Export', description: 'Excel fayl yuklandi' });
+  };
+
+  const exportToPDF = () => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Buyurtmalar hisoboti</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #333; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f4f4f4; }
+            .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+            .stat { padding: 10px; background: #f9f9f9; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Buyurtmalar hisoboti</h1>
+          <p>Sana: ${format(new Date(), 'dd.MM.yyyy HH:mm')}</p>
+          <div class="stats">
+            <div class="stat"><strong>Jami:</strong> ${stats.count} ta</div>
+            <div class="stat"><strong>Summa:</strong> ${stats.total.toLocaleString()} so'm</div>
+            <div class="stat"><strong>O'rtacha chek:</strong> ${Math.round(stats.avgCheck).toLocaleString()} so'm</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mijoz</th>
+                <th>Telefon</th>
+                <th>Summa</th>
+                <th>Status</th>
+                <th>Sana</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredOrders.map(o => `
+                <tr>
+                  <td>#${o.id.slice(0, 8)}</td>
+                  <td>${o.customerName}</td>
+                  <td>${o.phone}</td>
+                  <td>${o.totalPrice.toLocaleString()} so'm</td>
+                  <td>${statusLabels[o.status].label}</td>
+                  <td>${formatDate(o.createdAt)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    toast({ title: 'Export', description: 'PDF tayyorlandi' });
+  };
+
+  const handleAddOrder = () => {
+    if (!newOrder.customerName || !newOrder.phone || !newOrder.address) {
+      toast({ title: 'Xato', description: 'Barcha maydonlarni to\'ldiring', variant: 'destructive' });
+      return;
+    }
+    
+    addOrder({
+      customerName: newOrder.customerName,
+      phone: newOrder.phone,
+      address: newOrder.address,
+      totalPrice: newOrder.totalPrice,
+      status: 'new'
+    }, []);
+    
+    setNewOrder({ customerName: '', phone: '', address: '', totalPrice: 0 });
+    setShowNewOrderDialog(false);
+    toast({ title: 'Muvaffaqiyat', description: 'Yangi buyurtma qo\'shildi' });
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Buyurtmalar</h1>
             <p className="text-muted-foreground">Jami: {orders.length} ta buyurtma</p>
           </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setShowNewOrderDialog(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Yangi buyurtma
+            </Button>
+            <Button variant="outline" onClick={exportToExcel} className="gap-2">
+              <FileSpreadsheet className="w-4 h-4" />
+              Excel
+            </Button>
+            <Button variant="outline" onClick={exportToPDF} className="gap-2">
+              <FileText className="w-4 h-4" />
+              PDF
+            </Button>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Buyurtmalar</p>
+                  <p className="text-2xl font-bold">{stats.count}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/10 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Jami summa</p>
+                  <p className="text-2xl font-bold">{(stats.total / 1000000).toFixed(1)}M</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">O'rtacha chek</p>
+                  <p className="text-2xl font-bold">{(stats.avgCheck / 1000).toFixed(0)}K</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/10 rounded-lg">
+                  <Package className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Yetkazildi</p>
+                  <p className="text-2xl font-bold">{stats.delivered}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-500/10 rounded-lg">
+                  <Users className="w-5 h-5 text-yellow-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Yangi</p>
+                  <p className="text-2xl font-bold">{stats.newOrders}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Kunlik buyurtmalar (so'nggi 7 kun)
+              </h3>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" fontSize={12} />
+                    <YAxis fontSize={12} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="buyurtmalar" stroke="hsl(var(--primary))" strokeWidth={2} name="Buyurtmalar" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Status bo'yicha (so'nggi 7 kun)
+              </h3>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" fontSize={12} />
+                    <YAxis fontSize={12} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="yetkazildi" fill="hsl(142, 76%, 36%)" name="Yetkazildi" />
+                    <Bar dataKey="bekor" fill="hsl(0, 84%, 60%)" name="Bekor qilindi" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Mijoz ismi yoki telefon raqami..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-40">
+              <Calendar className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Sana" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barchasi</SelectItem>
+              <SelectItem value="today">Bugun</SelectItem>
+              <SelectItem value="week">Shu hafta</SelectItem>
+              <SelectItem value="month">Shu oy</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter" />
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Barchasi</SelectItem>
@@ -74,6 +418,7 @@ const AdminOrders = () => {
           </Select>
         </div>
 
+        {/* Orders Table */}
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
@@ -89,46 +434,55 @@ const AdminOrders = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-mono text-sm">#{order.id.slice(0, 8)}</TableCell>
-                  <TableCell className="font-medium">{order.customerName}</TableCell>
-                  <TableCell>{order.phone}</TableCell>
-                  <TableCell className="max-w-xs truncate">{order.address}</TableCell>
-                  <TableCell className="font-semibold">{order.totalPrice.toLocaleString()} so'm</TableCell>
-                  <TableCell>
-                    <Select 
-                      value={order.status} 
-                      onValueChange={(value: OrderStatus) => handleStatusChange(order.id, value)}
-                    >
-                      <SelectTrigger className="w-40">
-                        <Badge className={statusLabels[order.status].color}>
-                          {statusLabels[order.status].label}
-                        </Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(statusLabels).map(([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            <Badge className={value.color}>{value.label}</Badge>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {formatDate(order.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button size="icon" variant="ghost" onClick={() => setSelectedOrder(order)}>
-                      <Eye className="w-4 h-4" />
-                    </Button>
+              {filteredOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    Buyurtmalar topilmadi
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-sm">#{order.id.slice(0, 8)}</TableCell>
+                    <TableCell className="font-medium">{order.customerName}</TableCell>
+                    <TableCell>{order.phone}</TableCell>
+                    <TableCell className="max-w-xs truncate">{order.address}</TableCell>
+                    <TableCell className="font-semibold">{order.totalPrice.toLocaleString()} so'm</TableCell>
+                    <TableCell>
+                      <Select 
+                        value={order.status} 
+                        onValueChange={(value: OrderStatus) => handleStatusChange(order.id, value)}
+                      >
+                        <SelectTrigger className="w-40">
+                          <Badge className={statusLabels[order.status].color}>
+                            {statusLabels[order.status].label}
+                          </Badge>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(statusLabels).map(([key, value]) => (
+                            <SelectItem key={key} value={key}>
+                              <Badge className={value.color}>{value.label}</Badge>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {formatDate(order.createdAt)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="icon" variant="ghost" onClick={() => setSelectedOrder(order)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
 
+        {/* View Order Dialog */}
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
@@ -179,6 +533,61 @@ const AdminOrders = () => {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* New Order Dialog */}
+        <Dialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                Yangi buyurtma qo'shish
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Mijoz ismi</label>
+                <Input
+                  placeholder="Mijoz ismini kiriting"
+                  value={newOrder.customerName}
+                  onChange={(e) => setNewOrder({ ...newOrder, customerName: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Telefon raqami</label>
+                <Input
+                  placeholder="+998 90 123 45 67"
+                  value={newOrder.phone}
+                  onChange={(e) => setNewOrder({ ...newOrder, phone: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Manzil</label>
+                <Input
+                  placeholder="Yetkazib berish manzili"
+                  value={newOrder.address}
+                  onChange={(e) => setNewOrder({ ...newOrder, address: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Summa (so'm)</label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={newOrder.totalPrice || ''}
+                  onChange={(e) => setNewOrder({ ...newOrder, totalPrice: Number(e.target.value) })}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowNewOrderDialog(false)} className="flex-1">
+                  Bekor qilish
+                </Button>
+                <Button onClick={handleAddOrder} className="flex-1">
+                  Qo'shish
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
