@@ -48,9 +48,10 @@ interface SEOProps {
   breadcrumbs?: BreadcrumbItem[];
   faq?: FAQItem[];
   localBusiness?: LocalBusinessSchema;
+  robots?: string;
 }
 
-export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs, faq, localBusiness }: SEOProps) => {
+export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs, faq, localBusiness, robots = 'index, follow' }: SEOProps) => {
   useEffect(() => {
     // Update title
     document.title = title;
@@ -69,6 +70,7 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
 
     // Basic meta tags
     setMetaTag('description', description);
+    setMetaTag('robots', robots);
 
     // Open Graph tags
     setMetaTag('og:title', title, true);
@@ -239,5 +241,5 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       const canonical = document.querySelector('link[rel="canonical"]');
       if (canonical) canonical.remove();
     };
-  }, [title, description, image, url, type, product, breadcrumbs, faq, localBusiness]);
+  }, [title, description, image, url, type, product, breadcrumbs, faq, localBusiness, robots]);
 };
