@@ -2,8 +2,35 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Target, Users, Award, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/useSEO";
 
 const About = () => {
+  useSEO({
+    title: "Biz Haqimizda | Do'kon - Xojalik Mollari Do'koni",
+    description: "Xojalik Mollari — sizning ishonchli hamkoringiz. 2018-yildan beri O'zbekiston bozorida sifatli va arzon xojalik mahsulotlarini taqdim etib kelmoqdamiz.",
+    url: `${window.location.origin}/about`,
+    type: 'website',
+    breadcrumbs: [
+      { name: "Bosh sahifa", url: window.location.origin },
+      { name: "Biz haqimizda", url: `${window.location.origin}/about` }
+    ],
+    localBusiness: {
+      name: "Do'kon - Xojalik Mollari",
+      description: "Sifatli va arzon xojalik mahsulotlari do'koni. Tozalash, gigiena, kir yuvish va uy-ro'zg'or mollari.",
+      telephone: "+998-90-123-45-67",
+      email: "info@dokon.uz",
+      priceRange: "$$",
+      address: {
+        streetAddress: "Navoiy ko'chasi, 12",
+        addressLocality: "Toshkent",
+        addressRegion: "Toshkent viloyati",
+        postalCode: "100000",
+        addressCountry: "UZ"
+      },
+      openingHours: ["Mo-Fr 09:00-18:00", "Sa 10:00-16:00"]
+    }
+  });
+
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
