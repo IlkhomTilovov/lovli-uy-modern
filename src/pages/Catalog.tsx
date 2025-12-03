@@ -6,22 +6,35 @@ import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { products, categories } from "@/data/products";
+import { useErp } from "@/contexts/ErpContext";
 import { motion } from "framer-motion";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const selectedCategory = searchParams.get("category") || "all";
+  const { products, categories } = useErp();
 
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchesCategory = selectedCategory === "all" || product.categorySlug === selectedCategory;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           product.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [selectedCategory, searchQuery]);
+    return products
+      .filter(product => product.status === 'active')
+      .filter(product => {
+        const matchesCategory = selectedCategory === "all" || product.categoryId === selectedCategory;
+        const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                             product.description.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+      .map(product => {
+        const category = categories.find(c => c.id === product.categoryId);
+        return {
+          id: product.id,
+          name: product.title,
+          price: product.discountActive && product.discountPrice ? product.discountPrice : product.retailPrice,
+          image: product.images[0] || '/placeholder.svg',
+          category: category?.name || 'Boshqa'
+        };
+      });
+  }, [selectedCategory, searchQuery, products, categories]);
 
   const handleCategoryChange = (slug: string) => {
     if (slug === "all") {
@@ -100,12 +113,12 @@ const Catalog = () => {
                       >
                         Barcha mahsulotlar
                       </Button>
-                      {categories.map((category) => (
+                      {categories.filter(c => c.status === 'active').map((category) => (
                         <Button
-                          key={category.slug}
-                          variant={selectedCategory === category.slug ? "default" : "ghost"}
+                          key={category.id}
+                          variant={selectedCategory === category.id ? "default" : "ghost"}
                           className="w-full justify-start"
-                          onClick={() => handleCategoryChange(category.slug)}
+                          onClick={() => handleCategoryChange(category.id)}
                         >
                           {category.name}
                         </Button>
