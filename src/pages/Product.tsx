@@ -17,13 +17,26 @@ const Product = () => {
   const product = products.find(p => p.id === id);
   const category = product ? categories.find(c => c.id === product.category_id) : null;
 
-  // SEO with Open Graph
+  const displayPrice = product?.discount_active && product?.discount_price 
+    ? product.discount_price 
+    : product?.retail_price || 0;
+
+  // SEO with Open Graph and JSON-LD
   useSEO({
     title: product?.meta_title || `${product?.title || 'Mahsulot'} | Do'kon`,
     description: product?.meta_description || product?.description || "Sifatli mahsulot arzon narxda",
     image: product?.images?.[0],
     url: product ? `${window.location.origin}/product/${product.id}` : undefined,
-    type: 'product'
+    type: 'product',
+    product: product ? {
+      name: product.title,
+      description: product.description || undefined,
+      image: product.images?.[0],
+      sku: product.sku,
+      price: displayPrice,
+      currency: 'UZS',
+      availability: product.stock > 0 ? 'InStock' : 'OutOfStock'
+    } : undefined
   });
 
   const fadeInUp = {
@@ -73,10 +86,6 @@ const Product = () => {
         category: cat?.name || 'Boshqa'
       };
     });
-
-  const displayPrice = product.discount_active && product.discount_price 
-    ? product.discount_price 
-    : product.retail_price;
 
   return (
     <div className="min-h-screen flex flex-col">
