@@ -9,7 +9,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { useSEO } from "@/hooks/useSEO";
-import heroBanner from "@/assets/hero-banner.jpg";
+import heroBanner from "@/assets/hero-banner-new.jpg";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -60,29 +60,29 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary/5 via-accent/5 to-background overflow-hidden">
-        <div className="container mx-auto px-4 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <motion.div
               initial="hidden"
               animate="visible"
               variants={fadeInUp}
               transition={{ duration: 0.6 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6 text-center lg:text-left"
             >
-              <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
                 {banner?.title || "O'zbekistonning yetakchi xo'jalik mollari ishlab chiqaruvchisi"}
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
                 {banner?.subtitle || "Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar."}
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
+                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                   <Link to="/catalog">
                     {banner?.buttonText || "Katalogni Ko'rish"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
                   <Link to="/contact">Bog'lanish</Link>
                 </Button>
               </div>
@@ -92,7 +92,7 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
+              className="relative order-first lg:order-last"
             >
               <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
                 <img
@@ -101,9 +101,9 @@ const Index = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-accent text-accent-foreground p-6 rounded-xl shadow-lg">
-                <p className="text-sm font-medium">5+ Yillik Tajriba</p>
-                <p className="text-2xl font-bold">1000+ Mijozlar</p>
+              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-accent text-accent-foreground p-4 sm:p-6 rounded-xl shadow-lg">
+                <p className="text-xs sm:text-sm font-medium">5+ Yillik Tajriba</p>
+                <p className="text-xl sm:text-2xl font-bold">1000+ Mijozlar</p>
               </div>
             </motion.div>
           </div>
