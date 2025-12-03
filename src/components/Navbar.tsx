@@ -1,22 +1,19 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Menu, X, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
+import { SearchAutocomplete } from "./SearchAutocomplete";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const cartItems = 0;
   const { data: categories } = useCategories();
   const catalogRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
 
   const activeCategories = categories?.filter(cat => cat.status === 'active') || [];
 
@@ -29,24 +26,11 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
   const isCatalogActive = location.pathname === "/catalog" || location.pathname.startsWith("/kategoriya");
 
-  // Handle search submit
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/catalog?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setSearchOpen(false);
-    }
-  };
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (catalogRef.current && !catalogRef.current.contains(event.target as Node)) {
         setCatalogOpen(false);
-      }
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -121,20 +105,9 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* Desktop Search */}
-            <div ref={searchRef} className="hidden md:block relative">
-              <form onSubmit={handleSearch} className="flex items-center">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Qidirish..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 w-[200px] lg:w-[280px] h-9"
-                  />
-                </div>
-              </form>
+            {/* Desktop Search with Autocomplete */}
+            <div className="hidden md:block">
+              <SearchAutocomplete placeholder="Qidirish..." />
             </div>
 
             {/* Mobile Search Button */}
@@ -173,20 +146,11 @@ export const Navbar = () => {
         {/* Mobile Search */}
         {searchOpen && (
           <div className="md:hidden py-3 border-t border-border animate-fade-in">
-            <form onSubmit={handleSearch} className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Mahsulot qidirish..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-full"
-                  autoFocus
-                />
-              </div>
-              <Button type="submit" size="sm">Qidirish</Button>
-            </form>
+            <SearchAutocomplete 
+              isMobile 
+              placeholder="Mahsulot qidirish..."
+              onClose={() => setSearchOpen(false)}
+            />
           </div>
         )}
 
