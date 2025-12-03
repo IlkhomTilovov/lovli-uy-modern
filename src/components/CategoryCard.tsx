@@ -11,7 +11,7 @@ interface CategoryCardProps {
 
 export const CategoryCard = ({ name, image, productCount, slug }: CategoryCardProps) => {
   return (
-    <Link to={`/catalog?category=${slug}`}>
+    <Link to={`/kategoriya/${slug}`}>
       <motion.div
         whileHover={{ y: -8 }}
         transition={{ duration: 0.3 }}

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ErpProvider } from "@/contexts/ErpContext";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
+import Category from "./pages/Category";
 import Product from "./pages/Product";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -34,6 +35,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/catalog" element={<Catalog />} />
+              <Route path="/kategoriya/:slug" element={<Category />} />
               <Route path="/product/:id" element={<Product />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
