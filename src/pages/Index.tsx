@@ -5,12 +5,37 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
-import { products, categories } from "@/data/products";
+import { useErp } from "@/contexts/ErpContext";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { motion } from "framer-motion";
 
 const Index = () => {
-  const featuredProducts = products.filter(p => p.featured);
+  const { products, categories } = useErp();
+  
+  // Get active products and map to ProductCard format
+  const featuredProducts = products
+    .filter(p => p.status === 'active')
+    .slice(0, 4)
+    .map(product => {
+      const category = categories.find(c => c.id === product.categoryId);
+      return {
+        id: product.id,
+        name: product.title,
+        price: product.discountActive && product.discountPrice ? product.discountPrice : product.retailPrice,
+        image: product.images[0] || '/placeholder.svg',
+        category: category?.name || 'Boshqa'
+      };
+    });
+
+  // Map categories to CategoryCard format
+  const activeCategories = categories
+    .filter(c => c.status === 'active')
+    .map(category => ({
+      name: category.name,
+      slug: category.id,
+      image: '/placeholder.svg',
+      productCount: products.filter(p => p.categoryId === category.id && p.status === 'active').length
+    }));
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -93,7 +118,7 @@ const Index = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
+            {activeCategories.map((category, index) => (
               <motion.div
                 key={category.slug}
                 initial="hidden"
