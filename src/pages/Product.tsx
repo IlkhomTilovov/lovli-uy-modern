@@ -2,12 +2,13 @@ import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Package, Shield, Truck, Loader2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Package, Shield, Truck } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
+import { ProductDetailSkeleton } from "@/components/skeletons";
 
 const Product = () => {
   const { id } = useParams();
@@ -59,9 +60,9 @@ const Product = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
+        <main className="flex-1">
+          <ProductDetailSkeleton />
+        </main>
         <Footer />
       </div>
     );
