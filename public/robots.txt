@@ -13,5 +13,9 @@ Allow: /
 User-agent: *
 Allow: /
 
+# Admin sahifalarni indekslamaslik
+Disallow: /admin
+Disallow: /auth
+
 # Sitemap
-Sitemap: https://gsflcqydmyvuiudcbdwt.supabase.co/functions/v1/sitemap?baseUrl=https://yoursite.com
+Sitemap: https://gsflcqydmyvuiudcbdwt.supabase.co/functions/v1/sitemap
