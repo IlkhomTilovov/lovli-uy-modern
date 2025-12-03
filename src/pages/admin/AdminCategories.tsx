@@ -105,32 +105,49 @@ const AdminCategories = () => {
                 Yangi kategoriya
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>{editingCategory ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya qo\'shish'}</DialogTitle>
+                <DialogTitle className="text-xl font-semibold">
+                  {editingCategory ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya qo\'shish'}
+                </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5 pt-2">
                 <div className="space-y-2">
-                  <Label>Nomi</Label>
+                  <Label className="text-sm font-medium text-foreground">Nomi</Label>
                   <Input 
                     value={formData.name} 
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required 
+                    placeholder="Kategoriya nomini kiriting"
+                    className="h-11 border-2 focus:border-primary focus:ring-primary transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tavsif</Label>
+                  <Label className="text-sm font-medium text-foreground">Tavsif</Label>
                   <Textarea 
                     value={formData.description} 
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
+                    rows={4}
+                    placeholder="Kategoriya haqida qisqacha ma'lumot"
+                    className="border-2 focus:border-primary focus:ring-primary transition-colors resize-none"
                   />
                 </div>
 
-                <div className="flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Bekor qilish</Button>
-                  <Button type="submit" disabled={addCategoryMutation.isPending || updateCategoryMutation.isPending}>
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsOpen(false)}
+                    className="px-6"
+                  >
+                    Bekor qilish
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={addCategoryMutation.isPending || updateCategoryMutation.isPending}
+                    className="px-6 bg-primary hover:bg-primary/90"
+                  >
                     {(addCategoryMutation.isPending || updateCategoryMutation.isPending) && (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     )}
