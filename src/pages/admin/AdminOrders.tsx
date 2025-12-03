@@ -8,15 +8,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import { 
-  Eye, Package, Search, Download, FileSpreadsheet, FileText, Plus,
-  ShoppingCart, DollarSign, TrendingUp, Users, Calendar
+  Eye, Package, Search, FileSpreadsheet, FileText, Plus,
+  ShoppingCart, DollarSign, TrendingUp, Users, Calendar, CalendarIcon
 } from 'lucide-react';
 import { Order, OrderStatus } from '@/types/erp';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { startOfDay, startOfWeek, startOfMonth, isAfter, format, subDays } from 'date-fns';
+import { startOfDay, endOfDay, isAfter, isBefore, format, subDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
 const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
   new: { label: 'Yangi', color: 'bg-yellow-500' },
@@ -31,7 +34,7 @@ const AdminOrders = () => {
   const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
   const [newOrder, setNewOrder] = useState({
@@ -40,17 +43,6 @@ const AdminOrders = () => {
     address: '',
     totalPrice: 0
   });
-
-  // Date filtering
-  const getDateFilterStart = () => {
-    const now = new Date();
-    switch (dateFilter) {
-      case 'today': return startOfDay(now);
-      case 'week': return startOfWeek(now, { weekStartsOn: 1 });
-      case 'month': return startOfMonth(now);
-      default: return null;
-    }
-  };
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -61,10 +53,14 @@ const AdminOrders = () => {
       result = result.filter(o => o.status === filterStatus);
     }
     
-    // Date filter
-    const dateStart = getDateFilterStart();
-    if (dateStart) {
-      result = result.filter(o => isAfter(new Date(o.createdAt), dateStart));
+    // Date range filter
+    if (dateRange?.from) {
+      const startDate = startOfDay(dateRange.from);
+      result = result.filter(o => isAfter(new Date(o.createdAt), startDate) || new Date(o.createdAt).getTime() === startDate.getTime());
+    }
+    if (dateRange?.to) {
+      const endDate = endOfDay(dateRange.to);
+      result = result.filter(o => isBefore(new Date(o.createdAt), endDate) || new Date(o.createdAt).getTime() === endDate.getTime());
     }
     
     // Search filter
@@ -78,7 +74,7 @@ const AdminOrders = () => {
     }
     
     return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [orders, filterStatus, dateFilter, searchQuery]);
+  }, [orders, filterStatus, dateRange, searchQuery]);
 
   // Statistics
   const stats = useMemo(() => {
@@ -391,18 +387,54 @@ const AdminOrders = () => {
               className="pl-10"
             />
           </div>
-          <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-40">
-              <Calendar className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Sana" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barchasi</SelectItem>
-              <SelectItem value="today">Bugun</SelectItem>
-              <SelectItem value="week">Shu hafta</SelectItem>
-              <SelectItem value="month">Shu oy</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[280px] justify-start text-left font-normal",
+                  !dateRange && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "dd.MM.yyyy")} -{" "}
+                      {format(dateRange.to, "dd.MM.yyyy")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "dd.MM.yyyy")
+                  )
+                ) : (
+                  <span>Sana tanlang</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
+              <CalendarComponent
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+                className="pointer-events-auto"
+              />
+              {dateRange && (
+                <div className="p-3 border-t">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setDateRange(undefined)}
+                    className="w-full"
+                  >
+                    Tozalash
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Status" />
