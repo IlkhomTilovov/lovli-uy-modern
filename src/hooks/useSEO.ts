@@ -21,6 +21,23 @@ interface FAQItem {
   answer: string;
 }
 
+interface LocalBusinessSchema {
+  name: string;
+  description?: string;
+  telephone?: string;
+  email?: string;
+  address?: {
+    streetAddress: string;
+    addressLocality: string;
+    addressRegion?: string;
+    postalCode?: string;
+    addressCountry: string;
+  };
+  openingHours?: string[];
+  priceRange?: string;
+  image?: string;
+}
+
 interface SEOProps {
   title: string;
   description: string;
@@ -30,9 +47,10 @@ interface SEOProps {
   product?: ProductSchema;
   breadcrumbs?: BreadcrumbItem[];
   faq?: FAQItem[];
+  localBusiness?: LocalBusinessSchema;
 }
 
-export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs, faq }: SEOProps) => {
+export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs, faq, localBusiness }: SEOProps) => {
   useEffect(() => {
     // Update title
     document.title = title;
@@ -183,6 +201,34 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       });
     }
 
+    // LocalBusiness schema
+    if (localBusiness) {
+      schemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: localBusiness.name,
+        description: localBusiness.description || description,
+        telephone: localBusiness.telephone,
+        email: localBusiness.email,
+        image: localBusiness.image || image,
+        url: url || window.location.origin,
+        priceRange: localBusiness.priceRange,
+        ...(localBusiness.address && {
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: localBusiness.address.streetAddress,
+            addressLocality: localBusiness.address.addressLocality,
+            addressRegion: localBusiness.address.addressRegion,
+            postalCode: localBusiness.address.postalCode,
+            addressCountry: localBusiness.address.addressCountry
+          }
+        }),
+        ...(localBusiness.openingHours && {
+          openingHoursSpecification: localBusiness.openingHours
+        })
+      });
+    }
+
     jsonLdScript.textContent = JSON.stringify(schemas.length === 1 ? schemas[0] : schemas);
     document.head.appendChild(jsonLdScript);
 
@@ -193,5 +239,5 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       const canonical = document.querySelector('link[rel="canonical"]');
       if (canonical) canonical.remove();
     };
-  }, [title, description, image, url, type, product, breadcrumbs, faq]);
+  }, [title, description, image, url, type, product, breadcrumbs, faq, localBusiness]);
 };
