@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, ChevronDown, Search } from "lucide-react";
+import { ShoppingCart, Menu, X, ChevronDown, Search, ArrowRight, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -215,40 +215,88 @@ export const Navbar = () => {
         )}
       </div>
 
-      {/* Full-width Catalog Dropdown */}
+      {/* Full-width Mega Menu Catalog Dropdown */}
       {catalogOpen && (
-        <div className="hidden md:block absolute left-0 right-0 top-full w-full bg-background border-b border-border shadow-lg animate-fade-in z-50">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Kategoriyalar</h3>
-              <Link 
-                to="/catalog" 
-                className="text-sm text-primary hover:underline"
-              >
-                Barcha mahsulotlar →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {activeCategories.map((category) => (
-                <Link
-                  key={category.id}
-                  to={`/kategoriya/${category.id}`}
-                  className="group flex flex-col items-center p-4 rounded-lg hover:bg-muted transition-colors"
+        <div className="hidden md:block absolute left-0 right-0 top-full w-full animate-fade-in z-50">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
+            onClick={() => setCatalogOpen(false)}
+          />
+          
+          {/* Mega Menu Content */}
+          <div className="bg-gradient-to-b from-background via-background to-muted/30 border-b border-border shadow-2xl">
+            <div className="container mx-auto px-4 py-8">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold">Kategoriyalar</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Barcha mahsulotlarimizni ko'ring
+                  </p>
+                </div>
+                <Link 
+                  to="/catalog" 
+                  className="group flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
                 >
-                  {category.image && (
-                    <div className="w-16 h-16 mb-2 rounded-lg overflow-hidden bg-muted">
-                      <img 
-                        src={category.image} 
-                        alt={category.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  )}
-                  <span className="text-sm font-medium text-center group-hover:text-primary transition-colors">
-                    {category.name}
-                  </span>
+                  Barcha mahsulotlar
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-              ))}
+              </div>
+
+              {/* Categories Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {activeCategories.map((category) => (
+                  <Link
+                    key={category.id}
+                    to={`/kategoriya/${category.id}`}
+                    className="group relative overflow-hidden rounded-xl border border-border bg-card p-4 hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                  >
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <div className="relative flex items-center gap-4">
+                      {/* Category Image */}
+                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 flex-shrink-0 ring-2 ring-border group-hover:ring-primary/30 transition-all">
+                        {category.image ? (
+                          <img 
+                            src={category.image} 
+                            alt={category.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FolderOpen className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Category Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                          {category.name}
+                        </h4>
+                        {category.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {category.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Arrow */}
+                      <ChevronDown className="h-4 w-4 -rotate-90 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Empty State */}
+              {activeCategories.length === 0 && (
+                <div className="text-center py-12">
+                  <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">Hozircha kategoriyalar yo'q</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
