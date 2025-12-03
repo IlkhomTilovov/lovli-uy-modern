@@ -215,76 +215,96 @@ export const Navbar = () => {
         )}
       </div>
 
-      {/* Full-width Mega Menu Catalog Dropdown */}
+      {/* Premium Mega Menu */}
       {catalogOpen && (
         <div className="hidden md:block absolute left-0 right-0 top-full w-full animate-fade-in z-50">
-          {/* Backdrop */}
+          {/* Backdrop with blur */}
           <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm -z-10"
             onClick={() => setCatalogOpen(false)}
           />
           
           {/* Mega Menu Content */}
-          <div className="bg-gradient-to-b from-background via-background to-muted/30 border-b border-border shadow-2xl">
-            <div className="container mx-auto px-4 py-8">
+          <div className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5 border-b-2 border-primary/20 shadow-2xl">
+            {/* Decorative Elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+            
+            <div className="container mx-auto px-4 py-10 relative">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-bold">Kategoriyalar</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Barcha mahsulotlarimizni ko'ring
+              <div className="flex items-center justify-between mb-8">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                      Kategoriyalar
+                    </h3>
+                  </div>
+                  <p className="text-muted-foreground ml-4">
+                    Sizga kerak bo'lgan barcha mahsulotlar
                   </p>
                 </div>
                 <Link 
                   to="/catalog" 
-                  className="group flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
+                  className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-semibold overflow-hidden"
                 >
-                  Barcha mahsulotlar
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <span className="relative z-10">Barcha mahsulotlar</span>
+                  <ArrowRight className="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                 </Link>
               </div>
 
               {/* Categories Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {activeCategories.map((category) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                {activeCategories.map((category, index) => (
                   <Link
                     key={category.id}
                     to={`/kategoriya/${category.id}`}
-                    className="group relative overflow-hidden rounded-xl border border-border bg-card p-4 hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                    className="group relative overflow-hidden rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Gradient overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Card Gradient Background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
-                    <div className="relative flex items-center gap-4">
+                    {/* Shine Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                    
+                    <div className="relative p-5">
                       {/* Category Image */}
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 flex-shrink-0 ring-2 ring-border group-hover:ring-primary/30 transition-all">
+                      <div className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-muted via-muted/80 to-muted/50 shadow-inner">
                         {category.image ? (
                           <img 
                             src={category.image} 
                             alt={category.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <FolderOpen className="h-6 w-6 text-muted-foreground" />
+                            <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
                           </div>
                         )}
+                        
+                        {/* Image Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
 
                       {/* Category Info */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors duration-300">
                           {category.name}
                         </h4>
                         {category.description && (
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                             {category.description}
                           </p>
                         )}
+                        
+                        {/* View Link */}
+                        <div className="flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 pt-1">
+                          <span>Ko'rish</span>
+                          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-
-                      {/* Arrow */}
-                      <ChevronDown className="h-4 w-4 -rotate-90 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
                     </div>
                   </Link>
                 ))}
@@ -292,9 +312,12 @@ export const Navbar = () => {
 
               {/* Empty State */}
               {activeCategories.length === 0 && (
-                <div className="text-center py-12">
-                  <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                  <p className="text-muted-foreground">Hozircha kategoriyalar yo'q</p>
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
+                    <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-lg font-medium text-muted-foreground">Hozircha kategoriyalar yo'q</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Tez orada yangi kategoriyalar qo'shiladi</p>
                 </div>
               )}
             </div>
