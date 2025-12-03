@@ -74,6 +74,17 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       setMetaTag('twitter:image', image);
     }
 
+    // Canonical URL
+    if (url) {
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute('href', url);
+    }
+
     // JSON-LD Structured Data
     const existingJsonLd = document.querySelector('script[type="application/ld+json"][data-seo]');
     if (existingJsonLd) {
@@ -179,6 +190,8 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       document.title = "Do'kon";
       const script = document.querySelector('script[type="application/ld+json"][data-seo]');
       if (script) script.remove();
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) canonical.remove();
     };
   }, [title, description, image, url, type, product, breadcrumbs, faq]);
 };
