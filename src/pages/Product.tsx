@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -15,6 +16,25 @@ const Product = () => {
   
   const product = products.find(p => p.id === id);
   const category = product ? categories.find(c => c.id === product.category_id) : null;
+
+  // SEO: Update meta tags based on product
+  useEffect(() => {
+    if (product) {
+      document.title = product.meta_title || `${product.title} | Do'kon`;
+      
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', product.meta_description || product.description || `${product.title} - sifatli mahsulot arzon narxda`);
+    }
+
+    return () => {
+      document.title = "Do'kon";
+    };
+  }, [product]);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
