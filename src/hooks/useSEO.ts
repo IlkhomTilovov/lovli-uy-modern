@@ -16,6 +16,11 @@ interface BreadcrumbItem {
   url: string;
 }
 
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
 interface SEOProps {
   title: string;
   description: string;
@@ -24,9 +29,10 @@ interface SEOProps {
   type?: 'website' | 'article' | 'product';
   product?: ProductSchema;
   breadcrumbs?: BreadcrumbItem[];
+  faq?: FAQItem[];
 }
 
-export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs }: SEOProps) => {
+export const useSEO = ({ title, description, image, url, type = 'website', product, breadcrumbs, faq }: SEOProps) => {
   useEffect(() => {
     // Update title
     document.title = title;
@@ -150,6 +156,22 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       });
     }
 
+    // FAQPage schema
+    if (faq && faq.length > 0) {
+      schemas.push({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faq.map(item => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer
+          }
+        }))
+      });
+    }
+
     jsonLdScript.textContent = JSON.stringify(schemas.length === 1 ? schemas[0] : schemas);
     document.head.appendChild(jsonLdScript);
 
@@ -158,5 +180,5 @@ export const useSEO = ({ title, description, image, url, type = 'website', produ
       const script = document.querySelector('script[type="application/ld+json"][data-seo]');
       if (script) script.remove();
     };
-  }, [title, description, image, url, type, product, breadcrumbs]);
+  }, [title, description, image, url, type, product, breadcrumbs, faq]);
 };
