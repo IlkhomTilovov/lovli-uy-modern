@@ -5,11 +5,12 @@ import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
+import { FilterSidebarSkeleton, CatalogGridSkeleton } from "@/components/skeletons";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -99,65 +100,67 @@ const Catalog = () => {
           <div className="grid lg:grid-cols-[280px,1fr] gap-8">
             {/* Sidebar Filters */}
             <aside className="space-y-6">
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <div className="bg-card border border-border rounded-xl p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <SlidersHorizontal className="h-5 w-5 text-primary" />
-                    <h2 className="font-semibold text-lg">Filtrlar</h2>
-                  </div>
-
-                  {/* Search */}
-                  <div className="mb-6">
-                    <label className="text-sm font-medium mb-2 block">Qidirish</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Mahsulot nomi..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
+              {isLoading ? (
+                <FilterSidebarSkeleton />
+              ) : (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeInUp}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <div className="bg-card border border-border rounded-xl p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <SlidersHorizontal className="h-5 w-5 text-primary" />
+                      <h2 className="font-semibold text-lg">Filtrlar</h2>
                     </div>
-                  </div>
 
-                  {/* Categories */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Kategoriyalar</label>
-                    <div className="space-y-2">
-                      <Button
-                        variant={selectedCategory === "all" ? "default" : "ghost"}
-                        className="w-full justify-start"
-                        onClick={() => handleCategoryChange("all")}
-                      >
-                        Barcha mahsulotlar
-                      </Button>
-                      {categories.map((category) => (
+                    {/* Search */}
+                    <div className="mb-6">
+                      <label className="text-sm font-medium mb-2 block">Qidirish</label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Mahsulot nomi..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Categories */}
+                    <div>
+                      <label className="text-sm font-medium mb-3 block">Kategoriyalar</label>
+                      <div className="space-y-2">
                         <Button
-                          key={category.id}
-                          variant={selectedCategory === category.id ? "default" : "ghost"}
+                          variant={selectedCategory === "all" ? "default" : "ghost"}
                           className="w-full justify-start"
-                          onClick={() => handleCategoryChange(category.id)}
+                          onClick={() => handleCategoryChange("all")}
                         >
-                          {category.name}
+                          Barcha mahsulotlar
                         </Button>
-                      ))}
+                        {categories.map((category) => (
+                          <Button
+                            key={category.id}
+                            variant={selectedCategory === category.id ? "default" : "ghost"}
+                            className="w-full justify-start"
+                            onClick={() => handleCategoryChange(category.id)}
+                          >
+                            {category.name}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              )}
             </aside>
 
             {/* Products Grid */}
             <div>
               {isLoading ? (
-                <div className="flex justify-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <CatalogGridSkeleton count={6} />
               ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-muted-foreground text-lg">
