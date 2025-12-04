@@ -24,13 +24,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import {
   Loader2,
   ChevronRight,
   Home,
@@ -195,13 +188,6 @@ const Category = () => {
     return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredProducts, currentPage]);
 
-  // Popular products (products with highest discount)
-  const popularProducts = useMemo(() => {
-    if (!category) return [];
-    return [...filteredProducts]
-      .sort((a, b) => b.discountPercent - a.discountPercent)
-      .slice(0, 8);
-  }, [category, filteredProducts]);
 
   // Viewed products
   const viewedProducts = useMemo(() => {
@@ -542,43 +528,6 @@ const Category = () => {
           </section>
         )}
 
-        {/* Popular Products Carousel */}
-        {popularProducts.length > 0 && !hasActiveFilters && (
-          <section className="container mx-auto px-4 py-10">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-500/10 rounded-lg">
-                  <Flame className="h-6 w-6 text-orange-500" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">Mashhur mahsulotlar</h2>
-                  <p className="text-sm text-muted-foreground">Eng ko'p sotilgan va chegirmali</p>
-                </div>
-              </div>
-            </div>
-            
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-4">
-                {popularProducts.map((product) => (
-                  <CarouselItem key={product.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <ProductCard 
-                      {...product} 
-                      isBestSeller={product.discountPercent > 20}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4" />
-              <CarouselNext className="hidden md:flex -right-4" />
-            </Carousel>
-          </section>
-        )}
 
         {/* Filters and Products */}
         <section className="container mx-auto px-4 py-8">
