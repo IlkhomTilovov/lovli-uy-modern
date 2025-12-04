@@ -10,9 +10,32 @@ export interface BannerContent {
   image: string;
 }
 
-export interface AboutContent {
+export interface AboutValue {
+  text: string;
+}
+
+export interface AboutStat {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export interface AboutAdvantage {
   title: string;
-  content: string;
+  description: string;
+}
+
+export interface AboutContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  missionTitle: string;
+  missionContent: string;
+  valuesTitle: string;
+  values: AboutValue[];
+  statsTitle: string;
+  stats: AboutStat[];
+  advantagesTitle: string;
+  advantages: AboutAdvantage[];
 }
 
 export interface ContactContent {
