@@ -56,6 +56,96 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          price_at_moment: number
+          product_id: string | null
+          product_title: string
+          quantity: number
+          subtotal: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          price_at_moment: number
+          product_id?: string | null
+          product_title: string
+          quantity: number
+          subtotal: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          price_at_moment?: number
+          product_id?: string | null
+          product_title?: string
+          quantity?: number
+          subtotal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string
+          city: string
+          comment: string | null
+          created_at: string
+          customer_name: string
+          id: string
+          phone: string
+          region: string
+          status: string
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          city: string
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          id?: string
+          phone: string
+          region: string
+          status?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          id?: string
+          phone?: string
+          region?: string
+          status?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category_id: string | null
