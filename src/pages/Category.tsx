@@ -341,7 +341,7 @@ const Category = () => {
     );
   }
 
-  const FilterContent = () => (
+  const filterContent = (
     <div className="space-y-5">
       {/* Search */}
       <div className="space-y-2">
@@ -610,7 +610,7 @@ const Category = () => {
                     <SheetTitle>Filtrlar</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6">
-                    <FilterContent />
+                    {filterContent}
                   </div>
                 </SheetContent>
               </Sheet>
@@ -668,7 +668,7 @@ const Category = () => {
                   <SlidersHorizontal className="h-4 w-4" />
                   Filtrlar
                 </h3>
-                <FilterContent />
+                {filterContent}
               </div>
             </aside>
 
