@@ -437,39 +437,30 @@ const Category = () => {
       <Navbar />
 
       <main className="flex-1">
-        {/* Simple Hero Section */}
-        <section className="bg-secondary/50 border-b border-border">
-          <div className="container mx-auto px-4 py-10 md:py-14">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={fadeInUp}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Breadcrumb */}
-              <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <Link to="/" className="hover:text-foreground transition-colors flex items-center gap-1">
-                  <Home className="w-4 h-4" />
-                  Bosh sahifa
-                </Link>
-                <ChevronRight className="w-4 h-4" />
-                <Link to="/catalog" className="hover:text-foreground transition-colors">
-                  Katalog
-                </Link>
-                <ChevronRight className="w-4 h-4" />
-                <span className="text-foreground font-medium">{category.name}</span>
-              </nav>
+        {/* Compact Hero Section */}
+        <section className="border-b border-border">
+          <div className="container mx-auto px-4 py-4">
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+              <Link to="/" className="hover:text-foreground transition-colors">
+                Bosh sahifa
+              </Link>
+              <ChevronRight className="w-3 h-3" />
+              <Link to="/catalog" className="hover:text-foreground transition-colors">
+                Katalog
+              </Link>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-foreground">{category.name}</span>
+            </nav>
 
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{category.name}</h1>
-              {category.description && (
-                <p className="text-muted-foreground max-w-2xl mb-4">
-                  {category.description}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold">{category.name}</h1>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {filteredProducts.length} ta mahsulot
                 </p>
-              )}
-              <p className="text-sm text-muted-foreground">
-                {filteredProducts.length} ta mahsulot topildi
-              </p>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </section>
 
