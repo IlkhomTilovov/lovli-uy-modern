@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useErp } from '@/contexts/ErpContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,16 +11,40 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
-  Eye, Package, Search, FileSpreadsheet, FileText, Plus,
+  Eye, Package, Search, FileSpreadsheet, FileText, RefreshCw,
   ShoppingCart, DollarSign, TrendingUp, Users, Calendar, CalendarIcon
 } from 'lucide-react';
-import { Order, OrderStatus } from '@/types/erp';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { startOfDay, endOfDay, isAfter, isBefore, format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+
+type OrderStatus = 'new' | 'accepted' | 'preparing' | 'delivered' | 'cancelled';
+
+interface OrderItem {
+  id: string;
+  product_title: string;
+  quantity: number;
+  price_at_moment: number;
+  subtotal: number;
+}
+
+interface Order {
+  id: string;
+  customer_name: string;
+  phone: string;
+  region: string;
+  city: string;
+  address: string;
+  comment: string | null;
+  total_price: number;
+  status: string;
+  created_at: string;
+  order_items: OrderItem[];
+}
 
 const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
   new: { label: 'Yangi', color: 'bg-yellow-500' },
@@ -30,18 +55,46 @@ const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
 };
 
 const AdminOrders = () => {
-  const { orders, orderItems, products, updateOrderStatus, addOrder } = useErp();
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
-  const [newOrder, setNewOrder] = useState({
-    customerName: '',
-    phone: '',
-    address: '',
-    totalPrice: 0
+
+  // Fetch orders from Supabase
+  const { data: orders = [], isLoading, refetch } = useQuery({
+    queryKey: ['admin-orders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Order[];
+    },
+  });
+
+  // Update order status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', orderId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Buyurtma statusi o\'zgartirildi');
+    },
+    onError: () => {
+      toast.error('Xatolik yuz berdi');
+    },
   });
 
   // Filtered orders
@@ -56,29 +109,29 @@ const AdminOrders = () => {
     // Date range filter
     if (dateRange?.from) {
       const startDate = startOfDay(dateRange.from);
-      result = result.filter(o => isAfter(new Date(o.createdAt), startDate) || new Date(o.createdAt).getTime() === startDate.getTime());
+      result = result.filter(o => isAfter(new Date(o.created_at), startDate) || new Date(o.created_at).getTime() === startDate.getTime());
     }
     if (dateRange?.to) {
       const endDate = endOfDay(dateRange.to);
-      result = result.filter(o => isBefore(new Date(o.createdAt), endDate) || new Date(o.createdAt).getTime() === endDate.getTime());
+      result = result.filter(o => isBefore(new Date(o.created_at), endDate) || new Date(o.created_at).getTime() === endDate.getTime());
     }
     
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(o => 
-        o.customerName.toLowerCase().includes(query) ||
+        o.customer_name.toLowerCase().includes(query) ||
         o.phone.includes(query) ||
         o.address.toLowerCase().includes(query)
       );
     }
     
-    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return result;
   }, [orders, filterStatus, dateRange, searchQuery]);
 
   // Statistics
   const stats = useMemo(() => {
-    const total = filteredOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+    const total = filteredOrders.reduce((sum, o) => sum + Number(o.total_price), 0);
     const avgCheck = filteredOrders.length > 0 ? total / filteredOrders.length : 0;
     const delivered = filteredOrders.filter(o => o.status === 'delivered').length;
     const newOrders = filteredOrders.filter(o => o.status === 'new').length;
@@ -96,7 +149,7 @@ const AdminOrders = () => {
       dayEnd.setDate(dayEnd.getDate() + 1);
       
       const dayOrders = orders.filter(o => {
-        const orderDate = new Date(o.createdAt);
+        const orderDate = new Date(o.created_at);
         return orderDate >= dayStart && orderDate < dayEnd;
       });
       
@@ -106,7 +159,7 @@ const AdminOrders = () => {
       days.push({
         name: format(date, 'dd/MM'),
         buyurtmalar: dayOrders.length,
-        summa: dayOrders.reduce((sum, o) => sum + o.totalPrice, 0) / 1000,
+        summa: dayOrders.reduce((sum, o) => sum + Number(o.total_price), 0) / 1000,
         yetkazildi: delivered,
         bekor: cancelled
       });
@@ -114,17 +167,8 @@ const AdminOrders = () => {
     return days;
   }, [orders]);
 
-  const getOrderItems = (orderId: string) => {
-    return orderItems.filter(item => item.orderId === orderId);
-  };
-
-  const getProductName = (productId: string) => {
-    return products.find(p => p.id === productId)?.title || 'Noma\'lum';
-  };
-
-  const handleStatusChange = (orderId: string, status: OrderStatus) => {
-    updateOrderStatus(orderId, status);
-    toast({ title: 'Yangilandi', description: 'Buyurtma statusi o\'zgartirildi' });
+  const handleStatusChange = (orderId: string, status: string) => {
+    updateStatusMutation.mutate({ orderId, status });
   };
 
   const formatDate = (dateStr: string) => {
@@ -142,12 +186,12 @@ const AdminOrders = () => {
     const headers = ['ID', 'Mijoz', 'Telefon', 'Manzil', 'Summa', 'Status', 'Sana'];
     const rows = filteredOrders.map(o => [
       o.id.slice(0, 8),
-      o.customerName,
+      o.customer_name,
       o.phone,
-      o.address,
-      o.totalPrice,
-      statusLabels[o.status].label,
-      formatDate(o.createdAt)
+      `${o.region}, ${o.city}, ${o.address}`,
+      o.total_price,
+      statusLabels[o.status as OrderStatus]?.label || o.status,
+      formatDate(o.created_at)
     ]);
     
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -156,7 +200,7 @@ const AdminOrders = () => {
     link.href = URL.createObjectURL(blob);
     link.download = `buyurtmalar_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.click();
-    toast({ title: 'Export', description: 'Excel fayl yuklandi' });
+    toast.success('Excel fayl yuklandi');
   };
 
   const exportToPDF = () => {
@@ -197,11 +241,11 @@ const AdminOrders = () => {
               ${filteredOrders.map(o => `
                 <tr>
                   <td>#${o.id.slice(0, 8)}</td>
-                  <td>${o.customerName}</td>
+                  <td>${o.customer_name}</td>
                   <td>${o.phone}</td>
-                  <td>${o.totalPrice.toLocaleString()} so'm</td>
-                  <td>${statusLabels[o.status].label}</td>
-                  <td>${formatDate(o.createdAt)}</td>
+                  <td>${Number(o.total_price).toLocaleString()} so'm</td>
+                  <td>${statusLabels[o.status as OrderStatus]?.label || o.status}</td>
+                  <td>${formatDate(o.created_at)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -216,26 +260,7 @@ const AdminOrders = () => {
       printWindow.document.close();
       printWindow.print();
     }
-    toast({ title: 'Export', description: 'PDF tayyorlandi' });
-  };
-
-  const handleAddOrder = () => {
-    if (!newOrder.customerName || !newOrder.phone || !newOrder.address) {
-      toast({ title: 'Xato', description: 'Barcha maydonlarni to\'ldiring', variant: 'destructive' });
-      return;
-    }
-    
-    addOrder({
-      customerName: newOrder.customerName,
-      phone: newOrder.phone,
-      address: newOrder.address,
-      totalPrice: newOrder.totalPrice,
-      status: 'new'
-    }, []);
-    
-    setNewOrder({ customerName: '', phone: '', address: '', totalPrice: 0 });
-    setShowNewOrderDialog(false);
-    toast({ title: 'Muvaffaqiyat', description: 'Yangi buyurtma qo\'shildi' });
+    toast.success('PDF tayyorlandi');
   };
 
   return (
@@ -248,9 +273,9 @@ const AdminOrders = () => {
             <p className="text-muted-foreground">Jami: {orders.length} ta buyurtma</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setShowNewOrderDialog(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Yangi buyurtma
+            <Button variant="outline" onClick={() => refetch()} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Yangilash
             </Button>
             <Button variant="outline" onClick={exportToExcel} className="gap-2">
               <FileSpreadsheet className="w-4 h-4" />
@@ -466,160 +491,161 @@ const AdminOrders = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 8 }).map((_, j) => (
+                      <TableCell key={j}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : filteredOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
                     Buyurtmalar topilmadi
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-sm">#{order.id.slice(0, 8)}</TableCell>
-                    <TableCell className="font-medium">{order.customerName}</TableCell>
-                    <TableCell>{order.phone}</TableCell>
-                    <TableCell className="max-w-xs truncate">{order.address}</TableCell>
-                    <TableCell className="font-semibold">{order.totalPrice.toLocaleString()} so'm</TableCell>
-                    <TableCell>
-                      <Select 
-                        value={order.status} 
-                        onValueChange={(value: OrderStatus) => handleStatusChange(order.id, value)}
-                      >
-                        <SelectTrigger className="w-40">
-                          <Badge className={statusLabels[order.status].color}>
-                            {statusLabels[order.status].label}
-                          </Badge>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(statusLabels).map(([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              <Badge className={value.color}>{value.label}</Badge>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(order.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="icon" variant="ghost" onClick={() => setSelectedOrder(order)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredOrders.map((order) => {
+                  const status = statusLabels[order.status as OrderStatus] || { label: order.status, color: 'bg-gray-500' };
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono">#{order.id.slice(0, 8).toUpperCase()}</TableCell>
+                      <TableCell className="font-medium">{order.customer_name}</TableCell>
+                      <TableCell>{order.phone}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {order.region}, {order.city}
+                      </TableCell>
+                      <TableCell className="font-semibold">
+                        {Number(order.total_price).toLocaleString()} so'm
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={order.status}
+                          onValueChange={(value) => handleStatusChange(order.id, value)}
+                        >
+                          <SelectTrigger className="w-[140px] h-8">
+                            <Badge className={`${status.color} text-white`}>
+                              {status.label}
+                            </Badge>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">Yangi</SelectItem>
+                            <SelectItem value="accepted">Qabul qilindi</SelectItem>
+                            <SelectItem value="preparing">Tayyorlanmoqda</SelectItem>
+                            <SelectItem value="delivered">Yetkazildi</SelectItem>
+                            <SelectItem value="cancelled">Bekor qilindi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDate(order.created_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
         </div>
 
-        {/* View Order Dialog */}
+        {/* Order Details Dialog */}
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Buyurtma #{selectedOrder?.id.slice(0, 8)}
+              <DialogTitle>
+                Buyurtma #{selectedOrder?.id.slice(0, 8).toUpperCase()}
               </DialogTitle>
             </DialogHeader>
             {selectedOrder && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="space-y-6">
+                {/* Customer Info */}
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-muted-foreground">Mijoz</p>
-                    <p className="font-medium">{selectedOrder.customerName}</p>
+                    <p className="text-sm text-muted-foreground">Mijoz</p>
+                    <p className="font-medium">{selectedOrder.customer_name}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Telefon</p>
+                    <p className="text-sm text-muted-foreground">Telefon</p>
                     <p className="font-medium">{selectedOrder.phone}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">Manzil</p>
-                    <p className="font-medium">{selectedOrder.address}</p>
+                    <p className="text-sm text-muted-foreground">Manzil</p>
+                    <p className="font-medium">
+                      {selectedOrder.region}, {selectedOrder.city}, {selectedOrder.address}
+                    </p>
                   </div>
+                  {selectedOrder.comment && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Izoh</p>
+                      <p className="font-medium">{selectedOrder.comment}</p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="border-t pt-4">
-                  <p className="font-semibold mb-3">Buyurtma tarkibi</p>
-                  <div className="space-y-2">
-                    {getOrderItems(selectedOrder.id).map((item) => (
-                      <div key={item.id} className="flex justify-between items-center p-3 bg-accent/50 rounded-lg">
+                {/* Order Items */}
+                <div>
+                  <h4 className="font-semibold mb-3">Mahsulotlar</h4>
+                  <div className="border rounded-lg divide-y">
+                    {selectedOrder.order_items.map((item) => (
+                      <div key={item.id} className="p-3 flex justify-between items-center">
                         <div>
-                          <p className="font-medium">{getProductName(item.productId)}</p>
+                          <p className="font-medium">{item.product_title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {item.quantity} x {item.priceAtMoment.toLocaleString()} so'm
+                            {item.quantity} x {Number(item.price_at_moment).toLocaleString()} so'm
                           </p>
                         </div>
-                        <p className="font-semibold">{item.subtotal.toLocaleString()} so'm</p>
+                        <span className="font-semibold">
+                          {Number(item.subtotal).toLocaleString()} so'm
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="border-t pt-4 flex justify-between items-center">
-                  <span className="text-lg font-semibold">Jami:</span>
-                  <span className="text-xl font-bold text-primary">
-                    {selectedOrder.totalPrice.toLocaleString()} so'm
+                {/* Total */}
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <span className="font-semibold text-lg">Jami:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {Number(selectedOrder.total_price).toLocaleString()} so'm
                   </span>
+                </div>
+
+                {/* Status Change */}
+                <div className="flex items-center gap-4 pt-4 border-t">
+                  <span className="text-sm text-muted-foreground">Statusni o'zgartirish:</span>
+                  <Select
+                    value={selectedOrder.status}
+                    onValueChange={(value) => {
+                      handleStatusChange(selectedOrder.id, value);
+                      setSelectedOrder({ ...selectedOrder, status: value });
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">Yangi</SelectItem>
+                      <SelectItem value="accepted">Qabul qilindi</SelectItem>
+                      <SelectItem value="preparing">Tayyorlanmoqda</SelectItem>
+                      <SelectItem value="delivered">Yetkazildi</SelectItem>
+                      <SelectItem value="cancelled">Bekor qilindi</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
-          </DialogContent>
-        </Dialog>
-
-        {/* New Order Dialog */}
-        <Dialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Yangi buyurtma qo'shish
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Mijoz ismi</label>
-                <Input
-                  placeholder="Mijoz ismini kiriting"
-                  value={newOrder.customerName}
-                  onChange={(e) => setNewOrder({ ...newOrder, customerName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Telefon raqami</label>
-                <Input
-                  placeholder="+998 90 123 45 67"
-                  value={newOrder.phone}
-                  onChange={(e) => setNewOrder({ ...newOrder, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Manzil</label>
-                <Input
-                  placeholder="Yetkazib berish manzili"
-                  value={newOrder.address}
-                  onChange={(e) => setNewOrder({ ...newOrder, address: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Summa (so'm)</label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={newOrder.totalPrice || ''}
-                  onChange={(e) => setNewOrder({ ...newOrder, totalPrice: Number(e.target.value) })}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => setShowNewOrderDialog(false)} className="flex-1">
-                  Bekor qilish
-                </Button>
-                <Button onClick={handleAddOrder} className="flex-1">
-                  Qo'shish
-                </Button>
-              </div>
-            </div>
           </DialogContent>
         </Dialog>
       </div>
