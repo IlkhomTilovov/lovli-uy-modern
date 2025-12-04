@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -5,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
+import { CheckoutForm } from "@/components/CheckoutForm";
 
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -186,9 +189,15 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="lg">
+                <Button 
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" 
+                  size="lg"
+                  onClick={() => setCheckoutOpen(true)}
+                >
                   Buyurtma Berish
                 </Button>
+
+                <CheckoutForm open={checkoutOpen} onOpenChange={setCheckoutOpen} />
 
                 <Button asChild variant="outline" className="w-full mt-3">
                   <Link to="/catalog">Xaridni Davom Ettirish</Link>
