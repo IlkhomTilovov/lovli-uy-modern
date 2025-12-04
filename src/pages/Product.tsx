@@ -9,11 +9,13 @@ import { useCategories } from "@/hooks/useCategories";
 import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 import { ProductDetailSkeleton } from "@/components/skeletons";
+import { useCart } from "@/contexts/CartContext";
 
 const Product = () => {
   const { id } = useParams();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
+  const { addToCart } = useCart();
   
   const product = products.find(p => p.id === id);
   const category = product ? categories.find(c => c.id === product.category_id) : null;
@@ -178,6 +180,14 @@ const Product = () => {
                 size="lg"
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                 disabled={product.stock === 0}
+                onClick={() => addToCart({
+                  id: product.id,
+                  title: product.title,
+                  price: displayPrice,
+                  originalPrice: product.discount_active ? product.retail_price : undefined,
+                  image: product.images?.[0] || '/placeholder.svg',
+                  stock: product.stock
+                })}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Savatchaga Qo'shish

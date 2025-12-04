@@ -5,13 +5,14 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { SearchAutocomplete } from "./SearchAutocomplete";
+import { useCart } from "@/contexts/CartContext";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
-  const cartItems = 0;
+  const { totalItems } = useCart();
   const { data: categories } = useCategories();
   const catalogRef = useRef<HTMLDivElement>(null);
 
@@ -123,9 +124,9 @@ export const Navbar = () => {
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                {cartItems > 0 && (
+                {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {cartItems}
+                    {totalItems > 99 ? '99+' : totalItems}
                   </span>
                 )}
               </Button>
