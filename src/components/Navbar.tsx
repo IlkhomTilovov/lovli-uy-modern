@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, ChevronDown, Search, ArrowRight, FolderOpen } from "lucide-react";
+import { ShoppingCart, Menu, X, ChevronDown, Search, ArrowRight, FolderOpen, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ export const Navbar = () => {
     { href: "/", label: "Bosh Sahifa" },
     { href: "/about", label: "Biz Haqimizda" },
     { href: "/contact", label: "Aloqa" },
+    { href: "/orders", label: "Buyurtmalar" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

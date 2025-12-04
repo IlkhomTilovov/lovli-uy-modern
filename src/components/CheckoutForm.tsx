@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CheckCircle, Loader2, MapPin, Phone, User } from "lucide-react";
 
@@ -43,6 +44,7 @@ export const CheckoutForm = ({ open, onOpenChange }: CheckoutFormProps) => {
   const { items, totalPrice, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -59,25 +61,60 @@ export const CheckoutForm = ({ open, onOpenChange }: CheckoutFormProps) => {
   const onSubmit = async (data: CheckoutFormValues) => {
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log("Order data:", {
-      customer: data,
-      items,
-      totalPrice,
-    });
-    
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    
-    setTimeout(() => {
-      clearCart();
-      setIsSuccess(false);
-      onOpenChange(false);
-      form.reset();
-      toast.success("Buyurtmangiz qabul qilindi! Tez orada siz bilan bog'lanamiz.");
-    }, 2000);
+    try {
+      // Create order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_name: data.fullName,
+          phone: data.phone,
+          region: data.region,
+          city: data.city,
+          address: data.address,
+          comment: data.comment || null,
+          total_price: totalPrice,
+          status: 'new',
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = items.map(item => ({
+        order_id: order.id,
+        product_id: item.id,
+        product_title: item.title,
+        quantity: item.quantity,
+        price_at_moment: item.price,
+        subtotal: item.price * item.quantity,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      setOrderId(order.id);
+      setIsSuccess(true);
+      
+      // Save phone to localStorage for order tracking
+      localStorage.setItem('lastOrderPhone', data.phone);
+      
+      setTimeout(() => {
+        clearCart();
+        setIsSuccess(false);
+        onOpenChange(false);
+        form.reset();
+        toast.success("Buyurtmangiz qabul qilindi! Tez orada siz bilan bog'lanamiz.");
+      }, 2000);
+    } catch (error) {
+      console.error("Order error:", error);
+      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
@@ -90,6 +127,11 @@ export const CheckoutForm = ({ open, onOpenChange }: CheckoutFormProps) => {
             <p className="text-muted-foreground">
               Tez orada operatorimiz siz bilan bog'lanadi
             </p>
+            {orderId && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Buyurtma raqami: <span className="font-mono">{orderId.slice(0, 8).toUpperCase()}</span>
+              </p>
+            )}
           </div>
         </DialogContent>
       </Dialog>

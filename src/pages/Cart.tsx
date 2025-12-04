@@ -34,9 +34,14 @@ const Cart = () => {
             <p className="text-muted-foreground mb-8">
               Mahsulotlar qo'shish uchun katalogga o'ting
             </p>
-            <Button asChild size="lg">
-              <Link to="/catalog">Katalogni Ko'rish</Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button asChild size="lg">
+                <Link to="/catalog">Katalogni Ko'rish</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/orders">Buyurtmalar Tarixi</Link>
+              </Button>
+            </div>
           </motion.div>
         </main>
         <Footer />
