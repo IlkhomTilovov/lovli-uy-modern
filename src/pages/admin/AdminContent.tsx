@@ -10,7 +10,20 @@ import {
   Save, Image, FileText, Phone, Share2, Search, 
   MessageSquare, Clock, Upload, Plus, Trash2, Loader2
 } from 'lucide-react';
-import { useSiteContent, BannerContent, AboutContent, ContactContent, SocialContent, SeoContent, FooterContent, FaqContent, FaqItem } from '@/hooks/useSiteContent';
+import { 
+  useSiteContent, 
+  BannerContent, 
+  AboutContent, 
+  AboutValue,
+  AboutStat,
+  AboutAdvantage,
+  ContactContent, 
+  SocialContent, 
+  SeoContent, 
+  FooterContent, 
+  FaqContent, 
+  FaqItem 
+} from '@/hooks/useSiteContent';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,7 +39,16 @@ const AdminContent = () => {
 
   // About state
   const [aboutData, setAboutData] = useState<AboutContent>({
-    title: '', content: ''
+    heroTitle: '',
+    heroSubtitle: '',
+    missionTitle: '',
+    missionContent: '',
+    valuesTitle: '',
+    values: [],
+    statsTitle: '',
+    stats: [],
+    advantagesTitle: '',
+    advantages: []
   });
 
   // Contact state
@@ -98,6 +120,7 @@ const AdminContent = () => {
     }
   };
 
+  // FAQ helpers
   const addFaqItem = () => {
     setFaqData({
       items: [...faqData.items, { question: '', answer: '' }]
@@ -113,6 +136,67 @@ const AdminContent = () => {
   const removeFaqItem = (index: number) => {
     setFaqData({
       items: faqData.items.filter((_, i) => i !== index)
+    });
+  };
+
+  // About helpers
+  const addValue = () => {
+    setAboutData({
+      ...aboutData,
+      values: [...aboutData.values, { text: '' }]
+    });
+  };
+
+  const updateValue = (index: number, text: string) => {
+    const newValues = [...aboutData.values];
+    newValues[index] = { text };
+    setAboutData({ ...aboutData, values: newValues });
+  };
+
+  const removeValue = (index: number) => {
+    setAboutData({
+      ...aboutData,
+      values: aboutData.values.filter((_, i) => i !== index)
+    });
+  };
+
+  const addStat = () => {
+    setAboutData({
+      ...aboutData,
+      stats: [...aboutData.stats, { value: '', label: '', description: '' }]
+    });
+  };
+
+  const updateStat = (index: number, field: keyof AboutStat, value: string) => {
+    const newStats = [...aboutData.stats];
+    newStats[index] = { ...newStats[index], [field]: value };
+    setAboutData({ ...aboutData, stats: newStats });
+  };
+
+  const removeStat = (index: number) => {
+    setAboutData({
+      ...aboutData,
+      stats: aboutData.stats.filter((_, i) => i !== index)
+    });
+  };
+
+  const addAdvantage = () => {
+    setAboutData({
+      ...aboutData,
+      advantages: [...aboutData.advantages, { title: '', description: '' }]
+    });
+  };
+
+  const updateAdvantage = (index: number, field: keyof AboutAdvantage, value: string) => {
+    const newAdvantages = [...aboutData.advantages];
+    newAdvantages[index] = { ...newAdvantages[index], [field]: value };
+    setAboutData({ ...aboutData, advantages: newAdvantages });
+  };
+
+  const removeAdvantage = (index: number) => {
+    setAboutData({
+      ...aboutData,
+      advantages: aboutData.advantages.filter((_, i) => i !== index)
     });
   };
 
@@ -239,40 +323,232 @@ const AdminContent = () => {
           </TabsContent>
 
           {/* About Tab */}
-          <TabsContent value="about" className="mt-6">
+          <TabsContent value="about" className="mt-6 space-y-6">
+            {/* Hero Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Biz haqimizda</CardTitle>
-                <CardDescription>Kompaniya haqida ma'lumot</CardDescription>
+                <CardTitle>Hero Bo'limi</CardTitle>
+                <CardDescription>Sahifa boshi - sarlavha va tavsif</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Sarlavha</Label>
                   <Input 
-                    value={aboutData.title} 
-                    onChange={(e) => setAboutData({ ...aboutData, title: e.target.value })}
-                    placeholder="Biz haqimizda"
+                    value={aboutData.heroTitle} 
+                    onChange={(e) => setAboutData({ ...aboutData, heroTitle: e.target.value })}
+                    placeholder="Biz Haqimizda"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Matn</Label>
+                  <Label>Tavsif</Label>
                   <Textarea 
-                    value={aboutData.content} 
-                    onChange={(e) => setAboutData({ ...aboutData, content: e.target.value })}
-                    placeholder="Kompaniya haqida ma'lumot..."
-                    rows={8}
+                    value={aboutData.heroSubtitle} 
+                    onChange={(e) => setAboutData({ ...aboutData, heroSubtitle: e.target.value })}
+                    placeholder="Kompaniya haqida qisqa ma'lumot..."
+                    rows={3}
                   />
                 </div>
-                <Button 
-                  onClick={() => updateContent({ section: 'about', data: aboutData })} 
-                  disabled={isUpdating}
-                  className="gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Saqlash
-                </Button>
               </CardContent>
             </Card>
+
+            {/* Mission Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Maqsadimiz Bo'limi</CardTitle>
+                <CardDescription>Kompaniya maqsadi haqida</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={aboutData.missionTitle} 
+                    onChange={(e) => setAboutData({ ...aboutData, missionTitle: e.target.value })}
+                    placeholder="Bizning Maqsadimiz"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Matn (paragraflar orasiga bo'sh qator qo'shing)</Label>
+                  <Textarea 
+                    value={aboutData.missionContent} 
+                    onChange={(e) => setAboutData({ ...aboutData, missionContent: e.target.value })}
+                    placeholder="Kompaniya maqsadi haqida ma'lumot..."
+                    rows={6}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Values Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Qadriyatlarimiz Bo'limi</CardTitle>
+                <CardDescription>Kompaniya qadriyatlari ro'yxati</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={aboutData.valuesTitle} 
+                    onChange={(e) => setAboutData({ ...aboutData, valuesTitle: e.target.value })}
+                    placeholder="Bizning Qadriyatlarimiz"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>Qadriyatlar</Label>
+                  {aboutData.values.map((value, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input 
+                        value={value.text} 
+                        onChange={(e) => updateValue(index, e.target.value)}
+                        placeholder="Qadriyat matni..."
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => removeValue(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addValue} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Qadriyat qo'shish
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Yutuqlarimiz Bo'limi</CardTitle>
+                <CardDescription>Statistika va raqamlar</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={aboutData.statsTitle} 
+                    onChange={(e) => setAboutData({ ...aboutData, statsTitle: e.target.value })}
+                    placeholder="Bizning Yutuqlarimiz"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <Label>Statistika elementlari</Label>
+                  {aboutData.stats.map((stat, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Element {index + 1}</span>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => removeStat(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Qiymat</Label>
+                          <Input 
+                            value={stat.value} 
+                            onChange={(e) => updateStat(index, 'value', e.target.value)}
+                            placeholder="5+"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Nomi</Label>
+                          <Input 
+                            value={stat.label} 
+                            onChange={(e) => updateStat(index, 'label', e.target.value)}
+                            placeholder="Yillik Tajriba"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tavsif</Label>
+                          <Input 
+                            value={stat.description} 
+                            onChange={(e) => updateStat(index, 'description', e.target.value)}
+                            placeholder="Bozorda barqaror faoliyat"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addStat} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Statistika qo'shish
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Advantages Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ustunliklarimiz Bo'limi</CardTitle>
+                <CardDescription>Kompaniya afzalliklari</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={aboutData.advantagesTitle} 
+                    onChange={(e) => setAboutData({ ...aboutData, advantagesTitle: e.target.value })}
+                    placeholder="Bizning Ustunliklarimiz"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <Label>Ustunliklar</Label>
+                  {aboutData.advantages.map((advantage, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Ustunlik {index + 1}</span>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => removeAdvantage(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Sarlavha</Label>
+                        <Input 
+                          value={advantage.title} 
+                          onChange={(e) => updateAdvantage(index, 'title', e.target.value)}
+                          placeholder="Sifatli Mahsulotlar"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Tavsif</Label>
+                        <Textarea 
+                          value={advantage.description} 
+                          onChange={(e) => updateAdvantage(index, 'description', e.target.value)}
+                          placeholder="Faqat sertifikatlangan va tasdiqlangan brendlarni taqdim etamiz..."
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addAdvantage} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Ustunlik qo'shish
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button 
+              onClick={() => updateContent({ section: 'about', data: aboutData })} 
+              disabled={isUpdating}
+              className="gap-2"
+              size="lg"
+            >
+              <Save className="w-4 h-4" />
+              Barchasini saqlash
+            </Button>
           </TabsContent>
 
           {/* Contact Tab */}
@@ -465,10 +741,11 @@ const AdminContent = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Kalit so'zlar</Label>
-                  <Input 
+                  <Textarea 
                     value={seoData.keywords} 
                     onChange={(e) => setSeoData({ ...seoData, keywords: e.target.value })}
-                    placeholder="kalit, so'zlar, vergul, bilan"
+                    placeholder="kalit, so'z, vergul, bilan"
+                    rows={2}
                   />
                 </div>
                 <Button 
@@ -488,47 +765,54 @@ const AdminContent = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Ko'p so'raladigan savollar</CardTitle>
-                <CardDescription>FAQ bo'limini boshqaring</CardDescription>
+                <CardDescription>FAQ bo'limini tahrirlash</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {faqData.items.map((item, index) => (
                   <div key={index} className="p-4 border rounded-lg space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Savol #{index + 1}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Savol {index + 1}</span>
                       <Button 
-                        variant="ghost" 
-                        size="sm"
+                        variant="outline" 
+                        size="icon"
                         onClick={() => removeFaqItem(index)}
-                        className="text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    <Input 
-                      value={item.question}
-                      onChange={(e) => updateFaqItem(index, 'question', e.target.value)}
-                      placeholder="Savol"
-                    />
-                    <Textarea 
-                      value={item.answer}
-                      onChange={(e) => updateFaqItem(index, 'answer', e.target.value)}
-                      placeholder="Javob"
-                      rows={3}
-                    />
+                    <div className="space-y-2">
+                      <Label>Savol</Label>
+                      <Input 
+                        value={item.question} 
+                        onChange={(e) => updateFaqItem(index, 'question', e.target.value)}
+                        placeholder="Savol matni..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Javob</Label>
+                      <Textarea 
+                        value={item.answer} 
+                        onChange={(e) => updateFaqItem(index, 'answer', e.target.value)}
+                        placeholder="Javob matni..."
+                        rows={3}
+                      />
+                    </div>
                   </div>
                 ))}
-                <Button variant="outline" onClick={addFaqItem} className="w-full gap-2">
+                <Button variant="outline" onClick={addFaqItem} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Savol qo'shish
                 </Button>
-                <Button 
-                  onClick={() => updateContent({ section: 'faq', data: faqData })} 
-                  disabled={isUpdating}
-                  className="gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Saqlash
-                </Button>
+                <div className="pt-4">
+                  <Button 
+                    onClick={() => updateContent({ section: 'faq', data: faqData })} 
+                    disabled={isUpdating}
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    Saqlash
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -538,7 +822,7 @@ const AdminContent = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Footer sozlamalari</CardTitle>
-                <CardDescription>Saytning pastki qismini tahrirlash</CardDescription>
+                <CardDescription>Sayt pastki qismi</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -550,11 +834,11 @@ const AdminContent = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Qisqa tavsif</Label>
+                  <Label>Tavsif</Label>
                   <Textarea 
                     value={footerData.description} 
                     onChange={(e) => setFooterData({ ...footerData, description: e.target.value })}
-                    placeholder="Kompaniya haqida qisqa ma'lumot"
+                    placeholder="Kompaniya haqida qisqa ma'lumot..."
                     rows={3}
                   />
                 </div>
@@ -563,7 +847,7 @@ const AdminContent = () => {
                   <Input 
                     value={footerData.copyright} 
                     onChange={(e) => setFooterData({ ...footerData, copyright: e.target.value })}
-                    placeholder="© 2024 Kompaniya nomi. Barcha huquqlar himoyalangan."
+                    placeholder="© 2024 Kompaniya. Barcha huquqlar himoyalangan."
                   />
                 </div>
                 <Button 
