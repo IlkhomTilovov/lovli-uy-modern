@@ -70,7 +70,7 @@ export const Navbar = () => {
             </Link>
 
             {/* Katalog Dropdown */}
-            <div ref={catalogRef} className="relative">
+            <div className="relative">
               <button
                 onClick={() => setCatalogOpen(!catalogOpen)}
                 className={cn(
@@ -266,7 +266,7 @@ export const Navbar = () => {
 
       {/* Premium Mega Menu - Two Column Layout */}
       {catalogOpen && (
-        <div className="hidden md:block absolute left-0 right-0 top-full w-full animate-fade-in z-50">
+        <div ref={catalogRef} className="hidden md:block absolute left-0 right-0 top-full w-full animate-fade-in z-50">
           {/* Backdrop with blur */}
           <div 
             className="fixed inset-0 bg-black/30 backdrop-blur-sm -z-10"
@@ -287,7 +287,6 @@ export const Navbar = () => {
                       <Link
                         key={category.id}
                         to={`/kategoriya/${category.slug}`}
-                        onClick={() => setCatalogOpen(false)}
                         className="group flex items-center justify-between py-2.5 text-muted-foreground hover:text-primary transition-colors"
                       >
                         <span className="text-sm font-medium">{category.name}</span>
@@ -296,7 +295,6 @@ export const Navbar = () => {
                     ))}
                     <Link
                       to="/catalog"
-                      onClick={() => setCatalogOpen(false)}
                       className="group flex items-center justify-between py-2.5 text-primary font-medium"
                     >
                       <span className="text-sm">Barcha mahsulotlar</span>
@@ -312,7 +310,6 @@ export const Navbar = () => {
                       <Link
                         key={category.id}
                         to={`/kategoriya/${category.slug}`}
-                        onClick={() => setCatalogOpen(false)}
                         className="group relative overflow-hidden rounded-2xl aspect-[4/3]"
                       >
                         {/* Background Image */}
