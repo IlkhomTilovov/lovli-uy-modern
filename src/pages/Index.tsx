@@ -43,7 +43,7 @@ const Index = () => {
   // Map categories to CategoryCard format
   const activeCategories = categories.map(category => ({
     name: category.name,
-    slug: category.id,
+    slug: category.slug,
     image: category.image || '/placeholder.svg',
     productCount: products.filter(p => p.category_id === category.id && p.status === 'active').length
   }));
