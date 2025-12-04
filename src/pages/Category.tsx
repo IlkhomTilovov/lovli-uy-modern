@@ -437,25 +437,9 @@ const Category = () => {
       <Navbar />
 
       <main className="flex-1">
-        {/* Premium Hero Section */}
-        <section className="relative overflow-hidden">
-          {/* Background with gradient and pattern */}
-          <div 
-            className="absolute inset-0"
-            style={category.image ? {
-              backgroundImage: `url(${category.image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            } : undefined}
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/70 to-primary/90" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnY0em0wLTZoLTJ2LTRoMnY0em0tNiA2aC0ydi00aDJ2NHptMC02aC0ydi00aDJ2NHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
-          
-          {/* Decorative shapes */}
-          <div className="absolute top-10 right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-          
-          <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
+        {/* Simple Hero Section */}
+        <section className="bg-secondary/50 border-b border-border">
+          <div className="container mx-auto px-4 py-10 md:py-14">
             <motion.div
               initial="hidden"
               animate="visible"
@@ -463,45 +447,28 @@ const Category = () => {
               transition={{ duration: 0.5 }}
             >
               {/* Breadcrumb */}
-              <nav className="flex items-center gap-2 text-sm text-white/80 mb-6">
-                <Link to="/" className="hover:text-white transition-colors flex items-center gap-1">
+              <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <Link to="/" className="hover:text-foreground transition-colors flex items-center gap-1">
                   <Home className="w-4 h-4" />
                   Bosh sahifa
                 </Link>
                 <ChevronRight className="w-4 h-4" />
-                <Link to="/catalog" className="hover:text-white transition-colors">
+                <Link to="/catalog" className="hover:text-foreground transition-colors">
                   Katalog
                 </Link>
                 <ChevronRight className="w-4 h-4" />
-                <span className="text-white font-medium">{category.name}</span>
+                <span className="text-foreground font-medium">{category.name}</span>
               </nav>
 
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">{category.name}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">{category.name}</h1>
               {category.description && (
-                <p className="text-white/80 text-lg max-w-2xl mb-6">
+                <p className="text-muted-foreground max-w-2xl mb-4">
                   {category.description}
                 </p>
               )}
-
-              {/* Statistics Badges */}
-              <div className="flex flex-wrap gap-3">
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 text-white border-white/30 backdrop-blur-sm">
-                  <Package className="h-4 w-4 mr-2" />
-                  {categoryStats.total} ta mahsulot
-                </Badge>
-                {categoryStats.discounted > 0 && (
-                  <Badge variant="secondary" className="px-4 py-2 text-sm bg-red-500/80 text-white border-red-400/30 backdrop-blur-sm">
-                    <Percent className="h-4 w-4 mr-2" />
-                    {categoryStats.discounted} ta chegirmali
-                  </Badge>
-                )}
-                {categoryStats.new > 0 && (
-                  <Badge variant="secondary" className="px-4 py-2 text-sm bg-green-500/80 text-white border-green-400/30 backdrop-blur-sm">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {categoryStats.new} ta yangi
-                  </Badge>
-                )}
-              </div>
+              <p className="text-sm text-muted-foreground">
+                {filteredProducts.length} ta mahsulot topildi
+              </p>
             </motion.div>
           </div>
         </section>
