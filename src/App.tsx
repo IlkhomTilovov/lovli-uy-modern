@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErpProvider } from "@/contexts/ErpContext";
+import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import Category from "./pages/Category";
@@ -29,34 +30,36 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ErpProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/catalog" element={<Catalog />} />
-              <Route path="/kategoriya/:slug" element={<Category />} />
-              <Route path="/product/:id" element={<Product />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/cart" element={<Cart />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin/login" element={<Auth />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/categories" element={<AdminCategories />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/warehouse" element={<AdminWarehouse />} />
-              <Route path="/admin/content" element={<AdminContent />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/catalog" element={<Catalog />} />
+                <Route path="/kategoriya/:slug" element={<Category />} />
+                <Route path="/product/:id" element={<Product />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/cart" element={<Cart />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<Auth />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/products" element={<AdminProducts />} />
+                <Route path="/admin/categories" element={<AdminCategories />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/warehouse" element={<AdminWarehouse />} />
+                <Route path="/admin/content" element={<AdminContent />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
       </ErpProvider>
     </AuthProvider>
   </QueryClientProvider>
