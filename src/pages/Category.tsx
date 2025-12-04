@@ -451,13 +451,13 @@ const Category = () => {
           <Star className="h-3.5 w-3.5" />
           Reyting
         </Label>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {[0, 1, 2, 3, 4, 5].map((rating) => (
             <button
               key={rating}
               onClick={() => { setRatingFilter(rating); handleFilterChange(); }}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded text-xs border transition-colors",
+                "flex items-center gap-0.5 px-2 py-1.5 rounded text-xs border transition-colors whitespace-nowrap",
                 ratingFilter === rating 
                   ? "bg-primary text-primary-foreground border-primary" 
                   : "border-border hover:bg-secondary"
