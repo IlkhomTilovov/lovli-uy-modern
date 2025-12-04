@@ -41,6 +41,9 @@ import {
   Package,
   TrendingUp,
   Eye,
+  Star,
+  Weight,
+  Ruler,
 } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
@@ -59,6 +62,10 @@ const Category = () => {
   const [discountOnly, setDiscountOnly] = useState(false);
   const [newOnly, setNewOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
+  const [discountRange, setDiscountRange] = useState<[number, number]>([0, 100]);
+  const [ratingFilter, setRatingFilter] = useState<number>(0);
+  const [stockFilter, setStockFilter] = useState<"all" | "inStock" | "lowStock">("all");
+  const [sizeFilter, setSizeFilter] = useState<string>("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -137,7 +144,10 @@ const Category = () => {
           hasDiscount,
           discountPercent,
           isNew: new Date(product.created_at) > weekAgo,
-          createdAt: product.created_at
+          createdAt: product.created_at,
+          stock: product.stock,
+          rating: (product as any).rating || 0,
+          size: (product as any).size || null,
         };
       });
 
@@ -160,6 +170,28 @@ const Category = () => {
     // Price range filter
     result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
+    // Discount percentage range filter
+    if (discountRange[0] > 0 || discountRange[1] < 100) {
+      result = result.filter(p => p.discountPercent >= discountRange[0] && p.discountPercent <= discountRange[1]);
+    }
+
+    // Rating filter
+    if (ratingFilter > 0) {
+      result = result.filter(p => p.rating >= ratingFilter);
+    }
+
+    // Stock filter
+    if (stockFilter === "inStock") {
+      result = result.filter(p => p.stock > 5);
+    } else if (stockFilter === "lowStock") {
+      result = result.filter(p => p.stock > 0 && p.stock <= 5);
+    }
+
+    // Size filter
+    if (sizeFilter) {
+      result = result.filter(p => p.size === sizeFilter);
+    }
+
     // Sorting
     switch (sortBy) {
       case "price-asc":
@@ -174,12 +206,15 @@ const Category = () => {
       case "discount":
         result.sort((a, b) => b.discountPercent - a.discountPercent);
         break;
+      case "rating":
+        result.sort((a, b) => b.rating - a.rating);
+        break;
       default:
         break;
     }
 
     return result;
-  }, [category, products, searchQuery, discountOnly, newOnly, priceRange, sortBy]);
+  }, [category, products, searchQuery, discountOnly, newOnly, priceRange, discountRange, ratingFilter, stockFilter, sizeFilter, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -246,6 +281,10 @@ const Category = () => {
     setDiscountOnly(false);
     setNewOnly(false);
     setPriceRange([priceStats.min, priceStats.max]);
+    setDiscountRange([0, 100]);
+    setRatingFilter(0);
+    setStockFilter("all");
+    setSizeFilter("");
     setCurrentPage(1);
   };
 
@@ -271,7 +310,8 @@ const Category = () => {
   const isLoading = productsLoading || categoriesLoading;
 
   const hasActiveFilters = searchQuery || discountOnly || newOnly || sortBy !== "default" || 
-    priceRange[0] > priceStats.min || priceRange[1] < priceStats.max;
+    priceRange[0] > priceStats.min || priceRange[1] < priceStats.max ||
+    discountRange[0] > 0 || discountRange[1] < 100 || ratingFilter > 0 || stockFilter !== "all" || sizeFilter;
 
   if (isLoading) {
     return (
@@ -302,11 +342,11 @@ const Category = () => {
   }
 
   const FilterContent = () => (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Search */}
       <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <Search className="h-4 w-4" />
+        <Label className="flex items-center gap-2 text-xs font-medium">
+          <Search className="h-3.5 w-3.5" />
           Qidirish
         </Label>
         <div className="relative">
@@ -317,6 +357,7 @@ const Category = () => {
               setSearchQuery(e.target.value);
               handleFilterChange();
             }}
+            className="h-9 text-sm"
           />
           {searchQuery && (
             <button 
@@ -331,11 +372,11 @@ const Category = () => {
 
       {/* Quick Filter Tags */}
       <div className="space-y-2">
-        <Label>Tezkor filterlar</Label>
-        <div className="flex flex-wrap gap-2">
+        <Label className="text-xs font-medium">Tezkor filterlar</Label>
+        <div className="flex flex-wrap gap-1.5">
           <Badge 
             variant={discountOnly ? "default" : "outline"}
-            className="cursor-pointer hover:bg-primary/20"
+            className="cursor-pointer hover:bg-primary/20 text-xs"
             onClick={() => { setDiscountOnly(!discountOnly); handleFilterChange(); }}
           >
             <Percent className="h-3 w-3 mr-1" />
@@ -343,27 +384,27 @@ const Category = () => {
           </Badge>
           <Badge 
             variant={newOnly ? "default" : "outline"}
-            className="cursor-pointer hover:bg-primary/20"
+            className="cursor-pointer hover:bg-primary/20 text-xs"
             onClick={() => { setNewOnly(!newOnly); handleFilterChange(); }}
           >
             <Sparkles className="h-3 w-3 mr-1" />
             Yangi
           </Badge>
           <Badge 
-            variant={sortBy === "price-asc" ? "default" : "outline"}
-            className="cursor-pointer hover:bg-primary/20"
-            onClick={() => applyQuickFilter("cheap")}
+            variant={stockFilter === "inStock" ? "default" : "outline"}
+            className="cursor-pointer hover:bg-primary/20 text-xs"
+            onClick={() => { setStockFilter(stockFilter === "inStock" ? "all" : "inStock"); handleFilterChange(); }}
           >
-            <TrendingUp className="h-3 w-3 mr-1 rotate-180" />
-            Arzon
+            <Package className="h-3 w-3 mr-1" />
+            Mavjud
           </Badge>
         </div>
       </div>
 
       {/* Price Range */}
-      <div className="space-y-4">
-        <Label className="flex items-center gap-2">
-          <Tag className="h-4 w-4" />
+      <div className="space-y-3">
+        <Label className="flex items-center gap-2 text-xs font-medium">
+          <Tag className="h-3.5 w-3.5" />
           Narx oralig'i
         </Label>
         <Slider
@@ -375,43 +416,103 @@ const Category = () => {
           min={priceStats.min}
           max={priceStats.max}
           step={1000}
-          className="mt-2"
         />
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{priceRange[0].toLocaleString()} so'm</span>
           <span>{priceRange[1].toLocaleString()} so'm</span>
         </div>
       </div>
 
-      {/* Filter Checkboxes */}
+      {/* Discount Percentage Range */}
       <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="discount"
-            checked={discountOnly}
-            onCheckedChange={(checked) => {
-              setDiscountOnly(checked as boolean);
-              handleFilterChange();
-            }}
-          />
-          <Label htmlFor="discount" className="cursor-pointer flex items-center gap-2">
-            <Percent className="h-4 w-4 text-red-500" />
-            Faqat chegirmali
-          </Label>
+        <Label className="flex items-center gap-2 text-xs font-medium">
+          <Percent className="h-3.5 w-3.5" />
+          Chegirma foizi
+        </Label>
+        <Slider
+          value={discountRange}
+          onValueChange={(value) => {
+            setDiscountRange(value as [number, number]);
+            handleFilterChange();
+          }}
+          min={0}
+          max={100}
+          step={5}
+        />
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>{discountRange[0]}%</span>
+          <span>{discountRange[1]}%</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="new"
-            checked={newOnly}
-            onCheckedChange={(checked) => {
-              setNewOnly(checked as boolean);
-              handleFilterChange();
-            }}
-          />
-          <Label htmlFor="new" className="cursor-pointer flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-green-500" />
-            Faqat yangi mahsulotlar
-          </Label>
+      </div>
+
+      {/* Rating Filter */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 text-xs font-medium">
+          <Star className="h-3.5 w-3.5" />
+          Reyting
+        </Label>
+        <div className="flex gap-1">
+          {[0, 1, 2, 3, 4, 5].map((rating) => (
+            <button
+              key={rating}
+              onClick={() => { setRatingFilter(rating); handleFilterChange(); }}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded text-xs border transition-colors",
+                ratingFilter === rating 
+                  ? "bg-primary text-primary-foreground border-primary" 
+                  : "border-border hover:bg-secondary"
+              )}
+            >
+              {rating === 0 ? "Barchasi" : (
+                <>
+                  {rating}
+                  <Star className="h-3 w-3 fill-current" />
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stock Filter */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 text-xs font-medium">
+          <Package className="h-3.5 w-3.5" />
+          Ombordagi miqdor
+        </Label>
+        <Select value={stockFilter} onValueChange={(value: "all" | "inStock" | "lowStock") => { setStockFilter(value); handleFilterChange(); }}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue placeholder="Tanlang" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Barchasi</SelectItem>
+            <SelectItem value="inStock">Mavjud (5+ dona)</SelectItem>
+            <SelectItem value="lowStock">Kam qoldi (1-5 dona)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Size Filter */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 text-xs font-medium">
+          <Ruler className="h-3.5 w-3.5" />
+          O'lcham
+        </Label>
+        <div className="flex flex-wrap gap-1.5">
+          {["", "XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+            <button
+              key={size}
+              onClick={() => { setSizeFilter(size); handleFilterChange(); }}
+              className={cn(
+                "px-3 py-1.5 rounded text-xs border transition-colors",
+                sizeFilter === size 
+                  ? "bg-primary text-primary-foreground border-primary" 
+                  : "border-border hover:bg-secondary"
+              )}
+            >
+              {size || "Barchasi"}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -419,11 +520,11 @@ const Category = () => {
       {hasActiveFilters && (
         <div className="pt-4 border-t border-border">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {filteredProducts.length} ta natija
             </span>
           </div>
-          <Button variant="outline" onClick={resetFilters} className="w-full">
+          <Button variant="outline" onClick={resetFilters} className="w-full h-9 text-sm">
             <X className="h-4 w-4 mr-2" />
             Filtrlarni tozalash
           </Button>
@@ -525,6 +626,7 @@ const Category = () => {
                   <SelectItem value="price-desc">Qimmatdan arzonga</SelectItem>
                   <SelectItem value="newest">Eng yangilari</SelectItem>
                   <SelectItem value="discount">Chegirma bo'yicha</SelectItem>
+                  <SelectItem value="rating">Reyting bo'yicha</SelectItem>
                 </SelectContent>
               </Select>
 
