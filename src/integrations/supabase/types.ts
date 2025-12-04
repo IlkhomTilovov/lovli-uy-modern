@@ -67,12 +67,15 @@ export type Database = {
           images: string[] | null
           meta_description: string | null
           meta_title: string | null
+          rating: number | null
           retail_price: number
+          size: string | null
           sku: string
           status: string
           stock: number
           title: string
           updated_at: string
+          weight: number | null
           wholesale_price: number
         }
         Insert: {
@@ -85,12 +88,15 @@ export type Database = {
           images?: string[] | null
           meta_description?: string | null
           meta_title?: string | null
+          rating?: number | null
           retail_price?: number
+          size?: string | null
           sku: string
           status?: string
           stock?: number
           title: string
           updated_at?: string
+          weight?: number | null
           wholesale_price?: number
         }
         Update: {
@@ -103,12 +109,15 @@ export type Database = {
           images?: string[] | null
           meta_description?: string | null
           meta_title?: string | null
+          rating?: number | null
           retail_price?: number
+          size?: string | null
           sku?: string
           status?: string
           stock?: number
           title?: string
           updated_at?: string
+          weight?: number | null
           wholesale_price?: number
         }
         Relationships: [
