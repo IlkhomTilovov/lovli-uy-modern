@@ -128,7 +128,10 @@ const AdminContent = () => {
 
   // Footer state
   const [footerData, setFooterData] = useState<FooterContent>({
-    companyName: '', description: '', copyright: ''
+    companyName: '', slogan: '', description: '', 
+    ctaTitle: '', ctaSubtitle: '', ctaButtonText: '',
+    pagesTitle: '', contactTitle: '', workingHoursTitle: '', socialTitle: '',
+    copyright: '', privacyText: '', termsText: ''
   });
 
   // FAQ state
@@ -1336,48 +1339,167 @@ const AdminContent = () => {
           </TabsContent>
 
           {/* Footer Tab */}
-          <TabsContent value="footer" className="mt-6">
+          <TabsContent value="footer" className="mt-6 space-y-6">
+            {/* Company Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Footer sozlamalari</CardTitle>
-                <CardDescription>Sayt pastki qismi</CardDescription>
+                <CardTitle>Kompaniya ma'lumotlari</CardTitle>
+                <CardDescription>Logo yonidagi ma'lumotlar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Kompaniya nomi</Label>
-                  <Input 
-                    value={footerData.companyName} 
-                    onChange={(e) => setFooterData({ ...footerData, companyName: e.target.value })}
-                    placeholder="Kompaniya nomi"
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Kompaniya nomi</Label>
+                    <Input 
+                      value={footerData.companyName} 
+                      onChange={(e) => setFooterData({ ...footerData, companyName: e.target.value })}
+                      placeholder="Xojalik Mollari"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Slogan</Label>
+                    <Input 
+                      value={footerData.slogan} 
+                      onChange={(e) => setFooterData({ ...footerData, slogan: e.target.value })}
+                      placeholder="Sifat va ishonch"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Tavsif</Label>
                   <Textarea 
                     value={footerData.description} 
                     onChange={(e) => setFooterData({ ...footerData, description: e.target.value })}
-                    placeholder="Kompaniya haqida qisqa ma'lumot..."
-                    rows={3}
+                    placeholder="Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar."
+                    rows={2}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* CTA Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>CTA bo'limi</CardTitle>
+                <CardDescription>Footer ustidagi ko'k banner</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Sarlavha</Label>
+                    <Input 
+                      value={footerData.ctaTitle} 
+                      onChange={(e) => setFooterData({ ...footerData, ctaTitle: e.target.value })}
+                      placeholder="Savollaringiz bormi?"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tugma matni</Label>
+                    <Input 
+                      value={footerData.ctaButtonText} 
+                      onChange={(e) => setFooterData({ ...footerData, ctaButtonText: e.target.value })}
+                      placeholder="Bog'lanish"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Tavsif</Label>
+                  <Input 
+                    value={footerData.ctaSubtitle} 
+                    onChange={(e) => setFooterData({ ...footerData, ctaSubtitle: e.target.value })}
+                    placeholder="Biz bilan bog'laning - yordam berishdan mamnunmiz!"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Section Titles */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Bo'lim sarlavhalari</CardTitle>
+                <CardDescription>Footer bo'limlarining nomlari</CardDescription>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label>Sahifalar</Label>
+                  <Input 
+                    value={footerData.pagesTitle} 
+                    onChange={(e) => setFooterData({ ...footerData, pagesTitle: e.target.value })}
+                    placeholder="Sahifalar"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Aloqa</Label>
+                  <Input 
+                    value={footerData.contactTitle} 
+                    onChange={(e) => setFooterData({ ...footerData, contactTitle: e.target.value })}
+                    placeholder="Aloqa"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ish vaqti</Label>
+                  <Input 
+                    value={footerData.workingHoursTitle} 
+                    onChange={(e) => setFooterData({ ...footerData, workingHoursTitle: e.target.value })}
+                    placeholder="Ish Vaqti"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ijtimoiy tarmoqlar</Label>
+                  <Input 
+                    value={footerData.socialTitle} 
+                    onChange={(e) => setFooterData({ ...footerData, socialTitle: e.target.value })}
+                    placeholder="Ijtimoiy Tarmoqlar"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Bottom Bar */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Pastki qism</CardTitle>
+                <CardDescription>Copyright va huquqiy havolalar</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Copyright matni</Label>
                   <Input 
                     value={footerData.copyright} 
                     onChange={(e) => setFooterData({ ...footerData, copyright: e.target.value })}
-                    placeholder="© 2024 Kompaniya. Barcha huquqlar himoyalangan."
+                    placeholder="© 2024 Xojalik Mollari. Barcha huquqlar himoyalangan."
                   />
                 </div>
-                <Button 
-                  onClick={() => updateContent({ section: 'footer', data: footerData })} 
-                  disabled={isUpdating}
-                  className="gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Saqlash
-                </Button>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Maxfiylik siyosati</Label>
+                    <Input 
+                      value={footerData.privacyText} 
+                      onChange={(e) => setFooterData({ ...footerData, privacyText: e.target.value })}
+                      placeholder="Maxfiylik siyosati"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Foydalanish shartlari</Label>
+                    <Input 
+                      value={footerData.termsText} 
+                      onChange={(e) => setFooterData({ ...footerData, termsText: e.target.value })}
+                      placeholder="Foydalanish shartlari"
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
+
+            <Button 
+              onClick={() => updateContent({ section: 'footer', data: footerData })} 
+              disabled={isUpdating}
+              className="gap-2"
+              size="lg"
+            >
+              <Save className="w-4 h-4" />
+              Barchasini saqlash
+            </Button>
           </TabsContent>
         </Tabs>
       </div>
