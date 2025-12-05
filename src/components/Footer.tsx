@@ -4,18 +4,19 @@ import { Phone, MapPin, Mail, Facebook, Instagram, Send, Youtube, MessageCircle,
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { Button } from "@/components/ui/button";
 
-type Language = "uz" | "ru";
+type Language = "uz" | "ru" | "kk" | "tg" | "tk" | "ky" | "fa";
 const LANGUAGE_KEY = "site_language";
 
 const getInitialLanguage = (): Language => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem(LANGUAGE_KEY);
-    if (saved === "uz" || saved === "ru") return saved;
+    const validLanguages: Language[] = ["uz", "ru", "kk", "tg", "tk", "ky", "fa"];
+    if (saved && validLanguages.includes(saved as Language)) return saved as Language;
   }
   return "uz";
 };
 
-const translations = {
+const translations: Record<Language, Record<string, string>> = {
   uz: {
     companyName: "Xojalik Mollari",
     slogan: "Sifat va ishonch",
@@ -57,6 +58,111 @@ const translations = {
     contact: "Контакты",
     weekdays: "Пн-Сб",
     sunday: "Вс"
+  },
+  kk: {
+    companyName: "Шаруашылық тауарлары",
+    slogan: "Сапа және сенім",
+    description: "Сапалы және қолжетімді шаруашылық тауарлары. Үйіңіз үшін ең жақсы өнімдер.",
+    ctaTitle: "Сұрақтарыңыз бар ма?",
+    ctaSubtitle: "Бізбен хабарласыңыз - көмектесуге қуаныштымыз!",
+    ctaButtonText: "Байланысу",
+    pagesTitle: "Беттер",
+    contactTitle: "Байланыс",
+    workingHoursTitle: "Жұмыс уақыты",
+    socialTitle: "Әлеуметтік желілер",
+    copyright: `© ${new Date().getFullYear()} Шаруашылық тауарлары. Барлық құқықтар қорғалған.`,
+    privacyText: "Құпиялылық саясаты",
+    termsText: "Пайдалану шарттары",
+    home: "Басты бет",
+    catalog: "Каталог",
+    about: "Біз туралы",
+    contact: "Байланыс",
+    weekdays: "Дү-Сн",
+    sunday: "Жс"
+  },
+  tg: {
+    companyName: "Молҳои хоҷагӣ",
+    slogan: "Сифат ва эътимод",
+    description: "Молҳои хоҷагии сифатнок ва арзон. Беҳтарин маҳсулотҳо барои хонаи шумо.",
+    ctaTitle: "Саволҳо доред?",
+    ctaSubtitle: "Бо мо тамос гиред - мо аз кӯмак хушнудем!",
+    ctaButtonText: "Тамос",
+    pagesTitle: "Саҳифаҳо",
+    contactTitle: "Тамос",
+    workingHoursTitle: "Вақти корӣ",
+    socialTitle: "Шабакаҳои иҷтимоӣ",
+    copyright: `© ${new Date().getFullYear()} Молҳои хоҷагӣ. Ҳамаи ҳуқуқҳо ҳифз шудаанд.`,
+    privacyText: "Сиёсати махфият",
+    termsText: "Шартҳои истифода",
+    home: "Саҳифаи асосӣ",
+    catalog: "Каталог",
+    about: "Дар бораи мо",
+    contact: "Тамос",
+    weekdays: "Дш-Шб",
+    sunday: "Як"
+  },
+  tk: {
+    companyName: "Hojalyk harytlary",
+    slogan: "Hil we ynam",
+    description: "Ýokary hilli we elýeterli hojalyk harytlary. Öýüňiz üçin iň gowy önümler.",
+    ctaTitle: "Soraglaryňyz barmy?",
+    ctaSubtitle: "Biz bilen habarlaşyň - kömek etmäge şat!",
+    ctaButtonText: "Habarlaşmak",
+    pagesTitle: "Sahypalar",
+    contactTitle: "Habarlaşmak",
+    workingHoursTitle: "Iş wagty",
+    socialTitle: "Sosial ulgamlar",
+    copyright: `© ${new Date().getFullYear()} Hojalyk harytlary. Ähli hukuklar goragly.`,
+    privacyText: "Gizlinlik syýasaty",
+    termsText: "Ulanmak şertleri",
+    home: "Baş sahypa",
+    catalog: "Katalog",
+    about: "Biz barada",
+    contact: "Habarlaşmak",
+    weekdays: "Du-Şe",
+    sunday: "Ýb"
+  },
+  ky: {
+    companyName: "Чарба товарлары",
+    slogan: "Сапат жана ишеним",
+    description: "Сапаттуу жана жеткиликтүү чарба товарлары. Үйүңүз үчүн эң жакшы товарлар.",
+    ctaTitle: "Суроолоруңуз барбы?",
+    ctaSubtitle: "Биз менен байланышыңыз - жардам берүүдөн кубанычтуубуз!",
+    ctaButtonText: "Байланышуу",
+    pagesTitle: "Беттер",
+    contactTitle: "Байланыш",
+    workingHoursTitle: "Иш убактысы",
+    socialTitle: "Социалдык тармактар",
+    copyright: `© ${new Date().getFullYear()} Чарба товарлары. Бардык укуктар корголгон.`,
+    privacyText: "Купуялык саясаты",
+    termsText: "Пайдалануу шарттары",
+    home: "Башкы бет",
+    catalog: "Каталог",
+    about: "Биз жөнүндө",
+    contact: "Байланыш",
+    weekdays: "Дш-Шб",
+    sunday: "Жш"
+  },
+  fa: {
+    companyName: "کالاهای خانگی",
+    slogan: "کیفیت و اعتماد",
+    description: "کالاهای خانگی با کیفیت و مقرون به صرفه. بهترین محصولات برای خانه شما.",
+    ctaTitle: "سوالی دارید؟",
+    ctaSubtitle: "با ما تماس بگیرید - خوشحال می‌شویم کمک کنیم!",
+    ctaButtonText: "تماس",
+    pagesTitle: "صفحات",
+    contactTitle: "تماس",
+    workingHoursTitle: "ساعات کاری",
+    socialTitle: "شبکه‌های اجتماعی",
+    copyright: `© ${new Date().getFullYear()} کالاهای خانگی. تمامی حقوق محفوظ است.`,
+    privacyText: "سیاست حفظ حریم خصوصی",
+    termsText: "شرایط استفاده",
+    home: "صفحه اصلی",
+    catalog: "کاتالوگ",
+    about: "درباره ما",
+    contact: "تماس",
+    weekdays: "شنبه-پنج",
+    sunday: "جمعه"
   }
 };
 
