@@ -125,7 +125,7 @@ export const Navbar = () => {
                   : "text-muted-foreground"
               )}
             >
-              Bosh Sahifa
+              {t.home}
             </Link>
 
             {/* Katalog Dropdown */}
@@ -137,7 +137,7 @@ export const Navbar = () => {
                   isCatalogActive ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                Katalog
+                {t.catalog}
                 <ChevronDown 
                   className={cn(
                     "h-4 w-4 transition-transform duration-200",
