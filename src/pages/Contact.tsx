@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { useSEO } from "@/hooks/useSEO";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 type Language = "uz" | "ru";
+
+const LANGUAGE_KEY = "site_language";
 
 const translations = {
   uz: {
@@ -61,16 +63,28 @@ const translations = {
   }
 };
 
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
+
 const Contact = () => {
   const { toast } = useToast();
   const { contact, isLoading } = useSiteContent();
-  const [language, setLanguage] = useState<Language>("uz");
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
     message: ""
   });
+
+  useEffect(() => {
+    localStorage.setItem(LANGUAGE_KEY, language);
+  }, [language]);
 
   const t = translations[language];
 
