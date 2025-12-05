@@ -1,20 +1,27 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, LayoutGrid, Rows3 } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 import { FilterSidebarSkeleton, CatalogGridSkeleton } from "@/components/skeletons";
+import { usePagination } from "@/hooks/usePagination";
+import { useLazyLoad } from "@/hooks/useLazyLoad";
+import { PaginationControls } from "@/components/PaginationControls";
+import { LazyLoadTrigger } from "@/components/LazyLoadTrigger";
+
+const ITEMS_PER_PAGE = 12;
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"pagination" | "infinite">("pagination");
   const selectedCategory = searchParams.get("category") || "all";
   
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -58,6 +65,18 @@ const Catalog = () => {
       });
   }, [selectedCategory, searchQuery, products, categories]);
 
+  // Pagination hook
+  const pagination = usePagination(filteredProducts, { itemsPerPage: ITEMS_PER_PAGE });
+
+  // Lazy load hook
+  const lazyLoad = useLazyLoad(filteredProducts, { initialBatch: ITEMS_PER_PAGE, batchSize: ITEMS_PER_PAGE });
+
+  // Reset pagination/lazy load when filters change
+  useEffect(() => {
+    pagination.resetPage();
+    lazyLoad.reset();
+  }, [selectedCategory, searchQuery]);
+
   const handleCategoryChange = (slug: string) => {
     if (slug === "all") {
       searchParams.delete("category");
@@ -74,6 +93,11 @@ const Catalog = () => {
 
   const isLoading = productsLoading || categoriesLoading;
 
+  // Get items based on view mode
+  const displayProducts = viewMode === "pagination" 
+    ? pagination.paginatedItems 
+    : lazyLoad.visibleItems;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -87,11 +111,36 @@ const Catalog = () => {
               animate="visible"
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             >
-              <h1 className="text-4xl font-bold mb-4">Mahsulotlar Katalogi</h1>
-              <p className="text-muted-foreground text-lg">
-                {filteredProducts.length} mahsulot topildi
-              </p>
+              <div>
+                <h1 className="text-4xl font-bold mb-2">Mahsulotlar Katalogi</h1>
+                <p className="text-muted-foreground text-lg">
+                  {filteredProducts.length} mahsulot topildi
+                </p>
+              </div>
+              
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-2 bg-card border border-border rounded-lg p-1">
+                <Button
+                  variant={viewMode === "pagination" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("pagination")}
+                  className="gap-2"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  Sahifalash
+                </Button>
+                <Button
+                  variant={viewMode === "infinite" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("infinite")}
+                  className="gap-2"
+                >
+                  <Rows3 className="h-4 w-4" />
+                  Cheksiz yuklash
+                </Button>
+              </div>
             </motion.div>
           </div>
         </section>
@@ -158,7 +207,7 @@ const Catalog = () => {
             </aside>
 
             {/* Products Grid */}
-            <div>
+            <div className="space-y-6">
               {isLoading ? (
                 <CatalogGridSkeleton count={6} />
               ) : filteredProducts.length === 0 ? (
@@ -168,19 +217,48 @@ const Catalog = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product, index) => (
-                    <motion.div
-                      key={product.id}
-                      initial="hidden"
-                      animate="visible"
-                      variants={fadeInUp}
-                      transition={{ duration: 0.5, delay: index * 0.05 }}
-                    >
-                      <ProductCard {...product} />
-                    </motion.div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {displayProducts.map((product, index) => (
+                      <motion.div
+                        key={product.id}
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeInUp}
+                        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.3) }}
+                      >
+                        <ProductCard {...product} />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {viewMode === "pagination" && (
+                    <PaginationControls
+                      currentPage={pagination.currentPage}
+                      totalPages={pagination.totalPages}
+                      hasNextPage={pagination.hasNextPage}
+                      hasPrevPage={pagination.hasPrevPage}
+                      onPageChange={pagination.goToPage}
+                      startIndex={pagination.startIndex}
+                      endIndex={pagination.endIndex}
+                      totalItems={pagination.totalItems}
+                      showQuickJump={pagination.totalPages > 10}
+                    />
+                  )}
+
+                  {/* Lazy Load Trigger */}
+                  {viewMode === "infinite" && (
+                    <LazyLoadTrigger
+                      observerRef={lazyLoad.observerRef}
+                      hasMore={lazyLoad.hasMore}
+                      isLoading={lazyLoad.isLoading}
+                      loadedCount={lazyLoad.loadedCount}
+                      totalCount={lazyLoad.totalCount}
+                      onLoadMore={lazyLoad.loadMore}
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>
