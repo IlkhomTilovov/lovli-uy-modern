@@ -10,6 +10,52 @@ export interface BannerContent {
   image: string;
 }
 
+export interface HeroStatsContent {
+  experienceText: string;
+  experienceValue: string;
+  clientsText: string;
+  clientsValue: string;
+}
+
+export interface CategoriesSectionContent {
+  title: string;
+  subtitle: string;
+}
+
+export interface ProductsSectionContent {
+  title: string;
+  subtitle: string;
+  buttonText: string;
+}
+
+export interface FeatureItem {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface FeaturesContent {
+  title: string;
+  items: FeatureItem[];
+}
+
+export interface ReviewItem {
+  name: string;
+  rating: number;
+  text: string;
+}
+
+export interface ReviewsContent {
+  title: string;
+  items: ReviewItem[];
+}
+
+export interface CtaContent {
+  title: string;
+  subtitle: string;
+  buttonText: string;
+}
+
 export interface AboutValue {
   text: string;
 }
@@ -79,8 +125,8 @@ export interface FaqContent {
   items: FaqItem[];
 }
 
-type SectionKey = 'home_banner' | 'about' | 'contact' | 'social' | 'seo' | 'footer' | 'faq';
-type ContentData = BannerContent | AboutContent | ContactContent | SocialContent | SeoContent | FooterContent | FaqContent;
+type SectionKey = 'home_banner' | 'home_hero_stats' | 'home_categories' | 'home_products' | 'home_features' | 'home_reviews' | 'home_cta' | 'about' | 'contact' | 'social' | 'seo' | 'footer' | 'faq';
+type ContentData = BannerContent | HeroStatsContent | CategoriesSectionContent | ProductsSectionContent | FeaturesContent | ReviewsContent | CtaContent | AboutContent | ContactContent | SocialContent | SeoContent | FooterContent | FaqContent;
 
 export const useSiteContent = () => {
   const queryClient = useQueryClient();
@@ -100,12 +146,31 @@ export const useSiteContent = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ section, data }: { section: SectionKey; data: ContentData }) => {
-      const { error } = await supabase
+      // First try to update
+      const { data: existingData, error: selectError } = await supabase
         .from('site_content')
-        .update({ data: data as unknown as Json })
-        .eq('section', section);
-      
-      if (error) throw error;
+        .select('id')
+        .eq('section', section)
+        .maybeSingle();
+
+      if (selectError) throw selectError;
+
+      if (existingData) {
+        // Update existing record
+        const { error } = await supabase
+          .from('site_content')
+          .update({ data: data as unknown as Json })
+          .eq('section', section);
+        
+        if (error) throw error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('site_content')
+          .insert({ section, data: data as unknown as Json });
+        
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site-content'] });
@@ -132,6 +197,12 @@ export const useSiteContent = () => {
     isUpdating: updateMutation.isPending,
     getContent,
     banner: getContent<BannerContent>('home_banner'),
+    heroStats: getContent<HeroStatsContent>('home_hero_stats'),
+    categoriesSection: getContent<CategoriesSectionContent>('home_categories'),
+    productsSection: getContent<ProductsSectionContent>('home_products'),
+    features: getContent<FeaturesContent>('home_features'),
+    reviews: getContent<ReviewsContent>('home_reviews'),
+    cta: getContent<CtaContent>('home_cta'),
     about: getContent<AboutContent>('about'),
     contact: getContent<ContactContent>('contact'),
     social: getContent<SocialContent>('social'),

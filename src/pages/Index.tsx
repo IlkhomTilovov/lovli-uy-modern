@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star, Heart, Award, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -12,6 +12,18 @@ import { useSEO } from "@/hooks/useSEO";
 import heroBanner from "@/assets/hero-banner-new.jpg";
 import { motion } from "framer-motion";
 import { HeroSkeleton, CategoryGridSkeleton, ProductGridSkeleton } from "@/components/skeletons";
+import { LucideIcon } from "lucide-react";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Shield,
+  Sparkles,
+  Truck,
+  CheckCircle,
+  Star,
+  Heart,
+  Award,
+  Clock,
+};
 
 const Index = () => {
   // SEO with Open Graph
@@ -24,7 +36,11 @@ const Index = () => {
   });
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  const { banner, isLoading: contentLoading } = useSiteContent();
+  const { 
+    banner, heroStats, categoriesSection, productsSection, features, reviews, cta,
+    isLoading: contentLoading 
+  } = useSiteContent();
+
   // Get active products and map to ProductCard format
   const featuredProducts = products
     .filter(p => p.status === 'active')
@@ -54,6 +70,24 @@ const Index = () => {
   };
 
   const isLoading = productsLoading || categoriesLoading || contentLoading;
+
+  // Default features if none in DB
+  const defaultFeatures = [
+    { icon: 'Shield', title: 'Sifat Kafolati', description: 'Barcha mahsulotlar sertifikatlangan va sifat kafolati bilan' },
+    { icon: 'Sparkles', title: 'Doimiy Chegirmalar', description: 'Har oyda yangi chegirmalar va maxsus takliflar' },
+    { icon: 'Truck', title: 'Tez Yetkazib Berish', description: 'Toshkent bo\'ylab 1-2 kun ichida bepul yetkazib berish' },
+    { icon: 'CheckCircle', title: 'Katta Assortiment', description: '200+ turdagi xojalik mollari bir joyda' },
+  ];
+
+  // Default reviews if none in DB
+  const defaultReviews = [
+    { name: 'Aziza Karimova', rating: 5, text: 'Juda sifatli mahsulotlar va tez yetkazib berishadi. Narxlari ham arzon. Hammaga tavsiya qilaman!' },
+    { name: 'Sardor Toshmatov', rating: 5, text: 'Doimiy mijozman. Har doim zarur mahsulotlarni shu yerdan olib turaman. Xizmat juda yaxshi!' },
+    { name: 'Nilufar Rahimova', rating: 5, text: 'Katta assortiment va sifatli mahsulotlar. Chegirmalar ham doimo bor. Rahmat!' },
+  ];
+
+  const displayFeatures = features?.items?.length ? features.items : defaultFeatures;
+  const displayReviews = reviews?.items?.length ? reviews.items : defaultReviews;
 
   return (
     <div className="min-h-screen">
@@ -103,8 +137,12 @@ const Index = () => {
                 />
               </div>
               <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-accent text-accent-foreground p-4 sm:p-6 rounded-xl shadow-lg">
-                <p className="text-xs sm:text-sm font-medium">5+ Yillik Tajriba</p>
-                <p className="text-xl sm:text-2xl font-bold">1000+ Mijozlar</p>
+                <p className="text-xs sm:text-sm font-medium">
+                  {heroStats?.experienceText || "5+ Yillik Tajriba"}
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {heroStats?.clientsText || "1000+ Mijozlar"}
+                </p>
               </div>
             </motion.div>
           </div>
@@ -122,9 +160,11 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Kategoriyalar</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              {categoriesSection?.title || "Kategoriyalar"}
+            </h2>
             <p className="text-muted-foreground text-lg">
-              Sizga kerak bo'lgan mahsulotlarni toping
+              {categoriesSection?.subtitle || "Sizga kerak bo'lgan mahsulotlarni toping"}
             </p>
           </motion.div>
 
@@ -160,9 +200,11 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Eng Ko'p Sotiladigan Mahsulotlar</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              {productsSection?.title || "Eng Ko'p Sotiladigan Mahsulotlar"}
+            </h2>
             <p className="text-muted-foreground text-lg">
-              Mijozlarimizning sevimlilari
+              {productsSection?.subtitle || "Mijozlarimizning sevimlilari"}
             </p>
           </motion.div>
 
@@ -188,7 +230,7 @@ const Index = () => {
           <div className="text-center mt-12">
             <Button asChild size="lg" variant="outline">
               <Link to="/catalog">
-                Barcha Mahsulotlar
+                {productsSection?.buttonText || "Barcha Mahsulotlar"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -207,48 +249,32 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Nima Uchun Bizni Tanlaysiz?</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              {features?.title || "Nima Uchun Bizni Tanlaysiz?"}
+            </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: Shield,
-                title: "Sifat Kafolati",
-                description: "Barcha mahsulotlar sertifikatlangan va sifat kafolati bilan"
-              },
-              {
-                icon: Sparkles,
-                title: "Doimiy Chegirmalar",
-                description: "Har oyda yangi chegirmalar va maxsus takliflar"
-              },
-              {
-                icon: Truck,
-                title: "Tez Yetkazib Berish",
-                description: "Toshkent bo'ylab 1-2 kun ichida bepul yetkazib berish"
-              },
-              {
-                icon: CheckCircle,
-                title: "Katta Assortiment",
-                description: "200+ turdagi xojalik mollari bir joyda"
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center p-6 rounded-xl bg-card border border-border hover:shadow-lg transition-shadow"
-              >
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="font-semibold text-xl mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </motion.div>
-            ))}
+            {displayFeatures.map((feature, index) => {
+              const IconComponent = ICON_MAP[feature.icon] || Shield;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeInUp}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="text-center p-6 rounded-xl bg-card border border-border hover:shadow-lg transition-shadow"
+                >
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IconComponent className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-xl mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -264,27 +290,13 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">Mijozlarimiz Fikri</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              {reviews?.title || "Mijozlarimiz Fikri"}
+            </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Aziza Karimova",
-                rating: 5,
-                text: "Juda sifatli mahsulotlar va tez yetkazib berishadi. Narxlari ham arzon. Hammaga tavsiya qilaman!"
-              },
-              {
-                name: "Sardor Toshmatov",
-                rating: 5,
-                text: "Doimiy mijozman. Har doim zarur mahsulotlarni shu yerdan olib turaman. Xizmat juda yaxshi!"
-              },
-              {
-                name: "Nilufar Rahimova",
-                rating: 5,
-                text: "Katta assortiment va sifatli mahsulotlar. Chegirmalar ham doimo bor. Rahmat!"
-              }
-            ].map((review, index) => (
+            {displayReviews.map((review, index) => (
               <motion.div
                 key={review.name}
                 initial="hidden"
@@ -318,14 +330,14 @@ const Index = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Buyurtma Berishga Tayyormisiz?
+              {cta?.title || "Buyurtma Berishga Tayyormisiz?"}
             </h2>
             <p className="text-lg mb-8 opacity-90">
-              Hoziroq katalogni ko'rib chiqing va zarur mahsulotlarni tanlang
+              {cta?.subtitle || "Hoziroq katalogni ko'rib chiqing va zarur mahsulotlarni tanlang"}
             </p>
             <Button asChild size="lg" variant="secondary">
               <Link to="/catalog">
-                Katalogni Ko'rish
+                {cta?.buttonText || "Katalogni Ko'rish"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
