@@ -47,7 +47,6 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // TODO: Add actual form submission logic
     toast({
       title: "Xabar yuborildi!",
       description: "Tez orada siz bilan bog'lanamiz.",
@@ -62,12 +61,12 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-secondary/30 py-20 border-b border-border">
+        <section className="py-16 border-b border-border">
           <div className="container mx-auto px-4">
             <motion.div
               initial="hidden"
@@ -76,75 +75,79 @@ const Contact = () => {
               transition={{ duration: 0.5 }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-4xl lg:text-5xl font-bold mb-6">Biz Bilan Bog'laning</h1>
-              <p className="text-lg text-muted-foreground">
+              <h1 className="text-3xl lg:text-4xl font-bold mb-4">Biz Bilan Bog'laning</h1>
+              <p className="text-muted-foreground">
                 Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz!
               </p>
             </motion.div>
           </div>
         </section>
 
-        <div className="container mx-auto px-4 py-20">
-          <div className="grid lg:grid-cols-2 gap-12">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Contact Info */}
             <motion.div
               initial="hidden"
               animate="visible"
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
-              className="space-y-8"
+              className="space-y-6"
             >
               <div>
-                <h2 className="text-3xl font-bold mb-6">Aloqa Ma'lumotlari</h2>
-                <p className="text-muted-foreground mb-8">
+                <h2 className="text-2xl font-bold mb-3">Aloqa Ma'lumotlari</h2>
+                <p className="text-muted-foreground text-sm">
                   Quyidagi usullar orqali biz bilan bog'lanishingiz mumkin. Biz har doim sizning xizmatinizdamiz!
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-start gap-4 p-6 bg-card rounded-xl border border-border">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Phone className="h-6 w-6 text-primary" />
+              <div className="space-y-4">
+                {/* Phone */}
+                <div className="flex items-start gap-4 p-5 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Phone className="h-5 w-5 text-amber-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Telefon Raqamlar</h3>
-                    <p className="text-muted-foreground">+998 90 123 45 67</p>
-                    <p className="text-muted-foreground">+998 91 234 56 78</p>
+                    <h3 className="font-semibold text-sm mb-1">Telefon Raqamlar</h3>
+                    <p className="text-muted-foreground text-sm">+998 90 123 45 67</p>
+                    <p className="text-muted-foreground text-sm">+998 91 234 56 78</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-6 bg-card rounded-xl border border-border">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Mail className="h-6 w-6 text-primary" />
+                {/* Email */}
+                <div className="flex items-start gap-4 p-5 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Mail className="h-5 w-5 text-cyan-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Elektron Pochta</h3>
-                    <p className="text-muted-foreground">info@xojalikmollari.uz</p>
-                    <p className="text-muted-foreground">support@xojalikmollari.uz</p>
+                    <h3 className="font-semibold text-sm mb-1">Elektron Pochta</h3>
+                    <p className="text-muted-foreground text-sm">info@xojalikmollari.uz</p>
+                    <p className="text-muted-foreground text-sm">support@xojalikmollari.uz</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-6 bg-card rounded-xl border border-border">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-6 w-6 text-primary" />
+                {/* Address */}
+                <div className="flex items-start gap-4 p-5 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Manzil</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="font-semibold text-sm mb-1">Manzil</h3>
+                    <p className="text-muted-foreground text-sm">
                       Toshkent shahar, Chilonzor tumani,<br />
                       Kichik halqa yo'li 1-uy
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-6 bg-card rounded-xl border border-border">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-6 w-6 text-primary" />
+                {/* Working Hours */}
+                <div className="flex items-start gap-4 p-5 bg-card rounded-xl border border-border hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Clock className="h-5 w-5 text-rose-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Ish Vaqti</h3>
-                    <p className="text-muted-foreground">Dushanba - Shanba: 9:00 - 20:00</p>
-                    <p className="text-muted-foreground">Yakshanba: 10:00 - 18:00</p>
+                    <h3 className="font-semibold text-sm mb-1">Ish Vaqti</h3>
+                    <p className="text-muted-foreground text-sm">Dushanba - Shanba: 9:00 - 20:00</p>
+                    <p className="text-muted-foreground text-sm">Yakshanba: 10:00 - 18:00</p>
                   </div>
                 </div>
               </div>
@@ -157,10 +160,10 @@ const Contact = () => {
               variants={fadeInUp}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="bg-card p-8 rounded-2xl border border-border">
-                <h2 className="text-2xl font-bold mb-6">Xabar Yuborish</h2>
+              <div className="bg-card p-6 lg:p-8 rounded-2xl border border-border shadow-sm">
+                <h2 className="text-xl font-bold mb-6">Xabar Yuborish</h2>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label htmlFor="name" className="text-sm font-medium mb-2 block">
                       Ismingiz *
@@ -171,6 +174,7 @@ const Contact = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
+                      className="h-11"
                     />
                   </div>
 
@@ -185,6 +189,7 @@ const Contact = () => {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       required
+                      className="h-11"
                     />
                   </div>
 
@@ -198,6 +203,7 @@ const Contact = () => {
                       placeholder="example@email.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="h-11"
                     />
                   </div>
 
@@ -208,15 +214,20 @@ const Contact = () => {
                     <Textarea
                       id="message"
                       placeholder="Xabaringizni yozing..."
-                      rows={5}
+                      rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
+                      className="resize-none"
                     />
                   </div>
 
-                  <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="lg">
-                    <Send className="mr-2 h-5 w-5" />
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium" 
+                    size="lg"
+                  >
+                    <Send className="mr-2 h-4 w-4" />
                     Xabar Yuborish
                   </Button>
                 </form>
@@ -231,10 +242,10 @@ const Contact = () => {
             viewport={{ once: true }}
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="mt-20"
+            className="mt-16"
           >
-            <h2 className="text-3xl font-bold mb-8 text-center">Bizning Joylashuvimiz</h2>
-            <div className="aspect-video rounded-2xl overflow-hidden border border-border bg-secondary">
+            <h2 className="text-2xl font-bold mb-6 text-center">Bizning Joylashuvimiz</h2>
+            <div className="aspect-[16/9] lg:aspect-[21/9] rounded-2xl overflow-hidden border border-border bg-secondary">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2996.426076844384!2d69.20392931538396!3d41.31121597927122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a9323b4aa5cb98!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1635000000000!5m2!1sen!2s"
                 width="100%"
@@ -243,6 +254,7 @@ const Contact = () => {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
+                title="Bizning joylashuvimiz"
               />
             </div>
           </motion.div>
