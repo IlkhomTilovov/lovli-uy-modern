@@ -13,18 +13,19 @@ import { ProductDetailSkeleton } from "@/components/skeletons";
 import { useCart } from "@/contexts/CartContext";
 import { useTranslation } from "@/hooks/useTranslation";
 
-type Language = "uz" | "ru";
+type Language = "uz" | "ru" | "kk" | "tg" | "tk" | "ky" | "fa";
 const LANGUAGE_KEY = "site_language";
 
 const getInitialLanguage = (): Language => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem(LANGUAGE_KEY);
-    if (saved === "uz" || saved === "ru") return saved;
+    const validLanguages: Language[] = ["uz", "ru", "kk", "tg", "tk", "ky", "fa"];
+    if (saved && validLanguages.includes(saved as Language)) return saved as Language;
   }
   return "uz";
 };
 
-const translations = {
+const translations: Record<Language, Record<string, string>> = {
   uz: {
     productNotFound: "Mahsulot topilmadi",
     backToCatalog: "Katalogga qaytish",
@@ -66,6 +67,111 @@ const translations = {
     relatedProducts: "Похожие товары",
     home: "Главная",
     catalog: "Каталог"
+  },
+  kk: {
+    productNotFound: "Өнім табылмады",
+    backToCatalog: "Каталогқа оралу",
+    goBack: "Артқа",
+    other: "Басқа",
+    currency: "сум",
+    available: "Қолда бар",
+    pieces: "дана",
+    outOfStock: "Қолда жоқ",
+    qualityGuarantee: "Сапа кепілдігі",
+    fastDelivery: "Жылдам жеткізу (1-2 күн)",
+    addToCart: "Себетке қосу",
+    aboutProduct: "Өнім туралы",
+    specifications: "Сипаттамалары",
+    highQuality: "Жоғары сапалы өнім",
+    certified: "Сертификатталған және кепілденген",
+    fastDeliveryService: "Жылдам жеткізу қызметі",
+    relatedProducts: "Ұқсас өнімдер",
+    home: "Басты бет",
+    catalog: "Каталог"
+  },
+  tg: {
+    productNotFound: "Маҳсулот ёфт нашуд",
+    backToCatalog: "Ба каталог баргаштан",
+    goBack: "Бозгашт",
+    other: "Дигар",
+    currency: "сум",
+    available: "Мавҷуд",
+    pieces: "дона",
+    outOfStock: "Мавҷуд нест",
+    qualityGuarantee: "Кафолати сифат",
+    fastDelivery: "Таҳвили зуд (1-2 рӯз)",
+    addToCart: "Ба сабад илова кунед",
+    aboutProduct: "Дар бораи маҳсулот",
+    specifications: "Хусусиятҳо",
+    highQuality: "Маҳсулоти сифати баланд",
+    certified: "Сертификатшуда ва кафолатнок",
+    fastDeliveryService: "Хидмати таҳвили зуд",
+    relatedProducts: "Маҳсулотҳои монанд",
+    home: "Саҳифаи асосӣ",
+    catalog: "Каталог"
+  },
+  tk: {
+    productNotFound: "Önüm tapylmady",
+    backToCatalog: "Kataloga gaýt",
+    goBack: "Yza",
+    other: "Başga",
+    currency: "sum",
+    available: "Bar",
+    pieces: "sany",
+    outOfStock: "Ýok",
+    qualityGuarantee: "Hil kepilligi",
+    fastDelivery: "Çalt eltip bermek (1-2 gün)",
+    addToCart: "Sebede goş",
+    aboutProduct: "Önüm hakda",
+    specifications: "Aýratynlyklary",
+    highQuality: "Ýokary hilli önüm",
+    certified: "Sertifikatly we kepillendirilen",
+    fastDeliveryService: "Çalt eltip bermek hyzmaty",
+    relatedProducts: "Meňzeş önümler",
+    home: "Baş sahypa",
+    catalog: "Katalog"
+  },
+  ky: {
+    productNotFound: "Товар табылган жок",
+    backToCatalog: "Каталогго кайтуу",
+    goBack: "Артка",
+    other: "Башка",
+    currency: "сум",
+    available: "Бар",
+    pieces: "даана",
+    outOfStock: "Жок",
+    qualityGuarantee: "Сапат кепилдиги",
+    fastDelivery: "Тез жеткирүү (1-2 күн)",
+    addToCart: "Себетке кошуу",
+    aboutProduct: "Товар жөнүндө",
+    specifications: "Мүнөздөмөлөрү",
+    highQuality: "Жогорку сапаттагы товар",
+    certified: "Сертификатталган жана кепилденген",
+    fastDeliveryService: "Тез жеткирүү кызматы",
+    relatedProducts: "Окшош товарлар",
+    home: "Башкы бет",
+    catalog: "Каталог"
+  },
+  fa: {
+    productNotFound: "محصول یافت نشد",
+    backToCatalog: "بازگشت به کاتالوگ",
+    goBack: "بازگشت",
+    other: "دیگر",
+    currency: "سوم",
+    available: "موجود",
+    pieces: "عدد",
+    outOfStock: "ناموجود",
+    qualityGuarantee: "تضمین کیفیت",
+    fastDelivery: "تحویل سریع (۱-۲ روز)",
+    addToCart: "افزودن به سبد",
+    aboutProduct: "درباره محصول",
+    specifications: "مشخصات",
+    highQuality: "محصول با کیفیت بالا",
+    certified: "دارای گواهی و ضمانت",
+    fastDeliveryService: "خدمات تحویل سریع",
+    relatedProducts: "محصولات مشابه",
+    home: "صفحه اصلی",
+    catalog: "کاتالوگ"
   }
 };
 
