@@ -1,15 +1,22 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Phone, MapPin, Mail, Facebook, Instagram, Send, Youtube, MessageCircle, Clock, ArrowRight } from "lucide-react";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { Button } from "@/components/ui/button";
 
-export const Footer = () => {
-  const { contact, social, footer } = useSiteContent();
+type Language = "uz" | "ru";
+const LANGUAGE_KEY = "site_language";
 
-  const hasSocialLinks = social?.facebook || social?.instagram || social?.telegram || social?.youtube || social?.whatsapp;
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
 
-  // Default values
-  const defaults = {
+const translations = {
+  uz: {
     companyName: "Xojalik Mollari",
     slogan: "Sifat va ishonch",
     description: "Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar.",
@@ -22,25 +29,77 @@ export const Footer = () => {
     socialTitle: "Ijtimoiy Tarmoqlar",
     copyright: `© ${new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.`,
     privacyText: "Maxfiylik siyosati",
-    termsText: "Foydalanish shartlari"
+    termsText: "Foydalanish shartlari",
+    home: "Bosh Sahifa",
+    catalog: "Katalog",
+    about: "Biz Haqimizda",
+    contact: "Aloqa",
+    weekdays: "Du-Sha",
+    sunday: "Yak"
+  },
+  ru: {
+    companyName: "Хозяйственные товары",
+    slogan: "Качество и доверие",
+    description: "Качественные и доступные хозяйственные товары. Лучшие товары для вашего дома.",
+    ctaTitle: "Есть вопросы?",
+    ctaSubtitle: "Свяжитесь с нами - мы рады помочь!",
+    ctaButtonText: "Связаться",
+    pagesTitle: "Страницы",
+    contactTitle: "Контакты",
+    workingHoursTitle: "Время работы",
+    socialTitle: "Социальные сети",
+    copyright: `© ${new Date().getFullYear()} Хозяйственные товары. Все права защищены.`,
+    privacyText: "Политика конфиденциальности",
+    termsText: "Условия использования",
+    home: "Главная",
+    catalog: "Каталог",
+    about: "О нас",
+    contact: "Контакты",
+    weekdays: "Пн-Сб",
+    sunday: "Вс"
+  }
+};
+
+export const Footer = () => {
+  const { contact, social, footer } = useSiteContent();
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
+
+  // Listen for language changes from Navbar
+  useEffect(() => {
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = translations[language];
+
+  const hasSocialLinks = social?.facebook || social?.instagram || social?.telegram || social?.youtube || social?.whatsapp;
+
+  // Merge with translations
+  const content = {
+    companyName: t.companyName,
+    slogan: t.slogan,
+    description: t.description,
+    ctaTitle: t.ctaTitle,
+    ctaSubtitle: t.ctaSubtitle,
+    ctaButtonText: t.ctaButtonText,
+    pagesTitle: t.pagesTitle,
+    contactTitle: t.contactTitle,
+    workingHoursTitle: t.workingHoursTitle,
+    socialTitle: t.socialTitle,
+    copyright: t.copyright,
+    privacyText: t.privacyText,
+    termsText: t.termsText
   };
 
-  // Merge with DB content
-  const content = {
-    companyName: footer?.companyName || defaults.companyName,
-    slogan: footer?.slogan || defaults.slogan,
-    description: footer?.description || defaults.description,
-    ctaTitle: footer?.ctaTitle || defaults.ctaTitle,
-    ctaSubtitle: footer?.ctaSubtitle || defaults.ctaSubtitle,
-    ctaButtonText: footer?.ctaButtonText || defaults.ctaButtonText,
-    pagesTitle: footer?.pagesTitle || defaults.pagesTitle,
-    contactTitle: footer?.contactTitle || defaults.contactTitle,
-    workingHoursTitle: footer?.workingHoursTitle || defaults.workingHoursTitle,
-    socialTitle: footer?.socialTitle || defaults.socialTitle,
-    copyright: footer?.copyright || defaults.copyright,
-    privacyText: footer?.privacyText || defaults.privacyText,
-    termsText: footer?.termsText || defaults.termsText
-  };
+  const navLinks = [
+    { to: "/", label: t.home },
+    { to: "/catalog", label: t.catalog },
+    { to: "/about", label: t.about },
+    { to: "/contact", label: t.contact },
+  ];
 
   return (
     <footer className="relative bg-gradient-to-b from-secondary to-secondary/80 border-t border-border mt-20 overflow-hidden">
@@ -149,12 +208,7 @@ export const Footer = () => {
               {content.pagesTitle}
             </h3>
             <ul className="space-y-3">
-              {[
-                { to: "/", label: "Bosh Sahifa" },
-                { to: "/catalog", label: "Katalog" },
-                { to: "/about", label: "Biz Haqimizda" },
-                { to: "/contact", label: "Aloqa" },
-              ].map((link) => (
+              {navLinks.map((link) => (
                 <li key={link.to}>
                   <Link 
                     to={link.to} 
@@ -204,7 +258,7 @@ export const Footer = () => {
                 <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <MapPin className="h-4 w-4 text-primary" />
                 </div>
-                <span>{contact?.address || "Toshkent sh., Chilonzor tumani"}</span>
+                <span>{contact?.address || (language === "uz" ? "Toshkent sh., Chilonzor tumani" : "г. Ташкент, Чиланзарский район")}</span>
               </li>
             </ul>
           </div>
@@ -221,8 +275,8 @@ export const Footer = () => {
                   <Clock className="h-4 w-4 text-primary" />
                 </div>
                 <div className="text-muted-foreground">
-                  <p><span className="font-medium text-foreground">Du-Sha:</span> {contact?.workingHours?.weekdays || "9:00 - 20:00"}</p>
-                  <p><span className="font-medium text-foreground">Yak:</span> {contact?.workingHours?.sunday || "10:00 - 18:00"}</p>
+                  <p><span className="font-medium text-foreground">{t.weekdays}:</span> {contact?.workingHours?.weekdays || "9:00 - 20:00"}</p>
+                  <p><span className="font-medium text-foreground">{t.sunday}:</span> {contact?.workingHours?.sunday || "10:00 - 18:00"}</p>
                 </div>
               </div>
             </div>
