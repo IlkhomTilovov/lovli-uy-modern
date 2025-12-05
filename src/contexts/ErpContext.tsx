@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Category, Product, Order, OrderItem, WarehouseLog, SiteContent, User, UserRole } from '@/types/erp';
-import { mockCategories, mockProducts, mockOrders, mockOrderItems, mockWarehouseLogs, mockSiteContent, mockUsers } from '@/data/mockErpData';
+import { Category, Product, Order, OrderItem, WarehouseLog, SiteContent, User, UserRole, Supplier, InventoryAudit } from '@/types/erp';
+import { mockCategories, mockProducts, mockOrders, mockOrderItems, mockWarehouseLogs, mockSiteContent, mockUsers, mockSuppliers, mockInventoryAudits } from '@/data/mockErpData';
 
 interface ErpContextType {
   // Auth
@@ -27,9 +27,21 @@ interface ErpContextType {
   addOrder: (order: Omit<Order, 'id' | 'createdAt'>, items: Omit<OrderItem, 'id' | 'orderId' | 'createdAt'>[]) => void;
   updateOrderStatus: (id: string, status: Order['status']) => void;
   
+  // Suppliers
+  suppliers: Supplier[];
+  addSupplier: (supplier: Omit<Supplier, 'id' | 'createdAt'>) => void;
+  updateSupplier: (id: string, supplier: Partial<Supplier>) => void;
+  deleteSupplier: (id: string) => void;
+  
   // Warehouse
   warehouseLogs: WarehouseLog[];
   addWarehouseLog: (log: Omit<WarehouseLog, 'id' | 'createdAt' | 'total'>) => void;
+  
+  // Inventory Audits
+  inventoryAudits: InventoryAudit[];
+  addInventoryAudit: (audit: Omit<InventoryAudit, 'id' | 'createdAt'>) => void;
+  updateInventoryAudit: (id: string, audit: Partial<InventoryAudit>) => void;
+  approveInventoryAudit: (id: string, approvedBy: string) => void;
   
   // Site Content
   siteContent: SiteContent[];
@@ -54,6 +66,8 @@ interface StoredData {
   warehouseLogs: WarehouseLog[];
   siteContent: SiteContent[];
   users: User[];
+  suppliers: Supplier[];
+  inventoryAudits: InventoryAudit[];
 }
 
 export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -65,6 +79,8 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [warehouseLogs, setWarehouseLogs] = useState<WarehouseLog[]>(mockWarehouseLogs);
   const [siteContent, setSiteContent] = useState<SiteContent[]>(mockSiteContent);
   const [users, setUsers] = useState<User[]>(mockUsers);
+  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
+  const [inventoryAudits, setInventoryAudits] = useState<InventoryAudit[]>(mockInventoryAudits);
 
   // Load from localStorage
   useEffect(() => {
@@ -78,6 +94,8 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setWarehouseLogs(data.warehouseLogs || mockWarehouseLogs);
       setSiteContent(data.siteContent || mockSiteContent);
       setUsers(data.users || mockUsers);
+      setSuppliers(data.suppliers || mockSuppliers);
+      setInventoryAudits(data.inventoryAudits || mockInventoryAudits);
     }
     
     // Check for logged in user
@@ -89,13 +107,12 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Save to localStorage
   useEffect(() => {
-    const data: StoredData = { categories, products, orders, orderItems, warehouseLogs, siteContent, users };
+    const data: StoredData = { categories, products, orders, orderItems, warehouseLogs, siteContent, users, suppliers, inventoryAudits };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [categories, products, orders, orderItems, warehouseLogs, siteContent, users]);
+  }, [categories, products, orders, orderItems, warehouseLogs, siteContent, users, suppliers, inventoryAudits]);
 
   // Auth
   const login = (email: string, password: string): boolean => {
-    // Demo login - admin@example.com with any password
     const user = users.find(u => u.email === email);
     if (user || email === 'admin@example.com') {
       const loggedUser = user || { id: '1', email, name: 'Admin', role: 'admin' as UserRole, createdAt: new Date().toISOString() };
@@ -139,13 +156,26 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
+  // Suppliers
+  const addSupplier = (supplier: Omit<Supplier, 'id' | 'createdAt'>) => {
+    const newSupplier: Supplier = { ...supplier, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+    setSuppliers(prev => [...prev, newSupplier]);
+  };
+
+  const updateSupplier = (id: string, supplier: Partial<Supplier>) => {
+    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, ...supplier } : s));
+  };
+
+  const deleteSupplier = (id: string) => {
+    setSuppliers(prev => prev.filter(s => s.id !== id));
+  };
+
   // Orders
   const addOrder = (order: Omit<Order, 'id' | 'createdAt'>, items: Omit<OrderItem, 'id' | 'orderId' | 'createdAt'>[]) => {
     const orderId = crypto.randomUUID();
     const newOrder: Order = { ...order, id: orderId, createdAt: new Date().toISOString() };
     setOrders(prev => [...prev, newOrder]);
 
-    // Add order items
     const newItems: OrderItem[] = items.map(item => ({
       ...item,
       id: crypto.randomUUID(),
@@ -154,11 +184,9 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }));
     setOrderItems(prev => [...prev, ...newItems]);
 
-    // Create warehouse outgoing logs and update stock
     items.forEach(item => {
       const product = products.find(p => p.id === item.productId);
       if (product) {
-        // Add warehouse log
         const log: WarehouseLog = {
           id: crypto.randomUUID(),
           productId: item.productId,
@@ -170,8 +198,6 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           createdAt: new Date().toISOString()
         };
         setWarehouseLogs(prev => [...prev, log]);
-
-        // Update product stock
         updateProduct(item.productId, { stock: product.stock - item.quantity });
       }
     });
@@ -187,13 +213,59 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newLog: WarehouseLog = { ...log, total, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
     setWarehouseLogs(prev => [...prev, newLog]);
 
-    // Update product stock
     const product = products.find(p => p.id === log.productId);
     if (product) {
-      const newStock = log.type === 'incoming' 
-        ? product.stock + log.quantity 
-        : product.stock - log.quantity;
+      let newStock = product.stock;
+      if (log.type === 'incoming' || log.type === 'return') {
+        newStock = product.stock + log.quantity;
+      } else if (log.type === 'outgoing') {
+        newStock = product.stock - log.quantity;
+      } else if (log.type === 'adjustment') {
+        // Adjustment can be positive or negative based on quantity sign
+        newStock = product.stock + log.quantity;
+      }
       updateProduct(log.productId, { stock: Math.max(0, newStock) });
+    }
+  };
+
+  // Inventory Audits
+  const addInventoryAudit = (audit: Omit<InventoryAudit, 'id' | 'createdAt'>) => {
+    const newAudit: InventoryAudit = { ...audit, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+    setInventoryAudits(prev => [...prev, newAudit]);
+  };
+
+  const updateInventoryAudit = (id: string, audit: Partial<InventoryAudit>) => {
+    setInventoryAudits(prev => prev.map(a => a.id === id ? { ...a, ...audit } : a));
+  };
+
+  const approveInventoryAudit = (id: string, approvedBy: string) => {
+    const audit = inventoryAudits.find(a => a.id === id);
+    if (audit && audit.status === 'pending') {
+      // Update audit status
+      setInventoryAudits(prev => prev.map(a => 
+        a.id === id 
+          ? { ...a, status: 'approved', approvedAt: new Date().toISOString(), approvedBy } 
+          : a
+      ));
+      
+      // If there's a difference, create adjustment log and update stock
+      if (audit.difference !== 0) {
+        const product = products.find(p => p.id === audit.productId);
+        if (product) {
+          const adjustmentLog: WarehouseLog = {
+            id: crypto.randomUUID(),
+            productId: audit.productId,
+            type: 'adjustment',
+            quantity: audit.difference,
+            pricePerUnit: 0,
+            total: 0,
+            note: `Inventarizatsiya tuzatish: ${audit.note}`,
+            createdAt: new Date().toISOString()
+          };
+          setWarehouseLogs(prev => [...prev, adjustmentLog]);
+          updateProduct(audit.productId, { stock: audit.actualStock });
+        }
+      }
     }
   };
 
@@ -240,8 +312,16 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       orderItems,
       addOrder,
       updateOrderStatus,
+      suppliers,
+      addSupplier,
+      updateSupplier,
+      deleteSupplier,
       warehouseLogs,
       addWarehouseLog,
+      inventoryAudits,
+      addInventoryAudit,
+      updateInventoryAudit,
+      approveInventoryAudit,
       siteContent,
       updateSiteContent,
       users,
