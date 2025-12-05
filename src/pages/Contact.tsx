@@ -8,9 +8,11 @@ import { Phone, MapPin, Mail, Clock, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const Contact = () => {
   const { toast } = useToast();
+  const { contact, isLoading } = useSiteContent();
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -18,9 +20,53 @@ const Contact = () => {
     message: ""
   });
 
+  // Default values
+  const defaults = {
+    heroTitle: "Biz Bilan Bog'laning",
+    heroSubtitle: "Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz!",
+    infoTitle: "Aloqa Ma'lumotlari",
+    infoSubtitle: "Quyidagi usullar orqali biz bilan bog'lanishingiz mumkin. Biz har doim sizning xizmatinizdamiz!",
+    formTitle: "Xabar Yuborish",
+    phone: "+998 90 123 45 67",
+    phone2: "+998 91 234 56 78",
+    email: "info@xojalikmollari.uz",
+    email2: "support@xojalikmollari.uz",
+    address: "Toshkent shahar, Chilonzor tumani",
+    addressLine2: "Kichik halqa yo'li 1-uy",
+    workingHours: {
+      weekdays: "Dushanba - Shanba: 9:00 - 20:00",
+      sunday: "Yakshanba: 10:00 - 18:00"
+    },
+    mapTitle: "Bizning Joylashuvimiz",
+    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2996.426076844384!2d69.20392931538396!3d41.31121597927122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a9323b4aa5cb98!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1635000000000!5m2!1sen!2s",
+    submitButtonText: "Xabar Yuborish"
+  };
+
+  // Merge with DB content
+  const content = {
+    heroTitle: contact?.heroTitle || defaults.heroTitle,
+    heroSubtitle: contact?.heroSubtitle || defaults.heroSubtitle,
+    infoTitle: contact?.infoTitle || defaults.infoTitle,
+    infoSubtitle: contact?.infoSubtitle || defaults.infoSubtitle,
+    formTitle: contact?.formTitle || defaults.formTitle,
+    phone: contact?.phone || defaults.phone,
+    phone2: contact?.phone2 || defaults.phone2,
+    email: contact?.email || defaults.email,
+    email2: contact?.email2 || defaults.email2,
+    address: contact?.address || defaults.address,
+    addressLine2: contact?.addressLine2 || defaults.addressLine2,
+    workingHours: {
+      weekdays: contact?.workingHours?.weekdays || defaults.workingHours.weekdays,
+      sunday: contact?.workingHours?.sunday || defaults.workingHours.sunday
+    },
+    mapTitle: contact?.mapTitle || defaults.mapTitle,
+    mapUrl: contact?.mapUrl || defaults.mapUrl,
+    submitButtonText: contact?.submitButtonText || defaults.submitButtonText
+  };
+
   useSEO({
     title: "Aloqa | Do'kon - Biz Bilan Bog'laning",
-    description: "Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz! Telefon, email yoki formadan bog'laning.",
+    description: content.heroSubtitle,
     url: `${window.location.origin}/contact`,
     type: 'website',
     breadcrumbs: [
@@ -30,12 +76,12 @@ const Contact = () => {
     localBusiness: {
       name: "Do'kon - Xojalik Mollari",
       description: "Sifatli va arzon xojalik mahsulotlari do'koni. Tozalash, gigiena, kir yuvish va uy-ro'zg'or mollari.",
-      telephone: "+998-90-123-45-67",
-      email: "info@xojalikmollari.uz",
+      telephone: content.phone,
+      email: content.email,
       priceRange: "$$",
       address: {
-        streetAddress: "Kichik halqa yo'li 1-uy, Chilonzor tumani",
-        addressLocality: "Toshkent",
+        streetAddress: content.addressLine2,
+        addressLocality: content.address,
         addressRegion: "Toshkent",
         postalCode: "100000",
         addressCountry: "UZ"
@@ -75,10 +121,8 @@ const Contact = () => {
               transition={{ duration: 0.5 }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-3xl lg:text-4xl font-bold mb-4">Biz Bilan Bog'laning</h1>
-              <p className="text-muted-foreground">
-                Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz!
-              </p>
+              <h1 className="text-3xl lg:text-4xl font-bold mb-4">{content.heroTitle}</h1>
+              <p className="text-muted-foreground">{content.heroSubtitle}</p>
             </motion.div>
           </div>
         </section>
@@ -94,10 +138,8 @@ const Contact = () => {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-bold mb-3">Aloqa Ma'lumotlari</h2>
-                <p className="text-muted-foreground text-sm">
-                  Quyidagi usullar orqali biz bilan bog'lanishingiz mumkin. Biz har doim sizning xizmatinizdamiz!
-                </p>
+                <h2 className="text-2xl font-bold mb-3">{content.infoTitle}</h2>
+                <p className="text-muted-foreground text-sm">{content.infoSubtitle}</p>
               </div>
 
               <div className="space-y-4">
@@ -108,8 +150,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm mb-1">Telefon Raqamlar</h3>
-                    <p className="text-muted-foreground text-sm">+998 90 123 45 67</p>
-                    <p className="text-muted-foreground text-sm">+998 91 234 56 78</p>
+                    <p className="text-muted-foreground text-sm">{content.phone}</p>
+                    {content.phone2 && <p className="text-muted-foreground text-sm">{content.phone2}</p>}
                   </div>
                 </div>
 
@@ -120,8 +162,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm mb-1">Elektron Pochta</h3>
-                    <p className="text-muted-foreground text-sm">info@xojalikmollari.uz</p>
-                    <p className="text-muted-foreground text-sm">support@xojalikmollari.uz</p>
+                    <p className="text-muted-foreground text-sm">{content.email}</p>
+                    {content.email2 && <p className="text-muted-foreground text-sm">{content.email2}</p>}
                   </div>
                 </div>
 
@@ -133,8 +175,8 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold text-sm mb-1">Manzil</h3>
                     <p className="text-muted-foreground text-sm">
-                      Toshkent shahar, Chilonzor tumani,<br />
-                      Kichik halqa yo'li 1-uy
+                      {content.address}
+                      {content.addressLine2 && <><br />{content.addressLine2}</>}
                     </p>
                   </div>
                 </div>
@@ -146,8 +188,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm mb-1">Ish Vaqti</h3>
-                    <p className="text-muted-foreground text-sm">Dushanba - Shanba: 9:00 - 20:00</p>
-                    <p className="text-muted-foreground text-sm">Yakshanba: 10:00 - 18:00</p>
+                    <p className="text-muted-foreground text-sm">{content.workingHours.weekdays}</p>
+                    <p className="text-muted-foreground text-sm">{content.workingHours.sunday}</p>
                   </div>
                 </div>
               </div>
@@ -161,7 +203,7 @@ const Contact = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="bg-card p-6 lg:p-8 rounded-2xl border border-border shadow-sm">
-                <h2 className="text-xl font-bold mb-6">Xabar Yuborish</h2>
+                <h2 className="text-xl font-bold mb-6">{content.formTitle}</h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
@@ -228,7 +270,7 @@ const Contact = () => {
                     size="lg"
                   >
                     <Send className="mr-2 h-4 w-4" />
-                    Xabar Yuborish
+                    {content.submitButtonText}
                   </Button>
                 </form>
               </div>
@@ -244,10 +286,10 @@ const Contact = () => {
             transition={{ duration: 0.5 }}
             className="mt-16"
           >
-            <h2 className="text-2xl font-bold mb-6 text-center">Bizning Joylashuvimiz</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">{content.mapTitle}</h2>
             <div className="aspect-[16/9] lg:aspect-[21/9] rounded-2xl overflow-hidden border border-border bg-secondary">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2996.426076844384!2d69.20392931538396!3d41.31121597927122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a9323b4aa5cb98!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1635000000000!5m2!1sen!2s"
+                src={content.mapUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
