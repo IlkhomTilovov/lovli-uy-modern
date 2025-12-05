@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useErp } from '@/contexts/ErpContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,18 +14,140 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, ArrowDownCircle, ArrowUpCircle, Package, TrendingUp, TrendingDown, 
   Search, FileSpreadsheet, FileText, Bell, AlertTriangle, Calendar,
-  X, RotateCcw, ClipboardCheck, Truck, Users, CheckCircle, XCircle
+  X, RotateCcw, ClipboardCheck, Truck, Users, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format, startOfDay, startOfWeek, startOfMonth, isAfter, parseISO } from 'date-fns';
+import { useProducts } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
+
+// Local state types for warehouse operations (since we don't have warehouse tables yet)
+interface WarehouseLog {
+  id: string;
+  productId: string;
+  type: 'incoming' | 'outgoing' | 'return' | 'adjustment';
+  quantity: number;
+  pricePerUnit: number;
+  total: number;
+  note: string;
+  supplierId?: string;
+  batchNumber?: string;
+  expiryDate?: string;
+  createdAt: string;
+}
+
+interface Supplier {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  contactPerson?: string;
+  status: 'active' | 'inactive';
+}
+
+interface InventoryAudit {
+  id: string;
+  productId: string;
+  expectedStock: number;
+  actualStock: number;
+  difference: number;
+  note: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string;
+  createdAt: string;
+}
 
 const AdminWarehouse = () => {
-  const { 
-    products, warehouseLogs, addWarehouseLog, 
-    suppliers, addSupplier, updateSupplier, deleteSupplier,
-    inventoryAudits, addInventoryAudit, approveInventoryAudit, updateInventoryAudit
-  } = useErp();
+  // Use Supabase data for products
+  const { data: dbProducts = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
   const { toast } = useToast();
+  
+  // Transform DB products to match the expected format
+  const products = dbProducts.map(p => ({
+    id: p.id,
+    title: p.title,
+    stock: p.stock,
+    sku: p.sku,
+    retailPrice: p.retail_price,
+    minStock: 20, // Default min stock
+  }));
+  
+  // Local state for warehouse operations (these would need their own tables later)
+  const [warehouseLogs, setWarehouseLogs] = useState<WarehouseLog[]>(() => {
+    const saved = localStorage.getItem('warehouseLogs');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
+    const saved = localStorage.getItem('suppliers');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [inventoryAudits, setInventoryAudits] = useState<InventoryAudit[]>(() => {
+    const saved = localStorage.getItem('inventoryAudits');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  // Save to localStorage when data changes
+  const saveWarehouseLogs = (logs: WarehouseLog[]) => {
+    setWarehouseLogs(logs);
+    localStorage.setItem('warehouseLogs', JSON.stringify(logs));
+  };
+  
+  const saveSuppliers = (data: Supplier[]) => {
+    setSuppliers(data);
+    localStorage.setItem('suppliers', JSON.stringify(data));
+  };
+  
+  const saveInventoryAudits = (data: InventoryAudit[]) => {
+    setInventoryAudits(data);
+    localStorage.setItem('inventoryAudits', JSON.stringify(data));
+  };
+  
+  // Helper functions
+  const addWarehouseLog = (log: Omit<WarehouseLog, 'id' | 'total' | 'createdAt'>) => {
+    const newLog: WarehouseLog = {
+      ...log,
+      id: crypto.randomUUID(),
+      total: log.quantity * log.pricePerUnit,
+      createdAt: new Date().toISOString(),
+    };
+    saveWarehouseLogs([...warehouseLogs, newLog]);
+  };
+  
+  const addSupplier = (supplier: Omit<Supplier, 'id'>) => {
+    const newSupplier: Supplier = { ...supplier, id: crypto.randomUUID() };
+    saveSuppliers([...suppliers, newSupplier]);
+  };
+  
+  const updateSupplier = (id: string, data: Partial<Supplier>) => {
+    saveSuppliers(suppliers.map(s => s.id === id ? { ...s, ...data } : s));
+  };
+  
+  const deleteSupplier = (id: string) => {
+    saveSuppliers(suppliers.filter(s => s.id !== id));
+  };
+  
+  const addInventoryAudit = (audit: Omit<InventoryAudit, 'id' | 'createdAt'>) => {
+    const newAudit: InventoryAudit = {
+      ...audit,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
+    saveInventoryAudits([...inventoryAudits, newAudit]);
+  };
+  
+  const approveInventoryAudit = (id: string, approvedBy: string) => {
+    saveInventoryAudits(inventoryAudits.map(a => 
+      a.id === id ? { ...a, status: 'approved' as const, approvedBy } : a
+    ));
+  };
+  
+  const updateInventoryAudit = (id: string, data: Partial<InventoryAudit>) => {
+    saveInventoryAudits(inventoryAudits.map(a => a.id === id ? { ...a, ...data } : a));
+  };
   
   // Dialog states
   const [isOperationOpen, setIsOperationOpen] = useState(false);
@@ -268,6 +389,16 @@ const AdminWarehouse = () => {
       default: return <Badge>{type}</Badge>;
     }
   };
+
+  if (productsLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
