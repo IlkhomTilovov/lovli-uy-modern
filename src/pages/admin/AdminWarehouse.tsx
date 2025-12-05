@@ -19,135 +19,77 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format, startOfDay, startOfWeek, startOfMonth, isAfter, parseISO } from 'date-fns';
 import { useProducts } from '@/hooks/useProducts';
-import { useCategories } from '@/hooks/useCategories';
-
-// Local state types for warehouse operations (since we don't have warehouse tables yet)
-interface WarehouseLog {
-  id: string;
-  productId: string;
-  type: 'incoming' | 'outgoing' | 'return' | 'adjustment';
-  quantity: number;
-  pricePerUnit: number;
-  total: number;
-  note: string;
-  supplierId?: string;
-  batchNumber?: string;
-  expiryDate?: string;
-  createdAt: string;
-}
-
-interface Supplier {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  address?: string;
-  contactPerson?: string;
-  status: 'active' | 'inactive';
-}
-
-interface InventoryAudit {
-  id: string;
-  productId: string;
-  expectedStock: number;
-  actualStock: number;
-  difference: number;
-  note: string;
-  status: 'pending' | 'approved' | 'rejected';
-  approvedBy?: string;
-  createdAt: string;
-}
+import { 
+  useSuppliers, useAddSupplier, useUpdateSupplier, useDeleteSupplier,
+  useWarehouseLogs, useAddWarehouseLog,
+  useInventoryAudits, useAddInventoryAudit, useUpdateInventoryAudit,
+  Supplier, WarehouseLog, InventoryAudit
+} from '@/hooks/useWarehouse';
 
 const AdminWarehouse = () => {
-  // Use Supabase data for products
+  // Use Supabase data for everything
   const { data: dbProducts = [], isLoading: productsLoading } = useProducts();
-  const { data: categories = [] } = useCategories();
+  const { data: dbSuppliers = [], isLoading: suppliersLoading } = useSuppliers();
+  const { data: dbWarehouseLogs = [], isLoading: logsLoading } = useWarehouseLogs();
+  const { data: dbInventoryAudits = [], isLoading: auditsLoading } = useInventoryAudits();
+  
+  // Mutations
+  const addSupplierMutation = useAddSupplier();
+  const updateSupplierMutation = useUpdateSupplier();
+  const deleteSupplierMutation = useDeleteSupplier();
+  const addWarehouseLogMutation = useAddWarehouseLog();
+  const addInventoryAuditMutation = useAddInventoryAudit();
+  const updateInventoryAuditMutation = useUpdateInventoryAudit();
+  
   const { toast } = useToast();
   
-  // Transform DB products to match the expected format
+  // Transform DB data to match expected format
   const products = dbProducts.map(p => ({
     id: p.id,
     title: p.title,
     stock: p.stock,
     sku: p.sku,
     retailPrice: p.retail_price,
-    minStock: 20, // Default min stock
+    minStock: 20,
   }));
   
-  // Local state for warehouse operations (these would need their own tables later)
-  const [warehouseLogs, setWarehouseLogs] = useState<WarehouseLog[]>(() => {
-    const saved = localStorage.getItem('warehouseLogs');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const suppliers = dbSuppliers.map(s => ({
+    id: s.id,
+    name: s.name,
+    phone: s.phone,
+    email: s.email || undefined,
+    address: s.address || undefined,
+    contactPerson: s.contact_person || undefined,
+    status: s.status as 'active' | 'inactive',
+  }));
   
-  const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
-    const saved = localStorage.getItem('suppliers');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const warehouseLogs = dbWarehouseLogs.map(l => ({
+    id: l.id,
+    productId: l.product_id || '',
+    type: l.type as 'incoming' | 'outgoing' | 'return' | 'adjustment',
+    quantity: l.quantity,
+    pricePerUnit: Number(l.price_per_unit),
+    total: Number(l.total),
+    note: l.note || '',
+    supplierId: l.supplier_id || undefined,
+    batchNumber: l.batch_number || undefined,
+    expiryDate: l.expiry_date || undefined,
+    createdAt: l.created_at,
+  }));
   
-  const [inventoryAudits, setInventoryAudits] = useState<InventoryAudit[]>(() => {
-    const saved = localStorage.getItem('inventoryAudits');
-    return saved ? JSON.parse(saved) : [];
-  });
-  
-  // Save to localStorage when data changes
-  const saveWarehouseLogs = (logs: WarehouseLog[]) => {
-    setWarehouseLogs(logs);
-    localStorage.setItem('warehouseLogs', JSON.stringify(logs));
-  };
-  
-  const saveSuppliers = (data: Supplier[]) => {
-    setSuppliers(data);
-    localStorage.setItem('suppliers', JSON.stringify(data));
-  };
-  
-  const saveInventoryAudits = (data: InventoryAudit[]) => {
-    setInventoryAudits(data);
-    localStorage.setItem('inventoryAudits', JSON.stringify(data));
-  };
-  
-  // Helper functions
-  const addWarehouseLog = (log: Omit<WarehouseLog, 'id' | 'total' | 'createdAt'>) => {
-    const newLog: WarehouseLog = {
-      ...log,
-      id: crypto.randomUUID(),
-      total: log.quantity * log.pricePerUnit,
-      createdAt: new Date().toISOString(),
-    };
-    saveWarehouseLogs([...warehouseLogs, newLog]);
-  };
-  
-  const addSupplier = (supplier: Omit<Supplier, 'id'>) => {
-    const newSupplier: Supplier = { ...supplier, id: crypto.randomUUID() };
-    saveSuppliers([...suppliers, newSupplier]);
-  };
-  
-  const updateSupplier = (id: string, data: Partial<Supplier>) => {
-    saveSuppliers(suppliers.map(s => s.id === id ? { ...s, ...data } : s));
-  };
-  
-  const deleteSupplier = (id: string) => {
-    saveSuppliers(suppliers.filter(s => s.id !== id));
-  };
-  
-  const addInventoryAudit = (audit: Omit<InventoryAudit, 'id' | 'createdAt'>) => {
-    const newAudit: InventoryAudit = {
-      ...audit,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    saveInventoryAudits([...inventoryAudits, newAudit]);
-  };
-  
-  const approveInventoryAudit = (id: string, approvedBy: string) => {
-    saveInventoryAudits(inventoryAudits.map(a => 
-      a.id === id ? { ...a, status: 'approved' as const, approvedBy } : a
-    ));
-  };
-  
-  const updateInventoryAudit = (id: string, data: Partial<InventoryAudit>) => {
-    saveInventoryAudits(inventoryAudits.map(a => a.id === id ? { ...a, ...data } : a));
-  };
+  const inventoryAudits = dbInventoryAudits.map(a => ({
+    id: a.id,
+    productId: a.product_id || '',
+    expectedStock: a.expected_stock,
+    actualStock: a.actual_stock,
+    difference: a.difference,
+    note: a.note || '',
+    status: a.status as 'pending' | 'approved' | 'rejected',
+    approvedBy: a.approved_by || undefined,
+    createdAt: a.created_at,
+  }));
+
+  const isLoading = productsLoading || suppliersLoading || logsLoading || auditsLoading;
   
   // Dialog states
   const [isOperationOpen, setIsOperationOpen] = useState(false);
@@ -210,19 +152,20 @@ const AdminWarehouse = () => {
       return;
     }
 
-    addWarehouseLog({
-      productId: operationForm.productId,
+    const total = operationForm.quantity * operationForm.pricePerUnit;
+    addWarehouseLogMutation.mutate({
+      product_id: operationForm.productId || null,
       type: operationForm.type,
       quantity: operationForm.quantity,
-      pricePerUnit: operationForm.pricePerUnit,
-      note: operationForm.note,
-      supplierId: operationForm.supplierId || undefined,
-      batchNumber: operationForm.batchNumber || undefined,
-      expiryDate: operationForm.expiryDate || undefined,
+      price_per_unit: operationForm.pricePerUnit,
+      total: total,
+      note: operationForm.note || null,
+      supplier_id: operationForm.supplierId || null,
+      batch_number: operationForm.batchNumber || null,
+      expiry_date: operationForm.expiryDate || null,
+      created_by: null,
     });
     
-    const typeLabels = { incoming: 'Kirim', outgoing: 'Chiqim', return: 'Qaytarish', adjustment: 'Tuzatish' };
-    toast({ title: 'Muvaffaqiyatli!', description: `${typeLabels[operationForm.type]} qo'shildi` });
     setIsOperationOpen(false);
     resetOperationForm();
   };
@@ -231,11 +174,23 @@ const AdminWarehouse = () => {
     e.preventDefault();
     
     if (editingSupplierId) {
-      updateSupplier(editingSupplierId, supplierForm);
-      toast({ title: 'Muvaffaqiyatli!', description: 'Yetkazib beruvchi yangilandi' });
+      updateSupplierMutation.mutate({
+        id: editingSupplierId,
+        name: supplierForm.name,
+        phone: supplierForm.phone,
+        email: supplierForm.email || null,
+        address: supplierForm.address || null,
+        contact_person: supplierForm.contactPerson || null,
+      });
     } else {
-      addSupplier({ ...supplierForm, status: 'active' });
-      toast({ title: 'Muvaffaqiyatli!', description: 'Yetkazib beruvchi qo\'shildi' });
+      addSupplierMutation.mutate({
+        name: supplierForm.name,
+        phone: supplierForm.phone,
+        email: supplierForm.email || null,
+        address: supplierForm.address || null,
+        contact_person: supplierForm.contactPerson || null,
+        status: 'active',
+      });
     }
     setIsSupplierOpen(false);
     resetSupplierForm();
@@ -247,27 +202,27 @@ const AdminWarehouse = () => {
     const product = products.find(p => p.id === auditForm.productId);
     if (!product) return;
 
-    addInventoryAudit({
-      productId: auditForm.productId,
-      expectedStock: product.stock,
-      actualStock: auditForm.actualStock,
+    addInventoryAuditMutation.mutate({
+      product_id: auditForm.productId || null,
+      expected_stock: product.stock,
+      actual_stock: auditForm.actualStock,
       difference: auditForm.actualStock - product.stock,
-      note: auditForm.note,
+      note: auditForm.note || null,
       status: 'pending',
+      approved_by: null,
     });
     
-    toast({ title: 'Muvaffaqiyatli!', description: 'Inventarizatsiya yaratildi' });
     setIsAuditOpen(false);
     resetAuditForm();
   };
 
   const handleApproveAudit = (id: string) => {
-    approveInventoryAudit(id, 'Admin');
+    updateInventoryAuditMutation.mutate({ id, status: 'approved', approved_by: 'Admin' });
     toast({ title: 'Muvaffaqiyatli!', description: 'Inventarizatsiya tasdiqlandi' });
   };
 
   const handleRejectAudit = (id: string) => {
-    updateInventoryAudit(id, { status: 'rejected' });
+    updateInventoryAuditMutation.mutate({ id, status: 'rejected' });
     toast({ title: 'Bekor qilindi', description: 'Inventarizatsiya rad etildi' });
   };
 
@@ -390,7 +345,7 @@ const AdminWarehouse = () => {
     }
   };
 
-  if (productsLoading) {
+  if (isLoading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
@@ -936,7 +891,7 @@ const AdminWarehouse = () => {
                         <TableCell>
                           <div className="flex gap-1">
                             <Button size="sm" variant="ghost" onClick={() => editSupplier(supplier)}>Tahrirlash</Button>
-                            <Button size="sm" variant="ghost" className="text-red-600" onClick={() => { deleteSupplier(supplier.id); toast({ title: 'O\'chirildi' }); }}>O'chirish</Button>
+                            <Button size="sm" variant="ghost" className="text-red-600" onClick={() => deleteSupplierMutation.mutate(supplier.id)}>O'chirish</Button>
                           </div>
                         </TableCell>
                       </TableRow>

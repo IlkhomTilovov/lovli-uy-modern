@@ -56,6 +56,53 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_audits: {
+        Row: {
+          actual_stock: number
+          approved_by: string | null
+          created_at: string
+          difference: number
+          expected_stock: number
+          id: string
+          note: string | null
+          product_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_stock: number
+          approved_by?: string | null
+          created_at?: string
+          difference: number
+          expected_stock: number
+          id?: string
+          note?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_stock?: number
+          approved_by?: string | null
+          created_at?: string
+          difference?: number
+          expected_stock?: number
+          id?: string
+          note?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_audits_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -244,6 +291,42 @@ export type Database = {
         }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -264,6 +347,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      warehouse_logs: {
+        Row: {
+          batch_number: string | null
+          created_at: string
+          created_by: string | null
+          expiry_date: string | null
+          id: string
+          note: string | null
+          price_per_unit: number
+          product_id: string | null
+          quantity: number
+          supplier_id: string | null
+          total: number
+          type: string
+        }
+        Insert: {
+          batch_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          note?: string | null
+          price_per_unit?: number
+          product_id?: string | null
+          quantity: number
+          supplier_id?: string | null
+          total?: number
+          type: string
+        }
+        Update: {
+          batch_number?: string | null
+          created_at?: string
+          created_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          note?: string | null
+          price_per_unit?: number
+          product_id?: string | null
+          quantity?: number
+          supplier_id?: string | null
+          total?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouse_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_logs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
