@@ -110,8 +110,10 @@ const AdminContent = () => {
 
   // Contact state
   const [contactData, setContactData] = useState<ContactContent>({
-    phone: '', phone2: '', email: '', address: '',
-    workingHours: { weekdays: '', saturday: '', sunday: '' }
+    heroTitle: '', heroSubtitle: '', infoTitle: '', infoSubtitle: '', formTitle: '',
+    phone: '', phone2: '', email: '', email2: '', address: '', addressLine2: '',
+    workingHours: { weekdays: '', saturday: '', sunday: '' },
+    mapTitle: '', mapUrl: '', submitButtonText: ''
   });
 
   // Social state
@@ -947,50 +949,128 @@ const AdminContent = () => {
           </TabsContent>
 
           {/* Contact Tab */}
-          <TabsContent value="contact" className="mt-6">
+          <TabsContent value="contact" className="mt-6 space-y-6">
+            {/* Hero Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Sahifa sarlavhasi</CardTitle>
+                <CardDescription>Aloqa sahifasining bosh qismi</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Sarlavha</Label>
+                    <Input 
+                      value={contactData.heroTitle} 
+                      onChange={(e) => setContactData({ ...contactData, heroTitle: e.target.value })}
+                      placeholder="Biz Bilan Bog'laning"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tavsif</Label>
+                    <Input 
+                      value={contactData.heroSubtitle} 
+                      onChange={(e) => setContactData({ ...contactData, heroSubtitle: e.target.value })}
+                      placeholder="Savollaringiz bormi? Buyurtma bermoqchimisiz?"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Info Section Header */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ma'lumotlar bo'limi</CardTitle>
+                <CardDescription>Chap tomondagi ma'lumotlar bo'limi sarlavhalari</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Bo'lim sarlavhasi</Label>
+                    <Input 
+                      value={contactData.infoTitle} 
+                      onChange={(e) => setContactData({ ...contactData, infoTitle: e.target.value })}
+                      placeholder="Aloqa Ma'lumotlari"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bo'lim tavsifi</Label>
+                    <Input 
+                      value={contactData.infoSubtitle} 
+                      onChange={(e) => setContactData({ ...contactData, infoSubtitle: e.target.value })}
+                      placeholder="Quyidagi usullar orqali biz bilan bog'lanishingiz mumkin"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid gap-6 md:grid-cols-2">
+              {/* Contact Details */}
               <Card>
                 <CardHeader>
                   <CardTitle>Aloqa ma'lumotlari</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Telefon 1</Label>
-                    <Input 
-                      value={contactData.phone} 
-                      onChange={(e) => setContactData({ ...contactData, phone: e.target.value })}
-                      placeholder="+998 71 123 45 67"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Telefon 1</Label>
+                      <Input 
+                        value={contactData.phone} 
+                        onChange={(e) => setContactData({ ...contactData, phone: e.target.value })}
+                        placeholder="+998 90 123 45 67"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Telefon 2</Label>
+                      <Input 
+                        value={contactData.phone2} 
+                        onChange={(e) => setContactData({ ...contactData, phone2: e.target.value })}
+                        placeholder="+998 91 234 56 78"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Email 1</Label>
+                      <Input 
+                        type="email"
+                        value={contactData.email} 
+                        onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
+                        placeholder="info@xojalikmollari.uz"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email 2</Label>
+                      <Input 
+                        type="email"
+                        value={contactData.email2} 
+                        onChange={(e) => setContactData({ ...contactData, email2: e.target.value })}
+                        placeholder="support@xojalikmollari.uz"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Telefon 2</Label>
+                    <Label>Manzil (1-qator)</Label>
                     <Input 
-                      value={contactData.phone2} 
-                      onChange={(e) => setContactData({ ...contactData, phone2: e.target.value })}
-                      placeholder="+998 71 123 45 68"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input 
-                      type="email"
-                      value={contactData.email} 
-                      onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
-                      placeholder="info@example.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Manzil</Label>
-                    <Textarea 
                       value={contactData.address} 
                       onChange={(e) => setContactData({ ...contactData, address: e.target.value })}
-                      placeholder="Toshkent shahri..."
-                      rows={3}
+                      placeholder="Toshkent shahar, Chilonzor tumani"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Manzil (2-qator)</Label>
+                    <Input 
+                      value={contactData.addressLine2} 
+                      onChange={(e) => setContactData({ ...contactData, addressLine2: e.target.value })}
+                      placeholder="Kichik halqa yo'li 1-uy"
                     />
                   </div>
                 </CardContent>
               </Card>
 
+              {/* Working Hours */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1000,25 +1080,14 @@ const AdminContent = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Dushanba - Juma</Label>
+                    <Label>Dushanba - Shanba</Label>
                     <Input 
                       value={contactData.workingHours.weekdays} 
                       onChange={(e) => setContactData({ 
                         ...contactData, 
                         workingHours: { ...contactData.workingHours, weekdays: e.target.value }
                       })}
-                      placeholder="09:00 - 18:00"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Shanba</Label>
-                    <Input 
-                      value={contactData.workingHours.saturday} 
-                      onChange={(e) => setContactData({ 
-                        ...contactData, 
-                        workingHours: { ...contactData.workingHours, saturday: e.target.value }
-                      })}
-                      placeholder="09:00 - 15:00"
+                      placeholder="9:00 - 20:00"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1029,19 +1098,73 @@ const AdminContent = () => {
                         ...contactData, 
                         workingHours: { ...contactData.workingHours, sunday: e.target.value }
                       })}
-                      placeholder="Dam olish"
+                      placeholder="10:00 - 18:00"
                     />
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Form & Map Settings */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Forma sozlamalari</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Forma sarlavhasi</Label>
+                    <Input 
+                      value={contactData.formTitle} 
+                      onChange={(e) => setContactData({ ...contactData, formTitle: e.target.value })}
+                      placeholder="Xabar Yuborish"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tugma matni</Label>
+                    <Input 
+                      value={contactData.submitButtonText} 
+                      onChange={(e) => setContactData({ ...contactData, submitButtonText: e.target.value })}
+                      placeholder="Xabar Yuborish"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Xarita sozlamalari</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Xarita sarlavhasi</Label>
+                    <Input 
+                      value={contactData.mapTitle} 
+                      onChange={(e) => setContactData({ ...contactData, mapTitle: e.target.value })}
+                      placeholder="Bizning Joylashuvimiz"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Google Maps embed URL</Label>
+                    <Textarea 
+                      value={contactData.mapUrl} 
+                      onChange={(e) => setContactData({ ...contactData, mapUrl: e.target.value })}
+                      placeholder="https://www.google.com/maps/embed?pb=..."
+                      rows={3}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <Button 
               onClick={() => updateContent({ section: 'contact', data: contactData })} 
               disabled={isUpdating}
-              className="gap-2 mt-4"
+              className="gap-2"
+              size="lg"
             >
               <Save className="w-4 h-4" />
-              Saqlash
+              Barchasini saqlash
             </Button>
           </TabsContent>
 

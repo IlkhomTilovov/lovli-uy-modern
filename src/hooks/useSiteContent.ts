@@ -85,15 +85,25 @@ export interface AboutContent {
 }
 
 export interface ContactContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  infoTitle: string;
+  infoSubtitle: string;
+  formTitle: string;
   phone: string;
   phone2: string;
   email: string;
+  email2: string;
   address: string;
+  addressLine2: string;
   workingHours: {
     weekdays: string;
     saturday: string;
     sunday: string;
   };
+  mapTitle: string;
+  mapUrl: string;
+  submitButtonText: string;
 }
 
 export interface SocialContent {
