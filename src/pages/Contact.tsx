@@ -82,6 +82,15 @@ const Contact = () => {
     message: ""
   });
 
+  // Listen for language changes from Navbar
+  useEffect(() => {
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(LANGUAGE_KEY, language);
   }, [language]);

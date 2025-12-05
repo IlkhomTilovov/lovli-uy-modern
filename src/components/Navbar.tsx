@@ -1,28 +1,85 @@
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, ChevronDown, Search, ArrowRight, FolderOpen, ClipboardList } from "lucide-react";
+import { ShoppingCart, Menu, X, ChevronDown, Search, ArrowRight, FolderOpen, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { SearchAutocomplete } from "./SearchAutocomplete";
 import { useCart } from "@/contexts/CartContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+type Language = "uz" | "ru";
+const LANGUAGE_KEY = "site_language";
+
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
+
+const navTranslations = {
+  uz: {
+    home: "Bosh Sahifa",
+    catalog: "Katalog",
+    about: "Biz Haqimizda",
+    contact: "Aloqa",
+    orders: "Buyurtmalar",
+    categories: "KATEGORIYALAR",
+    allProducts: "Barcha mahsulotlar",
+    viewAll: "Barchasi",
+    noCategories: "Hozircha kategoriyalar yo'q",
+    search: "Qidirish...",
+    searchMobile: "Mahsulot qidirish...",
+    viewProducts: "Mahsulotlarni ko'ring"
+  },
+  ru: {
+    home: "Главная",
+    catalog: "Каталог",
+    about: "О нас",
+    contact: "Контакты",
+    orders: "Заказы",
+    categories: "КАТЕГОРИИ",
+    allProducts: "Все товары",
+    viewAll: "Все",
+    noCategories: "Пока нет категорий",
+    search: "Поиск...",
+    searchMobile: "Поиск товаров...",
+    viewProducts: "Посмотреть товары"
+  }
+};
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const location = useLocation();
   const { totalItems } = useCart();
   const { data: categories } = useCategories();
   const catalogRef = useRef<HTMLDivElement>(null);
 
+  const t = navTranslations[language];
   const activeCategories = categories?.filter(cat => cat.status === 'active') || [];
 
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem(LANGUAGE_KEY, lang);
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('languageChange', { detail: lang }));
+  };
+
   const links = [
-    { href: "/", label: "Bosh Sahifa" },
-    { href: "/about", label: "Biz Haqimizda" },
-    { href: "/contact", label: "Aloqa" },
-    { href: "/orders", label: "Buyurtmalar" },
+    { href: "/", label: t.home },
+    { href: "/about", label: t.about },
+    { href: "/contact", label: t.contact },
+    { href: "/orders", label: t.orders },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -107,9 +164,34 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Language Switcher - Desktop */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-1.5">
+                  <Globe className="h-4 w-4" />
+                  <span className="text-xs font-medium">{language === "uz" ? "UZ" : "RU"}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => handleLanguageChange("uz")}
+                  className={cn(language === "uz" && "bg-primary/10 text-primary")}
+                >
+                  🇺🇿 O'zbekcha
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleLanguageChange("ru")}
+                  className={cn(language === "ru" && "bg-primary/10 text-primary")}
+                >
+                  🇷🇺 Русский
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Desktop Search with Autocomplete */}
             <div className="hidden md:block">
-              <SearchAutocomplete placeholder="Qidirish..." />
+              <SearchAutocomplete placeholder={t.search} />
             </div>
 
             {/* Mobile Search Button */}
@@ -150,7 +232,7 @@ export const Navbar = () => {
           <div className="md:hidden py-3 border-t border-border animate-fade-in">
             <SearchAutocomplete 
               isMobile 
-              placeholder="Mahsulot qidirish..."
+              placeholder={t.searchMobile}
               onClose={() => setSearchOpen(false)}
             />
           </div>
@@ -160,6 +242,32 @@ export const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col space-y-1">
+              {/* Mobile Language Switcher */}
+              <div className="px-4 py-3 flex gap-2">
+                <button
+                  onClick={() => handleLanguageChange("uz")}
+                  className={cn(
+                    "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors",
+                    language === "uz"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  🇺🇿 O'zbekcha
+                </button>
+                <button
+                  onClick={() => handleLanguageChange("ru")}
+                  className={cn(
+                    "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors",
+                    language === "ru"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  🇷🇺 Русский
+                </button>
+              </div>
+
               <Link
                 to="/"
                 onClick={() => setIsOpen(false)}
@@ -168,7 +276,7 @@ export const Navbar = () => {
                   isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground"
                 )}
               >
-                Bosh Sahifa
+                {t.home}
                 <ChevronDown className="h-4 w-4 -rotate-90" />
               </Link>
               
@@ -176,14 +284,14 @@ export const Navbar = () => {
               <div className="px-4 py-3">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                    KATEGORIYALAR
+                    {t.categories}
                   </span>
                   <Link
                     to="/catalog"
                     onClick={() => setIsOpen(false)}
                     className="text-xs text-primary font-medium flex items-center gap-1"
                   >
-                    Barchasi
+                    {t.viewAll}
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -282,7 +390,7 @@ export const Navbar = () => {
                 {/* Left Side - Categories List */}
                 <div className="w-56 shrink-0">
                   <h3 className="text-xs font-semibold text-primary uppercase tracking-wider mb-4">
-                    KATEGORIYALAR
+                    {t.categories}
                   </h3>
                   <div className="space-y-1">
                     {activeCategories.map((category) => (
@@ -299,7 +407,7 @@ export const Navbar = () => {
                       to="/catalog"
                       className="group flex items-center justify-between py-2.5 text-primary font-medium"
                     >
-                      <span className="text-sm">Barcha mahsulotlar</span>
+                      <span className="text-sm">{t.allProducts}</span>
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
@@ -334,7 +442,7 @@ export const Navbar = () => {
                             {category.name}
                           </h4>
                           <p className="text-sm text-white/80 mb-3 line-clamp-1">
-                            {category.description || "Mahsulotlarni ko'ring"}
+                            {category.description || t.viewProducts}
                           </p>
                           <div className="flex items-center gap-2 text-white group-hover:translate-x-1 transition-transform">
                             <ArrowRight className="h-5 w-5" />
@@ -350,7 +458,7 @@ export const Navbar = () => {
               {activeCategories.length === 0 && (
                 <div className="text-center py-12">
                   <FolderOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Hozircha kategoriyalar yo'q</p>
+                  <p className="text-muted-foreground">{t.noCategories}</p>
                 </div>
               )}
             </div>
