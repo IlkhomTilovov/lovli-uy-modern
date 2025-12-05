@@ -10,9 +10,61 @@ import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
+type Language = "uz" | "ru";
+
+const translations = {
+  uz: {
+    heroTitle: "Biz Bilan Bog'laning",
+    heroSubtitle: "Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz!",
+    infoTitle: "Aloqa Ma'lumotlari",
+    infoSubtitle: "Quyidagi usullar orqali biz bilan bog'lanishingiz mumkin. Biz har doim sizning xizmatinizdamiz!",
+    formTitle: "Xabar Yuborish",
+    phoneLabel: "Telefon Raqamlar",
+    emailLabel: "Elektron Pochta",
+    addressLabel: "Manzil",
+    workingHoursLabel: "Ish Vaqti",
+    nameLabel: "Ismingiz *",
+    namePlaceholder: "To'liq ismingizni kiriting",
+    phoneFormLabel: "Telefon Raqam *",
+    emailFormLabel: "Email (ixtiyoriy)",
+    messageLabel: "Xabar *",
+    messagePlaceholder: "Xabaringizni yozing...",
+    submitButton: "Xabar Yuborish",
+    mapTitle: "Bizning Joylashuvimiz",
+    toastTitle: "Xabar yuborildi!",
+    toastDescription: "Tez orada siz bilan bog'lanamiz.",
+    weekdays: "Dushanba - Shanba: 9:00 - 20:00",
+    sunday: "Yakshanba: 10:00 - 18:00"
+  },
+  ru: {
+    heroTitle: "Свяжитесь с нами",
+    heroSubtitle: "Есть вопросы? Хотите сделать заказ? Мы всегда готовы помочь!",
+    infoTitle: "Контактная информация",
+    infoSubtitle: "Вы можете связаться с нами следующими способами. Мы всегда к вашим услугам!",
+    formTitle: "Отправить сообщение",
+    phoneLabel: "Номера телефонов",
+    emailLabel: "Электронная почта",
+    addressLabel: "Адрес",
+    workingHoursLabel: "Рабочее время",
+    nameLabel: "Ваше имя *",
+    namePlaceholder: "Введите ваше полное имя",
+    phoneFormLabel: "Номер телефона *",
+    emailFormLabel: "Email (необязательно)",
+    messageLabel: "Сообщение *",
+    messagePlaceholder: "Напишите ваше сообщение...",
+    submitButton: "Отправить сообщение",
+    mapTitle: "Наше местоположение",
+    toastTitle: "Сообщение отправлено!",
+    toastDescription: "Мы свяжемся с вами в ближайшее время.",
+    weekdays: "Понедельник - Суббота: 9:00 - 20:00",
+    sunday: "Воскресенье: 10:00 - 18:00"
+  }
+};
+
 const Contact = () => {
   const { toast } = useToast();
   const { contact, isLoading } = useSiteContent();
+  const [language, setLanguage] = useState<Language>("uz");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -20,58 +72,38 @@ const Contact = () => {
     message: ""
   });
 
-  // Default values
+  const t = translations[language];
+
+  // Default values for contact data (not translations)
   const defaults = {
-    heroTitle: "Biz Bilan Bog'laning",
-    heroSubtitle: "Savollaringiz bormi? Buyurtma bermoqchimisiz? Biz har doim yordam berishga tayyormiz!",
-    infoTitle: "Aloqa Ma'lumotlari",
-    infoSubtitle: "Quyidagi usullar orqali biz bilan bog'lanishingiz mumkin. Biz har doim sizning xizmatinizdamiz!",
-    formTitle: "Xabar Yuborish",
     phone: "+998 90 123 45 67",
     phone2: "+998 91 234 56 78",
     email: "info@xojalikmollari.uz",
     email2: "support@xojalikmollari.uz",
-    address: "Toshkent shahar, Chilonzor tumani",
-    addressLine2: "Kichik halqa yo'li 1-uy",
-    workingHours: {
-      weekdays: "Dushanba - Shanba: 9:00 - 20:00",
-      sunday: "Yakshanba: 10:00 - 18:00"
-    },
-    mapTitle: "Bizning Joylashuvimiz",
-    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2996.426076844384!2d69.20392931538396!3d41.31121597927122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a9323b4aa5cb98!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1635000000000!5m2!1sen!2s",
-    submitButtonText: "Xabar Yuborish"
+    address: language === "uz" ? "Toshkent shahar, Chilonzor tumani" : "г. Ташкент, Чиланзарский район",
+    addressLine2: language === "uz" ? "Kichik halqa yo'li 1-uy" : "Малая кольцевая дорога, дом 1",
+    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2996.426076844384!2d69.20392931538396!3d41.31121597927122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b0cc379e9c3%3A0xa5a9323b4aa5cb98!2sTashkent%2C%20Uzbekistan!5e0!3m2!1sen!2s!4v1635000000000!5m2!1sen!2s"
   };
 
   // Merge with DB content
   const content = {
-    heroTitle: contact?.heroTitle || defaults.heroTitle,
-    heroSubtitle: contact?.heroSubtitle || defaults.heroSubtitle,
-    infoTitle: contact?.infoTitle || defaults.infoTitle,
-    infoSubtitle: contact?.infoSubtitle || defaults.infoSubtitle,
-    formTitle: contact?.formTitle || defaults.formTitle,
     phone: contact?.phone || defaults.phone,
     phone2: contact?.phone2 || defaults.phone2,
     email: contact?.email || defaults.email,
     email2: contact?.email2 || defaults.email2,
-    address: contact?.address || defaults.address,
-    addressLine2: contact?.addressLine2 || defaults.addressLine2,
-    workingHours: {
-      weekdays: contact?.workingHours?.weekdays || defaults.workingHours.weekdays,
-      sunday: contact?.workingHours?.sunday || defaults.workingHours.sunday
-    },
-    mapTitle: contact?.mapTitle || defaults.mapTitle,
-    mapUrl: contact?.mapUrl || defaults.mapUrl,
-    submitButtonText: contact?.submitButtonText || defaults.submitButtonText
+    address: defaults.address,
+    addressLine2: defaults.addressLine2,
+    mapUrl: contact?.mapUrl || defaults.mapUrl
   };
 
   useSEO({
-    title: "Aloqa | Do'kon - Biz Bilan Bog'laning",
-    description: content.heroSubtitle,
+    title: language === "uz" ? "Aloqa | Do'kon - Biz Bilan Bog'laning" : "Контакты | Магазин - Свяжитесь с нами",
+    description: t.heroSubtitle,
     url: `${window.location.origin}/contact`,
     type: 'website',
     breadcrumbs: [
-      { name: "Bosh sahifa", url: window.location.origin },
-      { name: "Aloqa", url: `${window.location.origin}/contact` }
+      { name: language === "uz" ? "Bosh sahifa" : "Главная", url: window.location.origin },
+      { name: language === "uz" ? "Aloqa" : "Контакты", url: `${window.location.origin}/contact` }
     ],
     localBusiness: {
       name: "Do'kon - Xojalik Mollari",
@@ -94,8 +126,8 @@ const Contact = () => {
     e.preventDefault();
     
     toast({
-      title: "Xabar yuborildi!",
-      description: "Tez orada siz bilan bog'lanamiz.",
+      title: t.toastTitle,
+      description: t.toastDescription,
     });
 
     setFormData({ name: "", phone: "", email: "", message: "" });
@@ -114,6 +146,32 @@ const Contact = () => {
         {/* Hero */}
         <section className="py-16 border-b border-border">
           <div className="container mx-auto px-4">
+            {/* Language Switcher */}
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex rounded-lg border border-border bg-card p-1">
+                <button
+                  onClick={() => setLanguage("uz")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    language === "uz"
+                      ? "bg-amber-500 text-white"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  O'zbekcha
+                </button>
+                <button
+                  onClick={() => setLanguage("ru")}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    language === "ru"
+                      ? "bg-amber-500 text-white"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Русский
+                </button>
+              </div>
+            </div>
+
             <motion.div
               initial="hidden"
               animate="visible"
@@ -121,8 +179,8 @@ const Contact = () => {
               transition={{ duration: 0.5 }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-3xl lg:text-4xl font-bold mb-4">{content.heroTitle}</h1>
-              <p className="text-muted-foreground">{content.heroSubtitle}</p>
+              <h1 className="text-3xl lg:text-4xl font-bold mb-4">{t.heroTitle}</h1>
+              <p className="text-muted-foreground">{t.heroSubtitle}</p>
             </motion.div>
           </div>
         </section>
@@ -138,8 +196,8 @@ const Contact = () => {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-bold mb-3">{content.infoTitle}</h2>
-                <p className="text-muted-foreground text-sm">{content.infoSubtitle}</p>
+                <h2 className="text-2xl font-bold mb-3">{t.infoTitle}</h2>
+                <p className="text-muted-foreground text-sm">{t.infoSubtitle}</p>
               </div>
 
               <div className="space-y-4">
@@ -149,7 +207,7 @@ const Contact = () => {
                     <Phone className="h-5 w-5 text-amber-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm mb-1">Telefon Raqamlar</h3>
+                    <h3 className="font-semibold text-sm mb-1">{t.phoneLabel}</h3>
                     <p className="text-muted-foreground text-sm">{content.phone}</p>
                     {content.phone2 && <p className="text-muted-foreground text-sm">{content.phone2}</p>}
                   </div>
@@ -161,7 +219,7 @@ const Contact = () => {
                     <Mail className="h-5 w-5 text-cyan-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm mb-1">Elektron Pochta</h3>
+                    <h3 className="font-semibold text-sm mb-1">{t.emailLabel}</h3>
                     <p className="text-muted-foreground text-sm">{content.email}</p>
                     {content.email2 && <p className="text-muted-foreground text-sm">{content.email2}</p>}
                   </div>
@@ -173,7 +231,7 @@ const Contact = () => {
                     <MapPin className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm mb-1">Manzil</h3>
+                    <h3 className="font-semibold text-sm mb-1">{t.addressLabel}</h3>
                     <p className="text-muted-foreground text-sm">
                       {content.address}
                       {content.addressLine2 && <><br />{content.addressLine2}</>}
@@ -187,9 +245,9 @@ const Contact = () => {
                     <Clock className="h-5 w-5 text-rose-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm mb-1">Ish Vaqti</h3>
-                    <p className="text-muted-foreground text-sm">{content.workingHours.weekdays}</p>
-                    <p className="text-muted-foreground text-sm">{content.workingHours.sunday}</p>
+                    <h3 className="font-semibold text-sm mb-1">{t.workingHoursLabel}</h3>
+                    <p className="text-muted-foreground text-sm">{t.weekdays}</p>
+                    <p className="text-muted-foreground text-sm">{t.sunday}</p>
                   </div>
                 </div>
               </div>
@@ -203,16 +261,16 @@ const Contact = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="bg-card p-6 lg:p-8 rounded-2xl border border-border shadow-sm">
-                <h2 className="text-xl font-bold mb-6">{content.formTitle}</h2>
+                <h2 className="text-xl font-bold mb-6">{t.formTitle}</h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label htmlFor="name" className="text-sm font-medium mb-2 block">
-                      Ismingiz *
+                      {t.nameLabel}
                     </label>
                     <Input
                       id="name"
-                      placeholder="To'liq ismingizni kiriting"
+                      placeholder={t.namePlaceholder}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
@@ -222,7 +280,7 @@ const Contact = () => {
 
                   <div>
                     <label htmlFor="phone" className="text-sm font-medium mb-2 block">
-                      Telefon Raqam *
+                      {t.phoneFormLabel}
                     </label>
                     <Input
                       id="phone"
@@ -237,7 +295,7 @@ const Contact = () => {
 
                   <div>
                     <label htmlFor="email" className="text-sm font-medium mb-2 block">
-                      Email (ixtiyoriy)
+                      {t.emailFormLabel}
                     </label>
                     <Input
                       id="email"
@@ -251,11 +309,11 @@ const Contact = () => {
 
                   <div>
                     <label htmlFor="message" className="text-sm font-medium mb-2 block">
-                      Xabar *
+                      {t.messageLabel}
                     </label>
                     <Textarea
                       id="message"
-                      placeholder="Xabaringizni yozing..."
+                      placeholder={t.messagePlaceholder}
                       rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -270,7 +328,7 @@ const Contact = () => {
                     size="lg"
                   >
                     <Send className="mr-2 h-4 w-4" />
-                    {content.submitButtonText}
+                    {t.submitButton}
                   </Button>
                 </form>
               </div>
@@ -286,7 +344,7 @@ const Contact = () => {
             transition={{ duration: 0.5 }}
             className="mt-16"
           >
-            <h2 className="text-2xl font-bold mb-6 text-center">{content.mapTitle}</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">{t.mapTitle}</h2>
             <div className="aspect-[16/9] lg:aspect-[21/9] rounded-2xl overflow-hidden border border-border bg-secondary">
               <iframe
                 src={content.mapUrl}
@@ -296,7 +354,7 @@ const Contact = () => {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Bizning joylashuvimiz"
+                title={t.mapTitle}
               />
             </div>
           </motion.div>
