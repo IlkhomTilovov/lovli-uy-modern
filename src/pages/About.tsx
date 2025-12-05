@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Target, Users, Award, TrendingUp } from "lucide-react";
@@ -6,17 +7,97 @@ import { useSEO } from "@/hooks/useSEO";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type Language = "uz" | "ru";
+const LANGUAGE_KEY = "site_language";
+
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
+
+const translations = {
+  uz: {
+    heroTitle: "Biz Haqimizda",
+    heroSubtitle: "Xojalik Mollari — sizning ishonchli hamkoringiz. Biz 2018-yildan beri O'zbekiston bozorida sifatli va arzon xojalik mahsulotlarini taqdim etib kelmoqdamiz.",
+    missionTitle: "Bizning Maqsadimiz",
+    missionContent: "Har bir oilaga sifatli va arzon xojalik mahsulotlarini yetkazib berish orqali kundalik hayotni qulayroq qilish — bu bizning asosiy maqsadimiz.\n\nBiz nafaqat mahsulot sotamiz, balki mijozlarimizning ishonchini qozonamiz. Har bir buyurtma biz uchun muhim va biz doimo yuqori xizmat ko'rsatishga intilamiz.",
+    valuesTitle: "Bizning Qadriyatlarimiz",
+    values: [
+      { text: "Sifat — barcha mahsulotlarimiz sertifikatlangan" },
+      { text: "Ishonch — mijozlarimiz bilan o'zaro hurmat asosida ishlaymiz" },
+      { text: "Tezkorlik — buyurtmalarni o'z vaqtida yetkazib beramiz" },
+      { text: "Innovatsiya — doimo yangi mahsulotlar va xizmatlar qo'shamiz" }
+    ],
+    statsTitle: "Bizning Yutuqlarimiz",
+    stats: [
+      { value: "5+", label: "Yillik Tajriba", description: "Bozorda barqaror faoliyat" },
+      { value: "1000+", label: "Mijozlar", description: "Doimiy mijozlarimiz" },
+      { value: "200+", label: "Mahsulot Turi", description: "Keng assortiment" },
+      { value: "99%", label: "Qoniqish Darajasi", description: "Mijozlar baholashi" }
+    ],
+    advantagesTitle: "Bizning Ustunliklarimiz",
+    advantages: [
+      { title: "Sifatli Mahsulotlar", description: "Faqat sertifikatlangan va tasdiqlangan brendlarni taqdim etamiz. Har bir mahsulot sifat nazoratidan o'tadi." },
+      { title: "Arzon Narxlar", description: "To'g'ridan-to'g'ri ishlab chiqaruvchilar bilan hamkorlik qilib, eng qulay narxlarni taklif qilamiz." },
+      { title: "Tezkor Xizmat", description: "Onlayn buyurtma berish va tez yetkazib berish xizmati. Toshkent bo'ylab 1-2 kun ichida." }
+    ]
+  },
+  ru: {
+    heroTitle: "О нас",
+    heroSubtitle: "Хозяйственные товары — ваш надёжный партнёр. С 2018 года мы предлагаем качественные и доступные хозяйственные товары на рынке Узбекистана.",
+    missionTitle: "Наша миссия",
+    missionContent: "Наша главная цель — сделать повседневную жизнь более удобной, предоставляя каждой семье качественные и доступные хозяйственные товары.\n\nМы не просто продаём товары, мы завоёвываем доверие наших клиентов. Каждый заказ для нас важен, и мы всегда стремимся предоставить высокий уровень обслуживания.",
+    valuesTitle: "Наши ценности",
+    values: [
+      { text: "Качество — все наши товары сертифицированы" },
+      { text: "Доверие — работаем с клиентами на основе взаимного уважения" },
+      { text: "Оперативность — доставляем заказы вовремя" },
+      { text: "Инновации — постоянно добавляем новые товары и услуги" }
+    ],
+    statsTitle: "Наши достижения",
+    stats: [
+      { value: "5+", label: "Лет опыта", description: "Стабильная работа на рынке" },
+      { value: "1000+", label: "Клиентов", description: "Постоянные клиенты" },
+      { value: "200+", label: "Видов товаров", description: "Широкий ассортимент" },
+      { value: "99%", label: "Уровень удовлетворённости", description: "Оценка клиентов" }
+    ],
+    advantagesTitle: "Наши преимущества",
+    advantages: [
+      { title: "Качественные товары", description: "Предлагаем только сертифицированные и проверенные бренды. Каждый товар проходит контроль качества." },
+      { title: "Доступные цены", description: "Сотрудничая напрямую с производителями, предлагаем самые выгодные цены." },
+      { title: "Быстрый сервис", description: "Онлайн-заказ и быстрая доставка. По Ташкенту за 1-2 дня." }
+    ]
+  }
+};
+
 const About = () => {
   const { about, isLoading } = useSiteContent();
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
+
+  // Listen for language changes from Navbar
+  useEffect(() => {
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = translations[language];
 
   useSEO({
-    title: "Biz Haqimizda | Do'kon - Xojalik Mollari Do'koni",
-    description: about?.heroSubtitle || "Xojalik Mollari — sizning ishonchli hamkoringiz. 2018-yildan beri O'zbekiston bozorida sifatli va arzon xojalik mahsulotlarini taqdim etib kelmoqdamiz.",
+    title: language === "uz" 
+      ? "Biz Haqimizda | Do'kon - Xojalik Mollari Do'koni" 
+      : "О нас | Магазин - Хозяйственные товары",
+    description: t.heroSubtitle,
     url: `${window.location.origin}/about`,
     type: 'website',
     breadcrumbs: [
-      { name: "Bosh sahifa", url: window.location.origin },
-      { name: "Biz haqimizda", url: `${window.location.origin}/about` }
+      { name: language === "uz" ? "Bosh sahifa" : "Главная", url: window.location.origin },
+      { name: language === "uz" ? "Biz haqimizda" : "О нас", url: `${window.location.origin}/about` }
     ],
     localBusiness: {
       name: "Do'kon - Xojalik Mollari",
@@ -42,35 +123,7 @@ const About = () => {
 
   const statIcons = [TrendingUp, Users, Award, Target];
 
-  // Default values
-  const defaultAbout = {
-    heroTitle: "Biz Haqimizda",
-    heroSubtitle: "Xojalik Mollari — sizning ishonchli hamkoringiz. Biz 2018-yildan beri O'zbekiston bozorida sifatli va arzon xojalik mahsulotlarini taqdim etib kelmoqdamiz.",
-    missionTitle: "Bizning Maqsadimiz",
-    missionContent: "Har bir oilaga sifatli va arzon xojalik mahsulotlarini yetkazib berish orqali kundalik hayotni qulayroq qilish — bu bizning asosiy maqsadimiz.\n\nBiz nafaqat mahsulot sotamiz, balki mijozlarimizning ishonchini qozonamiz. Har bir buyurtma biz uchun muhim va biz doimo yuqori xizmat ko'rsatishga intilamiz.",
-    valuesTitle: "Bizning Qadriyatlarimiz",
-    values: [
-      { text: "Sifat — barcha mahsulotlarimiz sertifikatlangan" },
-      { text: "Ishonch — mijozlarimiz bilan o'zaro hurmat asosida ishlaymiz" },
-      { text: "Tezkorlik — buyurtmalarni o'z vaqtida yetkazib beramiz" },
-      { text: "Innovatsiya — doimo yangi mahsulotlar va xizmatlar qo'shamiz" }
-    ],
-    statsTitle: "Bizning Yutuqlarimiz",
-    stats: [
-      { value: "5+", label: "Yillik Tajriba", description: "Bozorda barqaror faoliyat" },
-      { value: "1000+", label: "Mijozlar", description: "Doimiy mijozlarimiz" },
-      { value: "200+", label: "Mahsulot Turi", description: "Keng assortiment" },
-      { value: "99%", label: "Qoniqish Darajasi", description: "Mijozlar baholashi" }
-    ],
-    advantagesTitle: "Bizning Ustunliklarimiz",
-    advantages: [
-      { title: "Sifatli Mahsulotlar", description: "Faqat sertifikatlangan va tasdiqlangan brendlarni taqdim etamiz. Har bir mahsulot sifat nazoratidan o'tadi." },
-      { title: "Arzon Narxlar", description: "To'g'ridan-to'g'ri ishlab chiqaruvchilar bilan hamkorlik qilib, eng qulay narxlarni taklif qilamiz." },
-      { title: "Tezkor Xizmat", description: "Onlayn buyurtma berish va tez yetkazib berish xizmati. Toshkent bo'ylab 1-2 kun ichida." }
-    ]
-  };
-
-  const content = about || defaultAbout;
+  const content = t;
 
   if (isLoading) {
     return (

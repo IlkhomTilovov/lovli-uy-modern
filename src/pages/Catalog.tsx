@@ -16,14 +16,66 @@ import { useLazyLoad } from "@/hooks/useLazyLoad";
 import { PaginationControls } from "@/components/PaginationControls";
 import { LazyLoadTrigger } from "@/components/LazyLoadTrigger";
 
+type Language = "uz" | "ru";
+const LANGUAGE_KEY = "site_language";
+
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
+
+const translations = {
+  uz: {
+    title: "Mahsulotlar Katalogi",
+    productsFound: "mahsulot topildi",
+    pagination: "Sahifalash",
+    infiniteScroll: "Cheksiz yuklash",
+    filters: "Filtrlar",
+    search: "Qidirish",
+    searchPlaceholder: "Mahsulot nomi...",
+    categories: "Kategoriyalar",
+    allProducts: "Barcha mahsulotlar",
+    noProducts: "Mahsulot topilmadi. Boshqa kategoriyani tanlang yoki qidiruv so'zini o'zgartiring.",
+    other: "Boshqa"
+  },
+  ru: {
+    title: "Каталог товаров",
+    productsFound: "товаров найдено",
+    pagination: "Пагинация",
+    infiniteScroll: "Бесконечная загрузка",
+    filters: "Фильтры",
+    search: "Поиск",
+    searchPlaceholder: "Название товара...",
+    categories: "Категории",
+    allProducts: "Все товары",
+    noProducts: "Товары не найдены. Выберите другую категорию или измените поисковый запрос.",
+    other: "Другое"
+  }
+};
+
 const ITEMS_PER_PAGE = 12;
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"pagination" | "infinite">("pagination");
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const selectedCategory = searchParams.get("category") || "all";
   
+  // Listen for language changes from Navbar
+  useEffect(() => {
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = translations[language];
+
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
@@ -36,10 +88,10 @@ const Catalog = () => {
   // SEO with Open Graph
   useSEO({
     title: selectedCategoryData?.meta_title || selectedCategoryData?.name 
-      ? `${selectedCategoryData.name} | Do'kon` 
-      : "Mahsulotlar Katalogi | Do'kon",
+      ? `${selectedCategoryData.name} | ${language === "uz" ? "Do'kon" : "Магазин"}` 
+      : language === "uz" ? "Mahsulotlar Katalogi | Do'kon" : "Каталог товаров | Магазин",
     description: selectedCategoryData?.meta_description || selectedCategoryData?.description 
-      || "Barcha mahsulotlar katalogi - sifatli va arzon narxlarda",
+      || (language === "uz" ? "Barcha mahsulotlar katalogi - sifatli va arzon narxlarda" : "Каталог всех товаров - качественные и доступные цены"),
     url: `${window.location.origin}/catalog`,
     type: 'website'
   });
@@ -60,10 +112,10 @@ const Catalog = () => {
           name: product.title,
           price: product.discount_active && product.discount_price ? product.discount_price : product.retail_price,
           image: product.images?.[0] || '/placeholder.svg',
-          category: category?.name || 'Boshqa'
+          category: category?.name || t.other
         };
       });
-  }, [selectedCategory, searchQuery, products, categories]);
+  }, [selectedCategory, searchQuery, products, categories, t.other]);
 
   // Pagination hook
   const pagination = usePagination(filteredProducts, { itemsPerPage: ITEMS_PER_PAGE });
@@ -114,9 +166,9 @@ const Catalog = () => {
               className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             >
               <div>
-                <h1 className="text-4xl font-bold mb-2">Mahsulotlar Katalogi</h1>
+                <h1 className="text-4xl font-bold mb-2">{t.title}</h1>
                 <p className="text-muted-foreground text-lg">
-                  {filteredProducts.length} mahsulot topildi
+                  {filteredProducts.length} {t.productsFound}
                 </p>
               </div>
               
@@ -129,7 +181,7 @@ const Catalog = () => {
                   className="gap-2"
                 >
                   <LayoutGrid className="h-4 w-4" />
-                  Sahifalash
+                  {t.pagination}
                 </Button>
                 <Button
                   variant={viewMode === "infinite" ? "default" : "ghost"}
@@ -138,7 +190,7 @@ const Catalog = () => {
                   className="gap-2"
                 >
                   <Rows3 className="h-4 w-4" />
-                  Cheksiz yuklash
+                  {t.infiniteScroll}
                 </Button>
               </div>
             </motion.div>
@@ -161,16 +213,16 @@ const Catalog = () => {
                   <div className="bg-card border border-border rounded-xl p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <SlidersHorizontal className="h-5 w-5 text-primary" />
-                      <h2 className="font-semibold text-lg">Filtrlar</h2>
+                      <h2 className="font-semibold text-lg">{t.filters}</h2>
                     </div>
 
                     {/* Search */}
                     <div className="mb-6">
-                      <label className="text-sm font-medium mb-2 block">Qidirish</label>
+                      <label className="text-sm font-medium mb-2 block">{t.search}</label>
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="Mahsulot nomi..."
+                          placeholder={t.searchPlaceholder}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="pl-10"
@@ -180,14 +232,14 @@ const Catalog = () => {
 
                     {/* Categories */}
                     <div>
-                      <label className="text-sm font-medium mb-3 block">Kategoriyalar</label>
+                      <label className="text-sm font-medium mb-3 block">{t.categories}</label>
                       <div className="space-y-2">
                         <Button
                           variant={selectedCategory === "all" ? "default" : "ghost"}
                           className="w-full justify-start"
                           onClick={() => handleCategoryChange("all")}
                         >
-                          Barcha mahsulotlar
+                          {t.allProducts}
                         </Button>
                         {categories.map((category) => (
                           <Button
@@ -213,7 +265,7 @@ const Catalog = () => {
               ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-muted-foreground text-lg">
-                    Mahsulot topilmadi. Boshqa kategoriyani tanlang yoki qidiruv so'zini o'zgartiring.
+                    {t.noProducts}
                   </p>
                 </div>
               ) : (
