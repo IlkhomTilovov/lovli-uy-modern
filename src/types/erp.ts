@@ -29,6 +29,7 @@ export interface Product {
   discountActive: boolean;
   sku: string;
   stock: number;
+  minStock: number; // Minimal zaxira
   images: string[];
   status: 'active' | 'inactive';
   metaTitle?: string;
@@ -36,15 +37,42 @@ export interface Product {
   createdAt: string;
 }
 
+export interface Supplier {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  contactPerson?: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+}
+
 export interface WarehouseLog {
   id: string;
   productId: string;
-  type: 'incoming' | 'outgoing';
+  type: 'incoming' | 'outgoing' | 'return' | 'adjustment';
   quantity: number;
   pricePerUnit: number;
   total: number;
   note: string;
+  supplierId?: string; // Yetkazib beruvchi
+  batchNumber?: string; // Partiya raqami
+  expiryDate?: string; // Yaroqlilik muddati
   createdAt: string;
+}
+
+export interface InventoryAudit {
+  id: string;
+  productId: string;
+  expectedStock: number;
+  actualStock: number;
+  difference: number;
+  note: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  approvedAt?: string;
+  approvedBy?: string;
 }
 
 export type OrderStatus = 'new' | 'accepted' | 'preparing' | 'delivered' | 'cancelled';

@@ -1,4 +1,4 @@
-import { Category, Product, Order, OrderItem, WarehouseLog, SiteContent, User } from '@/types/erp';
+import { Category, Product, Order, OrderItem, WarehouseLog, SiteContent, User, Supplier, InventoryAudit } from '@/types/erp';
 
 // Mock Users
 export const mockUsers: User[] = [
@@ -7,6 +7,30 @@ export const mockUsers: User[] = [
     email: 'admin@example.com',
     name: 'Admin User',
     role: 'admin',
+    createdAt: new Date().toISOString()
+  }
+];
+
+// Mock Suppliers
+export const mockSuppliers: Supplier[] = [
+  {
+    id: '1',
+    name: 'Toshkent Kimyo Zavodi',
+    phone: '+998712345678',
+    email: 'info@kimyozavod.uz',
+    address: 'Toshkent, Sergeli tumani',
+    contactPerson: 'Akmal Karimov',
+    status: 'active',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: 'Samarqand Plastik',
+    phone: '+998662234567',
+    email: 'sales@samplastik.uz',
+    address: 'Samarqand, Sanoat zonasi',
+    contactPerson: 'Rustam Alimov',
+    status: 'active',
     createdAt: new Date().toISOString()
   }
 ];
@@ -32,6 +56,7 @@ export const mockProducts: Product[] = [
     discountActive: true,
     sku: 'SPR-001',
     stock: 150,
+    minStock: 20,
     images: ['/placeholder.svg'],
     status: 'active',
     metaTitle: 'Professional Supurgi',
@@ -49,6 +74,7 @@ export const mockProducts: Product[] = [
     discountActive: false,
     sku: 'CHT-001',
     stock: 200,
+    minStock: 30,
     images: ['/placeholder.svg'],
     status: 'active',
     createdAt: new Date().toISOString()
@@ -64,6 +90,7 @@ export const mockProducts: Product[] = [
     discountActive: true,
     sku: 'VLR-001',
     stock: 75,
+    minStock: 15,
     images: ['/placeholder.svg'],
     status: 'active',
     createdAt: new Date().toISOString()
@@ -79,6 +106,7 @@ export const mockProducts: Product[] = [
     discountActive: false,
     sku: 'PCH-001',
     stock: 50,
+    minStock: 10,
     images: ['/placeholder.svg'],
     status: 'active',
     createdAt: new Date().toISOString()
@@ -116,9 +144,57 @@ export const mockOrderItems: OrderItem[] = [
 
 // Mock Warehouse Logs
 export const mockWarehouseLogs: WarehouseLog[] = [
-  { id: '1', productId: '1', type: 'incoming', quantity: 100, pricePerUnit: 30000, total: 3000000, note: 'Boshlang\'ich kirim', createdAt: new Date().toISOString() },
-  { id: '2', productId: '2', type: 'incoming', quantity: 200, pricePerUnit: 15000, total: 3000000, note: 'Yangi partiya', createdAt: new Date().toISOString() },
-  { id: '3', productId: '1', type: 'outgoing', quantity: 2, pricePerUnit: 38000, total: 76000, note: 'Buyurtma #1', createdAt: new Date().toISOString() },
+  { 
+    id: '1', 
+    productId: '1', 
+    type: 'incoming', 
+    quantity: 100, 
+    pricePerUnit: 30000, 
+    total: 3000000, 
+    note: 'Boshlang\'ich kirim',
+    supplierId: '1',
+    batchNumber: 'BTH-2024-001',
+    expiryDate: '2025-12-31',
+    createdAt: new Date().toISOString() 
+  },
+  { 
+    id: '2', 
+    productId: '2', 
+    type: 'incoming', 
+    quantity: 200, 
+    pricePerUnit: 15000, 
+    total: 3000000, 
+    note: 'Yangi partiya',
+    supplierId: '2',
+    batchNumber: 'BTH-2024-002',
+    createdAt: new Date().toISOString() 
+  },
+  { 
+    id: '3', 
+    productId: '1', 
+    type: 'outgoing', 
+    quantity: 2, 
+    pricePerUnit: 38000, 
+    total: 76000, 
+    note: 'Buyurtma #1', 
+    createdAt: new Date().toISOString() 
+  },
+];
+
+// Mock Inventory Audits
+export const mockInventoryAudits: InventoryAudit[] = [
+  {
+    id: '1',
+    productId: '1',
+    expectedStock: 150,
+    actualStock: 148,
+    difference: -2,
+    note: 'Oylik inventarizatsiya',
+    status: 'approved',
+    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    approvedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    approvedBy: 'Admin'
+  }
 ];
 
 // Mock Site Content
