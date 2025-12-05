@@ -5,14 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, Upload, X, Image as ImageIcon, GripVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Upload, X, Image as ImageIcon, GripVertical, AlertTriangle } from 'lucide-react';
 import { useCategories, useAddCategory, useUpdateCategory, useDeleteCategory, DbCategory } from '@/hooks/useCategories';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts, useUpdateProduct } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminCategories = () => {
@@ -22,10 +24,16 @@ const AdminCategories = () => {
   const addCategoryMutation = useAddCategory();
   const updateCategoryMutation = useUpdateCategory();
   const deleteCategoryMutation = useDeleteCategory();
+  const updateProductMutation = useUpdateProduct();
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<DbCategory | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<DbCategory | null>(null);
+  const [deleteAction, setDeleteAction] = useState<'move' | 'delete'>('move');
+  const [targetCategoryId, setTargetCategoryId] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -122,18 +130,73 @@ const AdminCategories = () => {
     resetForm();
   };
 
-  const handleDelete = (id: string) => {
-    const hasProducts = products.some(p => p.category_id === id);
-    if (hasProducts) {
+  const handleDeleteClick = (category: DbCategory) => {
+    setCategoryToDelete(category);
+    setDeleteAction('move');
+    setTargetCategoryId('');
+    setDeleteDialogOpen(true);
+  };
+
+  const getCategoryProducts = (categoryId: string) => {
+    return products.filter(p => p.category_id === categoryId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
+    
+    const categoryProducts = getCategoryProducts(categoryToDelete.id);
+    setIsDeleting(true);
+
+    try {
+      if (categoryProducts.length > 0) {
+        if (deleteAction === 'move') {
+          if (!targetCategoryId) {
+            toast({ 
+              title: 'Xatolik!', 
+              description: 'Mahsulotlarni ko\'chirish uchun kategoriya tanlang.',
+              variant: 'destructive'
+            });
+            setIsDeleting(false);
+            return;
+          }
+          // Move products to target category
+          for (const product of categoryProducts) {
+            await supabase
+              .from('products')
+              .update({ category_id: targetCategoryId })
+              .eq('id', product.id);
+          }
+          toast({ 
+            title: 'Muvaffaqiyatli!', 
+            description: `${categoryProducts.length} ta mahsulot boshqa kategoriyaga ko'chirildi.`
+          });
+        } else {
+          // Delete all products
+          for (const product of categoryProducts) {
+            await supabase
+              .from('products')
+              .delete()
+              .eq('id', product.id);
+          }
+          toast({ 
+            title: 'Muvaffaqiyatli!', 
+            description: `${categoryProducts.length} ta mahsulot o'chirildi.`
+          });
+        }
+      }
+
+      // Now delete the category
+      deleteCategoryMutation.mutate(categoryToDelete.id);
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+    } catch (error: any) {
       toast({ 
         title: 'Xatolik!', 
-        description: 'Bu kategoriyada mahsulotlar bor. Avval mahsulotlarni o\'chiring.',
+        description: error.message,
         variant: 'destructive'
       });
-      return;
-    }
-    if (confirm('Rostdan ham o\'chirmoqchimisiz?')) {
-      deleteCategoryMutation.mutate(id);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -391,7 +454,7 @@ const AdminCategories = () => {
                         size="icon" 
                         variant="ghost" 
                         className="text-destructive" 
-                        onClick={() => handleDelete(category.id)}
+                        onClick={() => handleDeleteClick(category)}
                         disabled={deleteCategoryMutation.isPending}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -403,6 +466,99 @@ const AdminCategories = () => {
             </TableBody>
           </Table>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+                Kategoriyani o'chirish
+              </AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-4">
+                  {categoryToDelete && getCategoryProducts(categoryToDelete.id).length > 0 ? (
+                    <>
+                      <p>
+                        <strong>"{categoryToDelete?.name}"</strong> kategoriyasida{' '}
+                        <Badge variant="secondary">
+                          {getCategoryProducts(categoryToDelete.id).length} ta
+                        </Badge>{' '}
+                        mahsulot bor.
+                      </p>
+                      
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Mahsulotlar bilan nima qilish kerak?</Label>
+                        
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="deleteAction"
+                              checked={deleteAction === 'move'}
+                              onChange={() => setDeleteAction('move')}
+                              className="accent-primary"
+                            />
+                            <span>Boshqa kategoriyaga ko'chirish</span>
+                          </label>
+                          
+                          {deleteAction === 'move' && (
+                            <Select value={targetCategoryId} onValueChange={setTargetCategoryId}>
+                              <SelectTrigger className="ml-6">
+                                <SelectValue placeholder="Kategoriyani tanlang" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categories
+                                  .filter(c => c.id !== categoryToDelete?.id)
+                                  .map(c => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                      {c.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="deleteAction"
+                              checked={deleteAction === 'delete'}
+                              onChange={() => setDeleteAction('delete')}
+                              className="accent-destructive"
+                            />
+                            <span className="text-destructive">Barcha mahsulotlarni o'chirish</span>
+                          </label>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <p>
+                      <strong>"{categoryToDelete?.name}"</strong> kategoriyasini o'chirishni xohlaysizmi?
+                    </p>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Bekor qilish</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                disabled={isDeleting || (deleteAction === 'move' && getCategoryProducts(categoryToDelete?.id || '').length > 0 && !targetCategoryId)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    O'chirilmoqda...
+                  </>
+                ) : (
+                  "O'chirish"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
