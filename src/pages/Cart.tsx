@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -8,9 +8,75 @@ import { motion } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
 import { CheckoutForm } from "@/components/CheckoutForm";
 
+type Language = "uz" | "ru";
+const LANGUAGE_KEY = "site_language";
+
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
+
+const translations = {
+  uz: {
+    emptyCart: "Savatingiz Bo'sh",
+    emptyCartDescription: "Mahsulotlar qo'shish uchun katalogga o'ting",
+    viewCatalog: "Katalogni Ko'rish",
+    ordersHistory: "Buyurtmalar Tarixi",
+    continueShopping: "Xaridni davom ettirish",
+    cartTitle: "Savat",
+    products: "ta mahsulot",
+    remove: "O'chirish",
+    total: "Jami",
+    clearCart: "Savatchani tozalash",
+    orderInfo: "Buyurtma Ma'lumotlari",
+    productsCount: "Mahsulotlar",
+    delivery: "Yetkazib berish",
+    free: "Bepul",
+    totalPrice: "Jami",
+    placeOrder: "Buyurtma Berish",
+    continueShoppingBtn: "Xaridni Davom Ettirish",
+    currency: "so'm"
+  },
+  ru: {
+    emptyCart: "Ваша корзина пуста",
+    emptyCartDescription: "Перейдите в каталог, чтобы добавить товары",
+    viewCatalog: "Смотреть каталог",
+    ordersHistory: "История заказов",
+    continueShopping: "Продолжить покупки",
+    cartTitle: "Корзина",
+    products: "товаров",
+    remove: "Удалить",
+    total: "Итого",
+    clearCart: "Очистить корзину",
+    orderInfo: "Информация о заказе",
+    productsCount: "Товары",
+    delivery: "Доставка",
+    free: "Бесплатно",
+    totalPrice: "Итого",
+    placeOrder: "Оформить заказ",
+    continueShoppingBtn: "Продолжить покупки",
+    currency: "сум"
+  }
+};
+
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
+
+  // Listen for language changes from Navbar
+  useEffect(() => {
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = translations[language];
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -30,16 +96,16 @@ const Cart = () => {
             className="text-center py-20"
           >
             <ShoppingBag className="h-24 w-24 text-muted-foreground mx-auto mb-6" />
-            <h2 className="text-3xl font-bold mb-4">Savatingiz Bo'sh</h2>
+            <h2 className="text-3xl font-bold mb-4">{t.emptyCart}</h2>
             <p className="text-muted-foreground mb-8">
-              Mahsulotlar qo'shish uchun katalogga o'ting
+              {t.emptyCartDescription}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild size="lg">
-                <Link to="/catalog">Katalogni Ko'rish</Link>
+                <Link to="/catalog">{t.viewCatalog}</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/orders">Buyurtmalar Tarixi</Link>
+                <Link to="/orders">{t.ordersHistory}</Link>
               </Button>
             </div>
           </motion.div>
@@ -59,10 +125,10 @@ const Cart = () => {
             <Button asChild variant="ghost" className="mb-4">
               <Link to="/catalog">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Xaridni davom ettirish
+                {t.continueShopping}
               </Link>
             </Button>
-            <h1 className="text-3xl font-bold">Savat ({items.length} ta mahsulot)</h1>
+            <h1 className="text-3xl font-bold">{t.cartTitle} ({items.length} {t.products})</h1>
           </div>
         </section>
 
@@ -99,11 +165,11 @@ const Cart = () => {
                     </Link>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-lg font-bold text-primary">
-                        {item.price.toLocaleString()} so'm
+                        {item.price.toLocaleString()} {t.currency}
                       </span>
                       {item.originalPrice && (
                         <span className="text-sm text-muted-foreground line-through">
-                          {item.originalPrice.toLocaleString()} so'm
+                          {item.originalPrice.toLocaleString()} {t.currency}
                         </span>
                       )}
                     </div>
@@ -140,16 +206,16 @@ const Cart = () => {
                         onClick={() => removeFromCart(item.id)}
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
-                        O'chirish
+                        {t.remove}
                       </Button>
                     </div>
                   </div>
 
                   {/* Item Total */}
                   <div className="text-right hidden sm:block">
-                    <p className="text-sm text-muted-foreground">Jami</p>
+                    <p className="text-sm text-muted-foreground">{t.total}</p>
                     <p className="text-lg font-bold">
-                      {(item.price * item.quantity).toLocaleString()} so'm
+                      {(item.price * item.quantity).toLocaleString()} {t.currency}
                     </p>
                   </div>
                 </motion.div>
@@ -163,7 +229,7 @@ const Cart = () => {
                   onClick={clearCart}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Savatchani tozalash
+                  {t.clearCart}
                 </Button>
               </div>
             </div>
@@ -177,20 +243,20 @@ const Cart = () => {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="bg-card border border-border rounded-xl p-6 sticky top-24"
               >
-                <h2 className="text-xl font-bold mb-6">Buyurtma Ma'lumotlari</h2>
+                <h2 className="text-xl font-bold mb-6">{t.orderInfo}</h2>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Mahsulotlar ({items.length}):</span>
-                    <span className="font-semibold">{totalPrice.toLocaleString()} so'm</span>
+                    <span className="text-muted-foreground">{t.productsCount} ({items.length}):</span>
+                    <span className="font-semibold">{totalPrice.toLocaleString()} {t.currency}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Yetkazib berish:</span>
-                    <span className="font-semibold text-green-600">Bepul</span>
+                    <span className="text-muted-foreground">{t.delivery}:</span>
+                    <span className="font-semibold text-green-600">{t.free}</span>
                   </div>
                   <div className="border-t border-border pt-3 flex justify-between">
-                    <span className="font-semibold text-lg">Jami:</span>
-                    <span className="font-bold text-2xl text-primary">{totalPrice.toLocaleString()} so'm</span>
+                    <span className="font-semibold text-lg">{t.totalPrice}:</span>
+                    <span className="font-bold text-2xl text-primary">{totalPrice.toLocaleString()} {t.currency}</span>
                   </div>
                 </div>
 
@@ -199,13 +265,13 @@ const Cart = () => {
                   size="lg"
                   onClick={() => setCheckoutOpen(true)}
                 >
-                  Buyurtma Berish
+                  {t.placeOrder}
                 </Button>
 
                 <CheckoutForm open={checkoutOpen} onOpenChange={setCheckoutOpen} />
 
                 <Button asChild variant="outline" className="w-full mt-3">
-                  <Link to="/catalog">Xaridni Davom Ettirish</Link>
+                  <Link to="/catalog">{t.continueShoppingBtn}</Link>
                 </Button>
               </motion.div>
             </div>
