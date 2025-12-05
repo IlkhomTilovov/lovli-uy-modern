@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle, Truck, Shield, Sparkles, Star, Heart, Award, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,78 @@ import { motion } from "framer-motion";
 import { HeroSkeleton, CategoryGridSkeleton, ProductGridSkeleton } from "@/components/skeletons";
 import { LucideIcon } from "lucide-react";
 
+type Language = "uz" | "ru";
+const LANGUAGE_KEY = "site_language";
+
+const getInitialLanguage = (): Language => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (saved === "uz" || saved === "ru") return saved;
+  }
+  return "uz";
+};
+
+const translations = {
+  uz: {
+    heroTitle: "O'zbekistonning yetakchi xo'jalik mollari ishlab chiqaruvchisi",
+    heroSubtitle: "Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar.",
+    viewCatalog: "Katalogni Ko'rish",
+    contact: "Bog'lanish",
+    experience: "5+ Yillik Tajriba",
+    clients: "1000+ Mijozlar",
+    categories: "Kategoriyalar",
+    categoriesSubtitle: "Sizga kerak bo'lgan mahsulotlarni toping",
+    featuredProducts: "Eng Ko'p Sotiladigan Mahsulotlar",
+    featuredSubtitle: "Mijozlarimizning sevimlilari",
+    allProducts: "Barcha Mahsulotlar",
+    whyChooseUs: "Nima Uchun Bizni Tanlaysiz?",
+    reviews: "Mijozlarimiz Fikri",
+    ctaTitle: "Buyurtma Berishga Tayyormisiz?",
+    ctaSubtitle: "Hoziroq katalogni ko'rib chiqing va zarur mahsulotlarni tanlang",
+    other: "Boshqa",
+    features: [
+      { icon: 'Shield', title: 'Sifat Kafolati', description: 'Barcha mahsulotlar sertifikatlangan va sifat kafolati bilan' },
+      { icon: 'Sparkles', title: 'Doimiy Chegirmalar', description: 'Har oyda yangi chegirmalar va maxsus takliflar' },
+      { icon: 'Truck', title: 'Tez Yetkazib Berish', description: "Toshkent bo'ylab 1-2 kun ichida bepul yetkazib berish" },
+      { icon: 'CheckCircle', title: 'Katta Assortiment', description: '200+ turdagi xojalik mollari bir joyda' },
+    ],
+    reviewsList: [
+      { name: 'Aziza Karimova', rating: 5, text: 'Juda sifatli mahsulotlar va tez yetkazib berishadi. Narxlari ham arzon. Hammaga tavsiya qilaman!' },
+      { name: 'Sardor Toshmatov', rating: 5, text: 'Doimiy mijozman. Har doim zarur mahsulotlarni shu yerdan olib turaman. Xizmat juda yaxshi!' },
+      { name: 'Nilufar Rahimova', rating: 5, text: "Katta assortiment va sifatli mahsulotlar. Chegirmalar ham doimo bor. Rahmat!" },
+    ]
+  },
+  ru: {
+    heroTitle: "Ведущий производитель хозяйственных товаров в Узбекистане",
+    heroSubtitle: "Валики, щётки, ножи, мётлы и качественные инструменты для повседневного использования.",
+    viewCatalog: "Смотреть каталог",
+    contact: "Связаться",
+    experience: "5+ лет опыта",
+    clients: "1000+ клиентов",
+    categories: "Категории",
+    categoriesSubtitle: "Найдите нужные вам товары",
+    featuredProducts: "Самые продаваемые товары",
+    featuredSubtitle: "Любимые товары наших клиентов",
+    allProducts: "Все товары",
+    whyChooseUs: "Почему выбирают нас?",
+    reviews: "Отзывы клиентов",
+    ctaTitle: "Готовы сделать заказ?",
+    ctaSubtitle: "Просмотрите каталог прямо сейчас и выберите нужные товары",
+    other: "Другое",
+    features: [
+      { icon: 'Shield', title: 'Гарантия качества', description: 'Все товары сертифицированы и с гарантией качества' },
+      { icon: 'Sparkles', title: 'Постоянные скидки', description: 'Каждый месяц новые скидки и специальные предложения' },
+      { icon: 'Truck', title: 'Быстрая доставка', description: 'Бесплатная доставка по Ташкенту за 1-2 дня' },
+      { icon: 'CheckCircle', title: 'Большой ассортимент', description: '200+ видов хозяйственных товаров в одном месте' },
+    ],
+    reviewsList: [
+      { name: 'Азиза Каримова', rating: 5, text: 'Очень качественные товары и быстрая доставка. Цены тоже доступные. Всем рекомендую!' },
+      { name: 'Сардор Тошматов', rating: 5, text: 'Постоянный клиент. Всегда беру нужные товары здесь. Сервис отличный!' },
+      { name: 'Нилуфар Рахимова', rating: 5, text: 'Большой ассортимент и качественные товары. Скидки всегда есть. Спасибо!' },
+    ]
+  }
+};
+
 const ICON_MAP: Record<string, LucideIcon> = {
   Shield,
   Sparkles,
@@ -26,14 +99,32 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 const Index = () => {
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
+  
+  // Listen for language changes from Navbar
+  useEffect(() => {
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = translations[language];
+
   // SEO with Open Graph
   useSEO({
-    title: "Do'kon - O'zbekistonning yetakchi xo'jalik mollari",
-    description: "Sifatli xo'jalik mollari - vallerlar, cho'tkalar, supurgilar va boshqa mahsulotlar arzon narxlarda",
+    title: language === "uz" 
+      ? "Do'kon - O'zbekistonning yetakchi xo'jalik mollari" 
+      : "Магазин - Ведущие хозяйственные товары Узбекистана",
+    description: language === "uz"
+      ? "Sifatli xo'jalik mollari - vallerlar, cho'tkalar, supurgilar va boshqa mahsulotlar arzon narxlarda"
+      : "Качественные хозяйственные товары - валики, щётки, мётлы и другие товары по доступным ценам",
     image: heroBanner,
     url: window.location.origin,
     type: 'website'
   });
+
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   const { 
@@ -52,7 +143,7 @@ const Index = () => {
         name: product.title,
         price: product.discount_active && product.discount_price ? product.discount_price : product.retail_price,
         image: product.images?.[0] || '/placeholder.svg',
-        category: category?.name || 'Boshqa'
+        category: category?.name || t.other
       };
     });
 
@@ -71,23 +162,8 @@ const Index = () => {
 
   const isLoading = productsLoading || categoriesLoading || contentLoading;
 
-  // Default features if none in DB
-  const defaultFeatures = [
-    { icon: 'Shield', title: 'Sifat Kafolati', description: 'Barcha mahsulotlar sertifikatlangan va sifat kafolati bilan' },
-    { icon: 'Sparkles', title: 'Doimiy Chegirmalar', description: 'Har oyda yangi chegirmalar va maxsus takliflar' },
-    { icon: 'Truck', title: 'Tez Yetkazib Berish', description: 'Toshkent bo\'ylab 1-2 kun ichida bepul yetkazib berish' },
-    { icon: 'CheckCircle', title: 'Katta Assortiment', description: '200+ turdagi xojalik mollari bir joyda' },
-  ];
-
-  // Default reviews if none in DB
-  const defaultReviews = [
-    { name: 'Aziza Karimova', rating: 5, text: 'Juda sifatli mahsulotlar va tez yetkazib berishadi. Narxlari ham arzon. Hammaga tavsiya qilaman!' },
-    { name: 'Sardor Toshmatov', rating: 5, text: 'Doimiy mijozman. Har doim zarur mahsulotlarni shu yerdan olib turaman. Xizmat juda yaxshi!' },
-    { name: 'Nilufar Rahimova', rating: 5, text: 'Katta assortiment va sifatli mahsulotlar. Chegirmalar ham doimo bor. Rahmat!' },
-  ];
-
-  const displayFeatures = features?.items?.length ? features.items : defaultFeatures;
-  const displayReviews = reviews?.items?.length ? reviews.items : defaultReviews;
+  const displayFeatures = t.features;
+  const displayReviews = t.reviewsList;
 
   return (
     <div className="min-h-screen">
@@ -105,20 +181,20 @@ const Index = () => {
               className="space-y-4 sm:space-y-6 text-center lg:text-left"
             >
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
-                {banner?.title || "O'zbekistonning yetakchi xo'jalik mollari ishlab chiqaruvchisi"}
+                {banner?.title || t.heroTitle}
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
-                {banner?.subtitle || "Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar."}
+                {banner?.subtitle || t.heroSubtitle}
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
                 <Button asChild size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                   <Link to="/catalog">
-                    {banner?.buttonText || "Katalogni Ko'rish"}
+                    {banner?.buttonText || t.viewCatalog}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                  <Link to="/contact">Bog'lanish</Link>
+                  <Link to="/contact">{t.contact}</Link>
                 </Button>
               </div>
             </motion.div>
@@ -138,10 +214,10 @@ const Index = () => {
               </div>
               <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-accent text-accent-foreground p-4 sm:p-6 rounded-xl shadow-lg">
                 <p className="text-xs sm:text-sm font-medium">
-                  {heroStats?.experienceText || "5+ Yillik Tajriba"}
+                  {heroStats?.experienceText || t.experience}
                 </p>
                 <p className="text-xl sm:text-2xl font-bold">
-                  {heroStats?.clientsText || "1000+ Mijozlar"}
+                  {heroStats?.clientsText || t.clients}
                 </p>
               </div>
             </motion.div>
@@ -161,10 +237,10 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              {categoriesSection?.title || "Kategoriyalar"}
+              {categoriesSection?.title || t.categories}
             </h2>
             <p className="text-muted-foreground text-lg">
-              {categoriesSection?.subtitle || "Sizga kerak bo'lgan mahsulotlarni toping"}
+              {categoriesSection?.subtitle || t.categoriesSubtitle}
             </p>
           </motion.div>
 
@@ -201,10 +277,10 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              {productsSection?.title || "Eng Ko'p Sotiladigan Mahsulotlar"}
+              {productsSection?.title || t.featuredProducts}
             </h2>
             <p className="text-muted-foreground text-lg">
-              {productsSection?.subtitle || "Mijozlarimizning sevimlilari"}
+              {productsSection?.subtitle || t.featuredSubtitle}
             </p>
           </motion.div>
 
@@ -230,7 +306,7 @@ const Index = () => {
           <div className="text-center mt-12">
             <Button asChild size="lg" variant="outline">
               <Link to="/catalog">
-                {productsSection?.buttonText || "Barcha Mahsulotlar"}
+                {productsSection?.buttonText || t.allProducts}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -250,7 +326,7 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              {features?.title || "Nima Uchun Bizni Tanlaysiz?"}
+              {features?.title || t.whyChooseUs}
             </h2>
           </motion.div>
 
@@ -291,7 +367,7 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              {reviews?.title || "Mijozlarimiz Fikri"}
+              {reviews?.title || t.reviews}
             </h2>
           </motion.div>
 
@@ -330,14 +406,14 @@ const Index = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              {cta?.title || "Buyurtma Berishga Tayyormisiz?"}
+              {cta?.title || t.ctaTitle}
             </h2>
             <p className="text-lg mb-8 opacity-90">
-              {cta?.subtitle || "Hoziroq katalogni ko'rib chiqing va zarur mahsulotlarni tanlang"}
+              {cta?.subtitle || t.ctaSubtitle}
             </p>
             <Button asChild size="lg" variant="secondary">
               <Link to="/catalog">
-                {cta?.buttonText || "Katalogni Ko'rish"}
+                {cta?.buttonText || t.viewCatalog}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
