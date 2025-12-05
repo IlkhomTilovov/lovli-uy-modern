@@ -6,13 +6,23 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Save, Image, FileText, Phone, Share2, Search, 
-  MessageSquare, Clock, Upload, Plus, Trash2, Loader2
+  MessageSquare, Clock, Upload, Plus, Trash2, Loader2,
+  Home, LayoutGrid, Package, Star, Megaphone
 } from 'lucide-react';
 import { 
   useSiteContent, 
   BannerContent, 
+  HeroStatsContent,
+  CategoriesSectionContent,
+  ProductsSectionContent,
+  FeaturesContent,
+  FeatureItem,
+  ReviewsContent,
+  ReviewItem,
+  CtaContent,
   AboutContent, 
   AboutValue,
   AboutStat,
@@ -27,14 +37,61 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+const ICON_OPTIONS = [
+  { value: 'Shield', label: 'Sifat (Shield)' },
+  { value: 'Sparkles', label: 'Chegirma (Sparkles)' },
+  { value: 'Truck', label: 'Yetkazib berish (Truck)' },
+  { value: 'CheckCircle', label: "To'gri belgi (CheckCircle)" },
+  { value: 'Star', label: 'Yulduz (Star)' },
+  { value: 'Heart', label: 'Yurak (Heart)' },
+  { value: 'Award', label: 'Mukofot (Award)' },
+  { value: 'Clock', label: 'Soat (Clock)' },
+];
+
 const AdminContent = () => {
-  const { banner, about, contact, social, seo, footer, faq, updateContent, isLoading, isUpdating } = useSiteContent();
+  const { 
+    banner, heroStats, categoriesSection, productsSection, features, reviews, cta,
+    about, contact, social, seo, footer, faq, 
+    updateContent, isLoading, isUpdating 
+  } = useSiteContent();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Banner state
   const [bannerData, setBannerData] = useState<BannerContent>({
     title: '', subtitle: '', buttonText: '', image: ''
+  });
+
+  // Hero Stats state
+  const [heroStatsData, setHeroStatsData] = useState<HeroStatsContent>({
+    experienceText: '', experienceValue: '', clientsText: '', clientsValue: ''
+  });
+
+  // Categories Section state
+  const [categoriesSectionData, setCategoriesSectionData] = useState<CategoriesSectionContent>({
+    title: '', subtitle: ''
+  });
+
+  // Products Section state
+  const [productsSectionData, setProductsSectionData] = useState<ProductsSectionContent>({
+    title: '', subtitle: '', buttonText: ''
+  });
+
+  // Features state
+  const [featuresData, setFeaturesData] = useState<FeaturesContent>({
+    title: '',
+    items: []
+  });
+
+  // Reviews state
+  const [reviewsData, setReviewsData] = useState<ReviewsContent>({
+    title: '',
+    items: []
+  });
+
+  // CTA state
+  const [ctaData, setCtaData] = useState<CtaContent>({
+    title: '', subtitle: '', buttonText: ''
   });
 
   // About state
@@ -79,13 +136,19 @@ const AdminContent = () => {
   // Load data from DB
   useEffect(() => {
     if (banner) setBannerData(banner);
+    if (heroStats) setHeroStatsData(heroStats);
+    if (categoriesSection) setCategoriesSectionData(categoriesSection);
+    if (productsSection) setProductsSectionData(productsSection);
+    if (features) setFeaturesData(features);
+    if (reviews) setReviewsData(reviews);
+    if (cta) setCtaData(cta);
     if (about) setAboutData(about);
     if (contact) setContactData(contact);
     if (social) setSocialData(social);
     if (seo) setSeoData(seo);
     if (footer) setFooterData(footer);
     if (faq) setFaqData(faq);
-  }, [banner, about, contact, social, seo, footer, faq]);
+  }, [banner, heroStats, categoriesSection, productsSection, features, reviews, cta, about, contact, social, seo, footer, faq]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,6 +181,48 @@ const AdminContent = () => {
     } finally {
       setUploading(false);
     }
+  };
+
+  // Features helpers
+  const addFeature = () => {
+    setFeaturesData({
+      ...featuresData,
+      items: [...featuresData.items, { title: '', description: '', icon: 'Shield' }]
+    });
+  };
+
+  const updateFeature = (index: number, field: keyof FeatureItem, value: string) => {
+    const newItems = [...featuresData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setFeaturesData({ ...featuresData, items: newItems });
+  };
+
+  const removeFeature = (index: number) => {
+    setFeaturesData({
+      ...featuresData,
+      items: featuresData.items.filter((_, i) => i !== index)
+    });
+  };
+
+  // Reviews helpers
+  const addReview = () => {
+    setReviewsData({
+      ...reviewsData,
+      items: [...reviewsData.items, { name: '', rating: 5, text: '' }]
+    });
+  };
+
+  const updateReview = (index: number, field: keyof ReviewItem, value: string | number) => {
+    const newItems = [...reviewsData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setReviewsData({ ...reviewsData, items: newItems });
+  };
+
+  const removeReview = (index: number) => {
+    setReviewsData({
+      ...reviewsData,
+      items: reviewsData.items.filter((_, i) => i !== index)
+    });
   };
 
   // FAQ helpers
@@ -200,6 +305,16 @@ const AdminContent = () => {
     });
   };
 
+  const saveHomePage = () => {
+    updateContent({ section: 'home_banner', data: bannerData });
+    updateContent({ section: 'home_hero_stats', data: heroStatsData });
+    updateContent({ section: 'home_categories', data: categoriesSectionData });
+    updateContent({ section: 'home_products', data: productsSectionData });
+    updateContent({ section: 'home_features', data: featuresData });
+    updateContent({ section: 'home_reviews', data: reviewsData });
+    updateContent({ section: 'home_cta', data: ctaData });
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -218,11 +333,11 @@ const AdminContent = () => {
           <p className="text-muted-foreground">Sayt kontentini tahrirlash</p>
         </div>
 
-        <Tabs defaultValue="banner">
+        <Tabs defaultValue="homepage">
           <TabsList className="flex-wrap h-auto gap-1">
-            <TabsTrigger value="banner" className="gap-2">
-              <Image className="w-4 h-4" />
-              Banner
+            <TabsTrigger value="homepage" className="gap-2">
+              <Home className="w-4 h-4" />
+              Bosh sahifa
             </TabsTrigger>
             <TabsTrigger value="about" className="gap-2">
               <FileText className="w-4 h-4" />
@@ -250,12 +365,16 @@ const AdminContent = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Banner Tab */}
-          <TabsContent value="banner" className="mt-6">
+          {/* Home Page Tab */}
+          <TabsContent value="homepage" className="mt-6 space-y-6">
+            {/* Hero Banner */}
             <Card>
               <CardHeader>
-                <CardTitle>Bosh sahifa banner</CardTitle>
-                <CardDescription>Hero banner sozlamalari</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="w-5 h-5" />
+                  Hero Banner
+                </CardTitle>
+                <CardDescription>Bosh sahifa asosiy banner</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -285,16 +404,26 @@ const AdminContent = () => {
                     </Button>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Sarlavha</Label>
-                  <Input 
-                    value={bannerData.title} 
-                    onChange={(e) => setBannerData({ ...bannerData, title: e.target.value })}
-                    placeholder="Asosiy sarlavha"
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Sarlavha</Label>
+                    <Input 
+                      value={bannerData.title} 
+                      onChange={(e) => setBannerData({ ...bannerData, title: e.target.value })}
+                      placeholder="Asosiy sarlavha"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tugma matni</Label>
+                    <Input 
+                      value={bannerData.buttonText} 
+                      onChange={(e) => setBannerData({ ...bannerData, buttonText: e.target.value })}
+                      placeholder="Katalogni ko'rish"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Qo'shimcha matn</Label>
+                  <Label>Tavsif</Label>
                   <Textarea 
                     value={bannerData.subtitle} 
                     onChange={(e) => setBannerData({ ...bannerData, subtitle: e.target.value })}
@@ -302,24 +431,290 @@ const AdminContent = () => {
                     rows={3}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Hero Stats Badge */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Statistika Badge</CardTitle>
+                <CardDescription>Banner ustidagi statistika kartochkasi</CardDescription>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tajriba matni</Label>
+                  <Input 
+                    value={heroStatsData.experienceText} 
+                    onChange={(e) => setHeroStatsData({ ...heroStatsData, experienceText: e.target.value })}
+                    placeholder="5+ Yillik Tajriba"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mijozlar matni</Label>
+                  <Input 
+                    value={heroStatsData.clientsText} 
+                    onChange={(e) => setHeroStatsData({ ...heroStatsData, clientsText: e.target.value })}
+                    placeholder="1000+ Mijozlar"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Categories Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LayoutGrid className="w-5 h-5" />
+                  Kategoriyalar bo'limi
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={categoriesSectionData.title} 
+                    onChange={(e) => setCategoriesSectionData({ ...categoriesSectionData, title: e.target.value })}
+                    placeholder="Kategoriyalar"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tavsif</Label>
+                  <Input 
+                    value={categoriesSectionData.subtitle} 
+                    onChange={(e) => setCategoriesSectionData({ ...categoriesSectionData, subtitle: e.target.value })}
+                    placeholder="Sizga kerak bo'lgan mahsulotlarni toping"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Products Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Mahsulotlar bo'limi
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={productsSectionData.title} 
+                    onChange={(e) => setProductsSectionData({ ...productsSectionData, title: e.target.value })}
+                    placeholder="Eng Ko'p Sotiladigan Mahsulotlar"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tavsif</Label>
+                  <Input 
+                    value={productsSectionData.subtitle} 
+                    onChange={(e) => setProductsSectionData({ ...productsSectionData, subtitle: e.target.value })}
+                    placeholder="Mijozlarimizning sevimlilari"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label>Tugma matni</Label>
                   <Input 
-                    value={bannerData.buttonText} 
-                    onChange={(e) => setBannerData({ ...bannerData, buttonText: e.target.value })}
-                    placeholder="Katalogni ko'rish"
+                    value={productsSectionData.buttonText} 
+                    onChange={(e) => setProductsSectionData({ ...productsSectionData, buttonText: e.target.value })}
+                    placeholder="Barcha Mahsulotlar"
                   />
                 </div>
-                <Button 
-                  onClick={() => updateContent({ section: 'home_banner', data: bannerData })} 
-                  disabled={isUpdating}
-                  className="gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Saqlash
-                </Button>
               </CardContent>
             </Card>
+
+            {/* Features Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Nima Uchun Bizni Tanlaysiz?</CardTitle>
+                <CardDescription>Afzalliklar ro'yxati</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Bo'lim sarlavhasi</Label>
+                  <Input 
+                    value={featuresData.title} 
+                    onChange={(e) => setFeaturesData({ ...featuresData, title: e.target.value })}
+                    placeholder="Nima Uchun Bizni Tanlaysiz?"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <Label>Afzalliklar</Label>
+                  {featuresData.items.map((feature, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Afzallik {index + 1}</span>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => removeFeature(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Ikona</Label>
+                          <Select 
+                            value={feature.icon} 
+                            onValueChange={(value) => updateFeature(index, 'icon', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ICON_OPTIONS.map(opt => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Sarlavha</Label>
+                          <Input 
+                            value={feature.title} 
+                            onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                            placeholder="Sifat Kafolati"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tavsif</Label>
+                          <Input 
+                            value={feature.description} 
+                            onChange={(e) => updateFeature(index, 'description', e.target.value)}
+                            placeholder="Barcha mahsulotlar sertifikatlangan..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addFeature} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Afzallik qo'shish
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reviews Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  Mijozlar fikrlari
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Bo'lim sarlavhasi</Label>
+                  <Input 
+                    value={reviewsData.title} 
+                    onChange={(e) => setReviewsData({ ...reviewsData, title: e.target.value })}
+                    placeholder="Mijozlarimiz Fikri"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <Label>Sharhlar</Label>
+                  {reviewsData.items.map((review, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Sharh {index + 1}</span>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => removeReview(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Ism</Label>
+                          <Input 
+                            value={review.name} 
+                            onChange={(e) => updateReview(index, 'name', e.target.value)}
+                            placeholder="Aziza Karimova"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Reyting (1-5)</Label>
+                          <Input 
+                            type="number"
+                            min={1}
+                            max={5}
+                            value={review.rating} 
+                            onChange={(e) => updateReview(index, 'rating', parseInt(e.target.value) || 5)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Sharh matni</Label>
+                          <Textarea 
+                            value={review.text} 
+                            onChange={(e) => updateReview(index, 'text', e.target.value)}
+                            placeholder="Juda sifatli mahsulotlar..."
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addReview} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Sharh qo'shish
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* CTA Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Megaphone className="w-5 h-5" />
+                  Chaqiruv bo'limi (CTA)
+                </CardTitle>
+                <CardDescription>Sahifa pastidagi ko'k banner</CardDescription>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Sarlavha</Label>
+                  <Input 
+                    value={ctaData.title} 
+                    onChange={(e) => setCtaData({ ...ctaData, title: e.target.value })}
+                    placeholder="Buyurtma Berishga Tayyormisiz?"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tavsif</Label>
+                  <Input 
+                    value={ctaData.subtitle} 
+                    onChange={(e) => setCtaData({ ...ctaData, subtitle: e.target.value })}
+                    placeholder="Hoziroq katalogni ko'rib chiqing..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tugma matni</Label>
+                  <Input 
+                    value={ctaData.buttonText} 
+                    onChange={(e) => setCtaData({ ...ctaData, buttonText: e.target.value })}
+                    placeholder="Katalogni Ko'rish"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button 
+              onClick={saveHomePage} 
+              disabled={isUpdating}
+              className="gap-2"
+              size="lg"
+            >
+              <Save className="w-4 h-4" />
+              Bosh sahifani saqlash
+            </Button>
           </TabsContent>
 
           {/* About Tab */}
