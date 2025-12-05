@@ -25,7 +25,17 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const languageName = targetLanguage === 'ru' ? 'Russian' : 'Uzbek';
+    const languageNames: Record<string, string> = {
+      uz: 'Uzbek',
+      ru: 'Russian',
+      kk: 'Kazakh',
+      tg: 'Tajik',
+      tk: 'Turkmen',
+      ky: 'Kyrgyz',
+      fa: 'Dari (Afghan Persian)'
+    };
+    
+    const languageName = languageNames[targetLanguage] || 'Uzbek';
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
