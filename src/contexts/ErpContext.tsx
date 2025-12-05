@@ -111,13 +111,14 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [categories, products, orders, orderItems, warehouseLogs, siteContent, users, suppliers, inventoryAudits]);
 
-  // Auth
+  // Auth - Note: This is a simplified mock auth for demo purposes only.
+  // In production, use Supabase Auth (AuthContext) for all authentication.
   const login = (email: string, password: string): boolean => {
+    // Find user by email AND verify password exists (basic validation)
     const user = users.find(u => u.email === email);
-    if (user || email === 'admin@example.com') {
-      const loggedUser = user || { id: '1', email, name: 'Admin', role: 'admin' as UserRole, createdAt: new Date().toISOString() };
-      setCurrentUser(loggedUser);
-      localStorage.setItem('erp_current_user', JSON.stringify(loggedUser));
+    if (user && password && password.length >= 6) {
+      setCurrentUser(user);
+      localStorage.setItem('erp_current_user', JSON.stringify(user));
       return true;
     }
     return false;
