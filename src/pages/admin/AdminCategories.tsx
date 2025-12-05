@@ -562,7 +562,7 @@ const AdminCategories = () => {
               <AlertDialogCancel disabled={isDeleting}>Bekor qilish</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmDelete}
-                disabled={isDeleting || (deleteAction === 'move' && getCategoryProducts(categoryToDelete?.id || '').length > 0 && !targetCategoryId)}
+                disabled={isDeleting || (categoryToDelete && deleteAction === 'move' && getCategoryProducts(categoryToDelete.id).length > 0 && !targetCategoryId)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 {isDeleting ? (
