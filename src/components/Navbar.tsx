@@ -13,18 +13,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Language = "uz" | "ru";
+type Language = "uz" | "ru" | "kk" | "tg" | "tk" | "ky" | "fa";
 const LANGUAGE_KEY = "site_language";
+
+const languageLabels: Record<Language, string> = {
+  uz: "🇺🇿 O'zbekcha",
+  ru: "🇷🇺 Русский",
+  kk: "🇰🇿 Қазақша",
+  tg: "🇹🇯 Тоҷикӣ",
+  tk: "🇹🇲 Türkmençe",
+  ky: "🇰🇬 Кыргызча",
+  fa: "🇦🇫 دری"
+};
+
+const languageCodes: Record<Language, string> = {
+  uz: "UZ",
+  ru: "RU",
+  kk: "KZ",
+  tg: "TJ",
+  tk: "TM",
+  ky: "KG",
+  fa: "AF"
+};
 
 const getInitialLanguage = (): Language => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem(LANGUAGE_KEY);
-    if (saved === "uz" || saved === "ru") return saved;
+    if (saved && saved in languageLabels) return saved as Language;
   }
   return "uz";
 };
 
-const navTranslations = {
+const navTranslations: Record<Language, Record<string, string>> = {
   uz: {
     home: "Bosh Sahifa",
     catalog: "Katalog",
@@ -52,6 +72,76 @@ const navTranslations = {
     search: "Поиск...",
     searchMobile: "Поиск товаров...",
     viewProducts: "Посмотреть товары"
+  },
+  kk: {
+    home: "Басты бет",
+    catalog: "Каталог",
+    about: "Біз туралы",
+    contact: "Байланыс",
+    orders: "Тапсырыстар",
+    categories: "САНАТТАР",
+    allProducts: "Барлық өнімдер",
+    viewAll: "Барлығы",
+    noCategories: "Әзірге санаттар жоқ",
+    search: "Іздеу...",
+    searchMobile: "Өнімді іздеу...",
+    viewProducts: "Өнімдерді көру"
+  },
+  tg: {
+    home: "Саҳифаи асосӣ",
+    catalog: "Каталог",
+    about: "Дар бораи мо",
+    contact: "Тамос",
+    orders: "Фармоишҳо",
+    categories: "КАТЕГОРИЯҲО",
+    allProducts: "Ҳамаи маҳсулотҳо",
+    viewAll: "Ҳама",
+    noCategories: "Ҳоло категорияҳо нест",
+    search: "Ҷустуҷӯ...",
+    searchMobile: "Ҷустуҷӯи маҳсулот...",
+    viewProducts: "Маҳсулотҳоро бинед"
+  },
+  tk: {
+    home: "Baş sahypa",
+    catalog: "Katalog",
+    about: "Biz barada",
+    contact: "Habarlaşmak",
+    orders: "Sargytlar",
+    categories: "KATEGORIÝALAR",
+    allProducts: "Ähli önümler",
+    viewAll: "Hemmesi",
+    noCategories: "Heniz kategoriýa ýok",
+    search: "Gözleg...",
+    searchMobile: "Önüm gözle...",
+    viewProducts: "Önümleri görmek"
+  },
+  ky: {
+    home: "Башкы бет",
+    catalog: "Каталог",
+    about: "Биз жөнүндө",
+    contact: "Байланыш",
+    orders: "Буйрутмалар",
+    categories: "КАТЕГОРИЯЛАР",
+    allProducts: "Бардык товарлар",
+    viewAll: "Баары",
+    noCategories: "Азырынча категориялар жок",
+    search: "Издөө...",
+    searchMobile: "Товар издөө...",
+    viewProducts: "Товарларды көрүү"
+  },
+  fa: {
+    home: "صفحه اصلی",
+    catalog: "کاتالوگ",
+    about: "درباره ما",
+    contact: "تماس",
+    orders: "سفارشات",
+    categories: "دسته‌ها",
+    allProducts: "همه محصولات",
+    viewAll: "همه",
+    noCategories: "هنوز دسته‌ای وجود ندارد",
+    search: "جستجو...",
+    searchMobile: "جستجوی محصول...",
+    viewProducts: "مشاهده محصولات"
   }
 };
 
@@ -169,23 +259,20 @@ export const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-1.5">
                   <Globe className="h-4 w-4" />
-                  <span className="text-xs font-medium">{language === "uz" ? "UZ" : "RU"}</span>
+                  <span className="text-xs font-medium">{languageCodes[language]}</span>
                   <ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  onClick={() => handleLanguageChange("uz")}
-                  className={cn(language === "uz" && "bg-primary/10 text-primary")}
-                >
-                  🇺🇿 O'zbekcha
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleLanguageChange("ru")}
-                  className={cn(language === "ru" && "bg-primary/10 text-primary")}
-                >
-                  🇷🇺 Русский
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+                {(Object.keys(languageLabels) as Language[]).map((lang) => (
+                  <DropdownMenuItem 
+                    key={lang}
+                    onClick={() => handleLanguageChange(lang)}
+                    className={cn(language === lang && "bg-primary/10 text-primary")}
+                  >
+                    {languageLabels[lang]}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -243,29 +330,23 @@ export const Navbar = () => {
           <div className="md:hidden py-4 border-t border-border animate-fade-in max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col space-y-1">
               {/* Mobile Language Switcher */}
-              <div className="px-4 py-3 flex gap-2">
-                <button
-                  onClick={() => handleLanguageChange("uz")}
-                  className={cn(
-                    "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors",
-                    language === "uz"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  🇺🇿 O'zbekcha
-                </button>
-                <button
-                  onClick={() => handleLanguageChange("ru")}
-                  className={cn(
-                    "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors",
-                    language === "ru"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  🇷🇺 Русский
-                </button>
+              <div className="px-4 py-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.keys(languageLabels) as Language[]).map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => handleLanguageChange(lang)}
+                      className={cn(
+                        "py-2 px-3 rounded-lg text-sm font-medium transition-colors",
+                        language === lang
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {languageLabels[lang]}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <Link

@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const LANGUAGE_KEY = 'xojalik_language';
+const LANGUAGE_KEY = 'site_language';
 const CACHE_KEY = 'translation_cache';
 
-type Language = 'uz' | 'ru';
+export type Language = 'uz' | 'ru' | 'kk' | 'tg' | 'tk' | 'ky' | 'fa';
 
 interface TranslationCache {
   [key: string]: {
-    uz: string;
-    ru: string;
+    [lang: string]: string;
   };
 }
 
@@ -35,21 +34,20 @@ const saveCache = (cache: TranslationCache) => {
 export const useTranslation = () => {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem(LANGUAGE_KEY);
-    return (saved === 'ru' ? 'ru' : 'uz') as Language;
+    const validLanguages: Language[] = ['uz', 'ru', 'kk', 'tg', 'tk', 'ky', 'fa'];
+    return validLanguages.includes(saved as Language) ? (saved as Language) : 'uz';
   });
   const [cache, setCache] = useState<TranslationCache>(getCache);
   const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => {
-    const handleLanguageChange = () => {
-      const saved = localStorage.getItem(LANGUAGE_KEY);
-      setLanguage((saved === 'ru' ? 'ru' : 'uz') as Language);
+    const handleLanguageChange = (e: CustomEvent<Language>) => {
+      setLanguage(e.detail);
     };
 
-    window.addEventListener('languageChange', handleLanguageChange);
-    return () => window.removeEventListener('languageChange', handleLanguageChange);
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
-
   const translateText = useCallback(async (text: string, originalLang: Language = 'uz'): Promise<string> => {
     if (!text || text.trim() === '') return text;
     
