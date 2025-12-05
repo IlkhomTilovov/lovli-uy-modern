@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Package, Shield, Truck } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Package, Shield, Truck, Loader2 } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
@@ -11,6 +11,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 import { ProductDetailSkeleton } from "@/components/skeletons";
 import { useCart } from "@/contexts/CartContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Language = "uz" | "ru";
 const LANGUAGE_KEY = "site_language";
@@ -74,6 +75,12 @@ const Product = () => {
   const { data: categories = [] } = useCategories();
   const { addToCart } = useCart();
   const [language, setLanguage] = useState<Language>(getInitialLanguage);
+  const { translateText, isTranslating } = useTranslation();
+  
+  // Translated content state
+  const [translatedTitle, setTranslatedTitle] = useState<string>('');
+  const [translatedDescription, setTranslatedDescription] = useState<string>('');
+  const [translatedCategory, setTranslatedCategory] = useState<string>('');
 
   // Listen for language changes from Navbar
   useEffect(() => {
@@ -92,6 +99,26 @@ const Product = () => {
   const displayPrice = product?.discount_active && product?.discount_price 
     ? product.discount_price 
     : product?.retail_price || 0;
+
+  // Translate product content when language changes
+  useEffect(() => {
+    const translateContent = async () => {
+      if (product) {
+        const title = await translateText(product.title, 'uz');
+        setTranslatedTitle(title);
+        
+        if (product.description) {
+          const desc = await translateText(product.description, 'uz');
+          setTranslatedDescription(desc);
+        }
+      }
+      if (category) {
+        const cat = await translateText(category.name, 'uz');
+        setTranslatedCategory(cat);
+      }
+    };
+    translateContent();
+  }, [product, category, language, translateText]);
 
   // SEO with Open Graph and JSON-LD
   useSEO({
@@ -213,8 +240,14 @@ const Product = () => {
               className="space-y-6"
             >
               <div>
-                <p className="text-sm text-muted-foreground mb-2">{category?.name || t.other}</p>
-                <h1 className="text-4xl font-bold mb-4">{product.title}</h1>
+                <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                  {translatedCategory || category?.name || t.other}
+                  {isTranslating && <Loader2 className="h-3 w-3 animate-spin" />}
+                </p>
+                <h1 className="text-4xl font-bold mb-4 flex items-center gap-2">
+                  {translatedTitle || product.title}
+                  {isTranslating && <Loader2 className="h-4 w-4 animate-spin" />}
+                </h1>
                 <div className="flex items-baseline gap-4 mb-6">
                   <p className="text-4xl font-bold text-primary">{displayPrice.toLocaleString()} {t.currency}</p>
                   {product.discount_active && product.discount_price && (
@@ -260,8 +293,9 @@ const Product = () => {
               {product.description && (
                 <div className="border-t border-border pt-6">
                   <h2 className="font-semibold text-xl mb-3">{t.aboutProduct}</h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {product.description}
+                  <p className="text-muted-foreground leading-relaxed flex items-start gap-2">
+                    {translatedDescription || product.description}
+                    {isTranslating && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 mt-1" />}
                   </p>
                 </div>
               )}
