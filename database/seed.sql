@@ -1,33 +1,140 @@
 -- =============================================
--- DATABASE SEED FILE
+-- DATABASE SEED FILE - Do'kon E-Commerce
 -- Loyihani boshqa serverga o'tkazishda ishlatiladi
 -- =============================================
 
 -- 1. KATEGORIYALAR
-INSERT INTO public.categories (id, name, slug, description, image) VALUES
-('cat-001', 'Tozalash vositalari', 'tozalash', 'Uy tozalash uchun barcha kerakli vositalar', '/placeholder.svg'),
-('cat-002', 'Kir yuvish', 'kir-yuvish', 'Kir yuvish vositalari va aksessuarlari', '/placeholder.svg'),
-('cat-003', 'Oshxona jihozlari', 'oshxona', 'Oshxona uchun foydali jihozlar', '/placeholder.svg'),
-('cat-004', 'Shaxsiy gigiena', 'gigiena', 'Shaxsiy gigiena vositalari', '/placeholder.svg')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.categories (name, slug, description, image, status, sort_order) VALUES
+('Tozalash vositalari', 'tozalash', 'Uy tozalash uchun barcha kerakli vositalar', NULL, 'active', 1),
+('Kir yuvish', 'kir-yuvish', 'Kir yuvish vositalari va aksessuarlari', NULL, 'active', 2),
+('Oshxona jihozlari', 'oshxona', 'Oshxona uchun foydali jihozlar', NULL, 'active', 3),
+('Shaxsiy gigiena', 'gigiena', 'Shaxsiy gigiena vositalari', NULL, 'active', 4)
+ON CONFLICT (slug) DO NOTHING;
 
--- 2. MAHSULOTLAR
-INSERT INTO public.products (id, title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) VALUES
-('prod-001', 'Premium Supurgi', 'Yuqori sifatli plastik supurgi', 'cat-001', 35000, 28000, 30000, true, 'SUP-001', 100, ARRAY['/placeholder.svg'], 'active'),
-('prod-002', 'Pol yuvish shvabra', 'Mikrofiber boshli shvabra', 'cat-001', 55000, 45000, NULL, false, 'SHV-001', 75, ARRAY['/placeholder.svg'], 'active'),
-('prod-003', 'Kir yuvish kukuni 3kg', 'Avtomatik mashinalar uchun', 'cat-002', 85000, 70000, 75000, true, 'KYK-001', 200, ARRAY['/placeholder.svg'], 'active'),
-('prod-004', 'Idish yuvish vositasi 1L', 'Limon hidli idish yuvish geli', 'cat-003', 25000, 20000, NULL, false, 'IDY-001', 150, ARRAY['/placeholder.svg'], 'active'),
-('prod-005', 'Cho''tka to''plami', '5 dona turli xil cho''tkalar', 'cat-001', 45000, 38000, 40000, true, 'CHT-001', 80, ARRAY['/placeholder.svg'], 'active'),
-('prod-006', 'Sochiq 3 dona', 'Paxta sochiqlar to''plami', 'cat-004', 35000, 28000, NULL, false, 'SCH-001', 120, ARRAY['/placeholder.svg'], 'active')
-ON CONFLICT (id) DO NOTHING;
+-- 2. MAHSULOTLAR (kategoriya id larini olish uchun subquery ishlatamiz)
+INSERT INTO public.products (title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) 
+SELECT 
+    'Premium Supurgi',
+    'Yuqori sifatli plastik supurgi',
+    c.id,
+    35000,
+    28000,
+    30000,
+    true,
+    'SUP-001',
+    100,
+    ARRAY[]::TEXT[],
+    'active'
+FROM public.categories c WHERE c.slug = 'tozalash'
+ON CONFLICT (sku) DO NOTHING;
 
--- 3. ADMIN ROLINI QO'SHISH (foydalanuvchi allaqachon ro'yxatdan o'tgan bo'lishi kerak)
--- Eslatma: user_id ni o'zingizning foydalanuvchi ID ga o'zgartiring
--- INSERT INTO public.user_roles (user_id, role) VALUES ('your-user-id-here', 'admin');
+INSERT INTO public.products (title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) 
+SELECT 
+    'Pol yuvish shvabra',
+    'Mikrofiber boshli shvabra',
+    c.id,
+    55000,
+    45000,
+    NULL,
+    false,
+    'SHV-001',
+    75,
+    ARRAY[]::TEXT[],
+    'active'
+FROM public.categories c WHERE c.slug = 'tozalash'
+ON CONFLICT (sku) DO NOTHING;
+
+INSERT INTO public.products (title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) 
+SELECT 
+    'Kir yuvish kukuni 3kg',
+    'Avtomatik mashinalar uchun',
+    c.id,
+    85000,
+    70000,
+    75000,
+    true,
+    'KYK-001',
+    200,
+    ARRAY[]::TEXT[],
+    'active'
+FROM public.categories c WHERE c.slug = 'kir-yuvish'
+ON CONFLICT (sku) DO NOTHING;
+
+INSERT INTO public.products (title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) 
+SELECT 
+    'Idish yuvish vositasi 1L',
+    'Limon hidli idish yuvish geli',
+    c.id,
+    25000,
+    20000,
+    NULL,
+    false,
+    'IDY-001',
+    150,
+    ARRAY[]::TEXT[],
+    'active'
+FROM public.categories c WHERE c.slug = 'oshxona'
+ON CONFLICT (sku) DO NOTHING;
+
+INSERT INTO public.products (title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) 
+SELECT 
+    'Cho''tka to''plami',
+    '5 dona turli xil cho''tkalar',
+    c.id,
+    45000,
+    38000,
+    40000,
+    true,
+    'CHT-001',
+    80,
+    ARRAY[]::TEXT[],
+    'active'
+FROM public.categories c WHERE c.slug = 'tozalash'
+ON CONFLICT (sku) DO NOTHING;
+
+INSERT INTO public.products (title, description, category_id, retail_price, wholesale_price, discount_price, discount_active, sku, stock, images, status) 
+SELECT 
+    'Sochiq 3 dona',
+    'Paxta sochiqlar to''plami',
+    c.id,
+    35000,
+    28000,
+    NULL,
+    false,
+    'SCH-001',
+    120,
+    ARRAY[]::TEXT[],
+    'active'
+FROM public.categories c WHERE c.slug = 'gigiena'
+ON CONFLICT (sku) DO NOTHING;
+
+-- 3. SITE CONTENT (Hero va boshqa kontentlar)
+INSERT INTO public.site_content (section, data) VALUES
+('hero', '{
+    "title": "Uy uchun barcha narsalar",
+    "subtitle": "Sifatli mahsulotlar arzon narxlarda",
+    "buttonText": "Xarid qilish",
+    "buttonLink": "/catalog"
+}'::jsonb),
+('contact', '{
+    "phone": "+998 90 123 45 67",
+    "email": "info@dokon.uz",
+    "address": "Toshkent shahri, Chilonzor tumani",
+    "workingHours": "09:00 - 18:00"
+}'::jsonb)
+ON CONFLICT (section) DO NOTHING;
+
+-- =============================================
+-- 4. ADMIN ROLINI QO'SHISH
+-- Eslatma: Bu qatorni o'zingizning foydalanuvchi ID ga o'zgartiring
+-- =============================================
+-- Avval auth.users jadvalida foydalanuvchi yarating (Supabase Auth orqali)
+-- Keyin quyidagi so'rovni ishga tushiring:
+-- INSERT INTO public.user_roles (user_id, role) VALUES ('your-user-uuid-here', 'admin');
 
 -- =============================================
 -- ISHLATISH:
--- 1. Supabase dashboard > SQL Editor
--- 2. Bu faylni nusxalang va ishga tushiring
--- 3. Yoki psql orqali: psql -h your-host -U postgres -d postgres -f seed.sql
+-- 1. Avval schema.sql ni ishga tushiring
+-- 2. Keyin bu faylni ishga tushiring
+-- 3. Admin foydalanuvchi yaratib, user_roles ga qo'shing
 -- =============================================
