@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,17 +15,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Loader2, Upload, X, Image as ImageIcon, GripVertical, AlertTriangle } from 'lucide-react';
 import { useCategories, useAddCategory, useUpdateCategory, useDeleteCategory, DbCategory } from '@/hooks/useCategories';
-import { useProducts, useUpdateProduct } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/useProducts';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminCategories = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: categories = [], isLoading } = useCategories();
   const { data: products = [] } = useProducts();
   const addCategoryMutation = useAddCategory();
   const updateCategoryMutation = useUpdateCategory();
   const deleteCategoryMutation = useDeleteCategory();
-  const updateProductMutation = useUpdateProduct();
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<DbCategory | null>(null);
@@ -141,7 +142,8 @@ const AdminCategories = () => {
     return products.filter(p => p.category_id === categoryId);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!categoryToDelete) return;
     
     const categoryProducts = getCategoryProducts(categoryToDelete.id);
@@ -160,24 +162,26 @@ const AdminCategories = () => {
             return;
           }
           // Move products to target category
-          for (const product of categoryProducts) {
-            await supabase
-              .from('products')
-              .update({ category_id: targetCategoryId })
-              .eq('id', product.id);
-          }
+          const { error: moveError } = await supabase
+            .from('products')
+            .update({ category_id: targetCategoryId })
+            .eq('category_id', categoryToDelete.id);
+            
+          if (moveError) throw moveError;
+          
           toast({ 
             title: 'Muvaffaqiyatli!', 
             description: `${categoryProducts.length} ta mahsulot boshqa kategoriyaga ko'chirildi.`
           });
         } else {
           // Delete all products
-          for (const product of categoryProducts) {
-            await supabase
-              .from('products')
-              .delete()
-              .eq('id', product.id);
-          }
+          const { error: deleteError } = await supabase
+            .from('products')
+            .delete()
+            .eq('category_id', categoryToDelete.id);
+            
+          if (deleteError) throw deleteError;
+          
           toast({ 
             title: 'Muvaffaqiyatli!', 
             description: `${categoryProducts.length} ta mahsulot o'chirildi.`
@@ -186,9 +190,23 @@ const AdminCategories = () => {
       }
 
       // Now delete the category
-      deleteCategoryMutation.mutate(categoryToDelete.id);
+      const { error: catError } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryToDelete.id);
+        
+      if (catError) throw catError;
+      
+      toast({ 
+        title: 'Muvaffaqiyatli!', 
+        description: 'Kategoriya o\'chirildi.'
+      });
+      
       setDeleteDialogOpen(false);
       setCategoryToDelete(null);
+      // Refresh the data
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error: any) {
       toast({ 
         title: 'Xatolik!', 
