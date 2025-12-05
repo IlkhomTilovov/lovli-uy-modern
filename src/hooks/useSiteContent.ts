@@ -122,8 +122,18 @@ export interface SeoContent {
 
 export interface FooterContent {
   companyName: string;
+  slogan: string;
   description: string;
+  ctaTitle: string;
+  ctaSubtitle: string;
+  ctaButtonText: string;
+  pagesTitle: string;
+  contactTitle: string;
+  workingHoursTitle: string;
+  socialTitle: string;
   copyright: string;
+  privacyText: string;
+  termsText: string;
 }
 
 export interface FaqItem {

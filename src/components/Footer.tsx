@@ -8,6 +8,40 @@ export const Footer = () => {
 
   const hasSocialLinks = social?.facebook || social?.instagram || social?.telegram || social?.youtube || social?.whatsapp;
 
+  // Default values
+  const defaults = {
+    companyName: "Xojalik Mollari",
+    slogan: "Sifat va ishonch",
+    description: "Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar.",
+    ctaTitle: "Savollaringiz bormi?",
+    ctaSubtitle: "Biz bilan bog'laning - yordam berishdan mamnunmiz!",
+    ctaButtonText: "Bog'lanish",
+    pagesTitle: "Sahifalar",
+    contactTitle: "Aloqa",
+    workingHoursTitle: "Ish Vaqti",
+    socialTitle: "Ijtimoiy Tarmoqlar",
+    copyright: `© ${new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.`,
+    privacyText: "Maxfiylik siyosati",
+    termsText: "Foydalanish shartlari"
+  };
+
+  // Merge with DB content
+  const content = {
+    companyName: footer?.companyName || defaults.companyName,
+    slogan: footer?.slogan || defaults.slogan,
+    description: footer?.description || defaults.description,
+    ctaTitle: footer?.ctaTitle || defaults.ctaTitle,
+    ctaSubtitle: footer?.ctaSubtitle || defaults.ctaSubtitle,
+    ctaButtonText: footer?.ctaButtonText || defaults.ctaButtonText,
+    pagesTitle: footer?.pagesTitle || defaults.pagesTitle,
+    contactTitle: footer?.contactTitle || defaults.contactTitle,
+    workingHoursTitle: footer?.workingHoursTitle || defaults.workingHoursTitle,
+    socialTitle: footer?.socialTitle || defaults.socialTitle,
+    copyright: footer?.copyright || defaults.copyright,
+    privacyText: footer?.privacyText || defaults.privacyText,
+    termsText: footer?.termsText || defaults.termsText
+  };
+
   return (
     <footer className="relative bg-gradient-to-b from-secondary to-secondary/80 border-t border-border mt-20 overflow-hidden">
       {/* Decorative Elements */}
@@ -19,12 +53,12 @@ export const Footer = () => {
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 sm:p-8 mb-12 text-primary-foreground">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-center md:text-left">
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">Savollaringiz bormi?</h3>
-              <p className="text-primary-foreground/80 text-sm sm:text-base">Biz bilan bog'laning - yordam berishdan mamnunmiz!</p>
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">{content.ctaTitle}</h3>
+              <p className="text-primary-foreground/80 text-sm sm:text-base">{content.ctaSubtitle}</p>
             </div>
             <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
               <Link to="/contact">
-                Bog'lanish
+                {content.ctaButtonText}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -40,18 +74,18 @@ export const Footer = () => {
                 <span className="text-primary-foreground font-bold text-2xl">XM</span>
               </div>
               <div>
-                <span className="font-bold text-lg block">{footer?.companyName || "Xojalik Mollari"}</span>
-                <span className="text-xs text-muted-foreground">Sifat va ishonch</span>
+                <span className="font-bold text-lg block">{content.companyName}</span>
+                <span className="text-xs text-muted-foreground">{content.slogan}</span>
               </div>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              {footer?.description || "Sifatli va arzon xojalik mollari. Sizning uyingiz uchun eng yaxshi mahsulotlar."}
+              {content.description}
             </p>
             
             {/* Social Links - Mobile visible here */}
             {hasSocialLinks && (
               <div className="lg:hidden">
-                <h4 className="font-semibold text-sm mb-3">Ijtimoiy Tarmoqlar</h4>
+                <h4 className="font-semibold text-sm mb-3">{content.socialTitle}</h4>
                 <div className="flex flex-wrap gap-2">
                   {social?.telegram && (
                     <a
@@ -112,7 +146,7 @@ export const Footer = () => {
           <div>
             <h3 className="font-bold text-base mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-primary rounded-full" />
-              Sahifalar
+              {content.pagesTitle}
             </h3>
             <ul className="space-y-3">
               {[
@@ -138,7 +172,7 @@ export const Footer = () => {
           <div>
             <h3 className="font-bold text-base mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-primary rounded-full" />
-              Aloqa
+              {content.contactTitle}
             </h3>
             <ul className="space-y-4">
               <li>
@@ -179,7 +213,7 @@ export const Footer = () => {
           <div>
             <h3 className="font-bold text-base mb-4 flex items-center gap-2">
               <div className="w-1 h-5 bg-primary rounded-full" />
-              Ish Vaqti
+              {content.workingHoursTitle}
             </h3>
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 text-sm">
@@ -187,9 +221,8 @@ export const Footer = () => {
                   <Clock className="h-4 w-4 text-primary" />
                 </div>
                 <div className="text-muted-foreground">
-                  <p><span className="font-medium text-foreground">Du-Ju:</span> {contact?.workingHours?.weekdays || "9:00 - 18:00"}</p>
-                  <p><span className="font-medium text-foreground">Sha:</span> {contact?.workingHours?.saturday || "10:00 - 16:00"}</p>
-                  <p><span className="font-medium text-foreground">Yak:</span> {contact?.workingHours?.sunday || "Dam olish"}</p>
+                  <p><span className="font-medium text-foreground">Du-Sha:</span> {contact?.workingHours?.weekdays || "9:00 - 20:00"}</p>
+                  <p><span className="font-medium text-foreground">Yak:</span> {contact?.workingHours?.sunday || "10:00 - 18:00"}</p>
                 </div>
               </div>
             </div>
@@ -197,7 +230,7 @@ export const Footer = () => {
             {/* Social Links - Desktop */}
             {hasSocialLinks && (
               <div className="hidden lg:block">
-                <h4 className="font-semibold text-sm mb-3">Ijtimoiy Tarmoqlar</h4>
+                <h4 className="font-semibold text-sm mb-3">{content.socialTitle}</h4>
                 <div className="flex flex-wrap gap-2">
                   {social?.telegram && (
                     <a
@@ -264,12 +297,12 @@ export const Footer = () => {
         <div className="mt-12 pt-8 border-t border-border/50">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
             <p className="text-center sm:text-left">
-              {footer?.copyright || `© ${new Date().getFullYear()} Xojalik Mollari. Barcha huquqlar himoyalangan.`}
+              {content.copyright}
             </p>
             <div className="flex items-center gap-4 text-xs">
-              <Link to="/about" className="hover:text-primary transition-colors">Maxfiylik siyosati</Link>
+              <Link to="/about" className="hover:text-primary transition-colors">{content.privacyText}</Link>
               <span className="text-border">•</span>
-              <Link to="/about" className="hover:text-primary transition-colors">Foydalanish shartlari</Link>
+              <Link to="/about" className="hover:text-primary transition-colors">{content.termsText}</Link>
             </div>
           </div>
         </div>
