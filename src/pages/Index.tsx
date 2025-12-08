@@ -15,18 +15,41 @@ import { motion } from "framer-motion";
 import { HeroSkeleton, CategoryGridSkeleton, ProductGridSkeleton } from "@/components/skeletons";
 import { LucideIcon } from "lucide-react";
 
-type Language = "uz" | "ru";
+type Language = "uz" | "ru" | "kk" | "tg" | "tk" | "ky" | "fa";
 const LANGUAGE_KEY = "site_language";
+
+const languageLabels: Record<Language, string> = {
+  uz: "O'zbekcha", ru: "Русский", kk: "Қазақша", tg: "Тоҷикӣ", tk: "Türkmençe", ky: "Кыргызча", fa: "دری"
+};
 
 const getInitialLanguage = (): Language => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem(LANGUAGE_KEY);
-    if (saved === "uz" || saved === "ru") return saved;
+    if (saved && saved in languageLabels) return saved as Language;
   }
   return "uz";
 };
 
-const translations = {
+const translations: Record<Language, {
+  heroTitle: string;
+  heroSubtitle: string;
+  viewCatalog: string;
+  contact: string;
+  experience: string;
+  clients: string;
+  categories: string;
+  categoriesSubtitle: string;
+  featuredProducts: string;
+  featuredSubtitle: string;
+  allProducts: string;
+  whyChooseUs: string;
+  reviews: string;
+  ctaTitle: string;
+  ctaSubtitle: string;
+  other: string;
+  features: { icon: string; title: string; description: string }[];
+  reviewsList: { name: string; rating: number; text: string }[];
+}> = {
   uz: {
     heroTitle: "O'zbekistonning yetakchi xo'jalik mollari ishlab chiqaruvchisi",
     heroSubtitle: "Vallerlar, cho'tkalar, pichoqlar, supurgilar va har kuni kerak bo'ladigan sifatli uskunalar.",
@@ -83,6 +106,151 @@ const translations = {
       { name: 'Азиза Каримова', rating: 5, text: 'Очень качественные товары и быстрая доставка. Цены тоже доступные. Всем рекомендую!' },
       { name: 'Сардор Тошматов', rating: 5, text: 'Постоянный клиент. Всегда беру нужные товары здесь. Сервис отличный!' },
       { name: 'Нилуфар Рахимова', rating: 5, text: 'Большой ассортимент и качественные товары. Скидки всегда есть. Спасибо!' },
+    ]
+  },
+  kk: {
+    heroTitle: "Өзбекстанның жетекші шаруашылық тауарлары өндірушісі",
+    heroSubtitle: "Валиктер, щеткалар, пышақтар, сыпырғыштар және күнделікті қажетті сапалы құралдар.",
+    viewCatalog: "Каталогты көру",
+    contact: "Байланысу",
+    experience: "5+ жыл тәжірибе",
+    clients: "1000+ клиент",
+    categories: "Санаттар",
+    categoriesSubtitle: "Сізге қажетті тауарларды табыңыз",
+    featuredProducts: "Ең көп сатылатын тауарлар",
+    featuredSubtitle: "Клиенттеріміздің сүйіктілері",
+    allProducts: "Барлық тауарлар",
+    whyChooseUs: "Неге бізді таңдайды?",
+    reviews: "Клиенттер пікірлері",
+    ctaTitle: "Тапсырыс беруге дайынсыз ба?",
+    ctaSubtitle: "Қазір каталогты қарап, қажетті тауарларды таңдаңыз",
+    other: "Басқа",
+    features: [
+      { icon: 'Shield', title: 'Сапа кепілдігі', description: 'Барлық тауарлар сертификатталған және сапа кепілдігімен' },
+      { icon: 'Sparkles', title: 'Тұрақты жеңілдіктер', description: 'Ай сайын жаңа жеңілдіктер мен арнайы ұсыныстар' },
+      { icon: 'Truck', title: 'Жылдам жеткізу', description: 'Ташкент бойынша 1-2 күнде тегін жеткізу' },
+      { icon: 'CheckCircle', title: 'Үлкен ассортимент', description: '200+ түрлі шаруашылық тауарлары бір жерде' },
+    ],
+    reviewsList: [
+      { name: 'Әзиза Каримова', rating: 5, text: 'Өте сапалы тауарлар және жылдам жеткізу. Бағалары да қолжетімді. Барлығына ұсынамын!' },
+      { name: 'Сардор Тошматов', rating: 5, text: 'Тұрақты клиентпін. Әрқашан қажетті тауарларды осы жерден аламын. Қызмет керемет!' },
+      { name: 'Нилуфар Рахимова', rating: 5, text: 'Үлкен ассортимент және сапалы тауарлар. Жеңілдіктер әрқашан бар. Рахмет!' },
+    ]
+  },
+  tg: {
+    heroTitle: "Истеҳсолкунандаи пешбари молҳои хоҷагӣ дар Ӯзбекистон",
+    heroSubtitle: "Валикҳо, чӯткаҳо, корд, ҷорӯбҳо ва асбобҳои сифатнок барои истифодаи ҳаррӯза.",
+    viewCatalog: "Каталогро дидан",
+    contact: "Тамос гирифтан",
+    experience: "5+ сол таҷриба",
+    clients: "1000+ муштарӣ",
+    categories: "Категорияҳо",
+    categoriesSubtitle: "Маҳсулотҳои лозимиро пайдо кунед",
+    featuredProducts: "Маҳсулотҳои бештар фурӯхташаванда",
+    featuredSubtitle: "Маҳсулотҳои дӯстдоштаи муштариёнамон",
+    allProducts: "Ҳамаи маҳсулотҳо",
+    whyChooseUs: "Чаро моро интихоб мекунанд?",
+    reviews: "Фикрҳои муштариён",
+    ctaTitle: "Барои фармоиш омодаед?",
+    ctaSubtitle: "Ҳозир каталогро бубинед ва маҳсулотҳои лозимиро интихоб кунед",
+    other: "Дигар",
+    features: [
+      { icon: 'Shield', title: 'Кафолати сифат', description: 'Ҳамаи маҳсулотҳо сертификатшуда ва бо кафолати сифат' },
+      { icon: 'Sparkles', title: 'Тахфифҳои доимӣ', description: 'Ҳар моҳ тахфифҳои нав ва пешниҳодҳои махсус' },
+      { icon: 'Truck', title: 'Расонидани тез', description: 'Расонидани ройгон дар Тошкент дар 1-2 рӯз' },
+      { icon: 'CheckCircle', title: 'Ассортименти калон', description: '200+ намуди молҳои хоҷагӣ дар як ҷой' },
+    ],
+    reviewsList: [
+      { name: 'Азиза Каримова', rating: 5, text: 'Маҳсулотҳои хеле сифатнок ва расонидани тез. Нархҳо низ мувофиқ. Ба ҳама тавсия медиҳам!' },
+      { name: 'Сардор Тошматов', rating: 5, text: 'Муштарии доимӣ ҳастам. Ҳамеша маҳсулотҳои лозимиро аз ин ҷо мегирам. Хизматрасонӣ олӣ!' },
+      { name: 'Нилуфар Рахимова', rating: 5, text: 'Ассортименти калон ва маҳсулотҳои сифатнок. Тахфифҳо ҳамеша ҳаст. Ташаккур!' },
+    ]
+  },
+  tk: {
+    heroTitle: "Özbegistanyň öňdebaryjy hojalyk harytlary öndürijisi",
+    heroSubtitle: "Walikler, çotkalar, pyçaklar, sübseler we gündelik gerek boljak ýokary hilli gurallar.",
+    viewCatalog: "Katalogu görmek",
+    contact: "Habarlaşmak",
+    experience: "5+ ýyl tejribe",
+    clients: "1000+ müşderi",
+    categories: "Kategoriýalar",
+    categoriesSubtitle: "Gerekli harytlary tapyň",
+    featuredProducts: "Iň köp satylýan harytlar",
+    featuredSubtitle: "Müşderilerimiziň halanlary",
+    allProducts: "Ähli harytlar",
+    whyChooseUs: "Näme üçin bizi saýlaýarlar?",
+    reviews: "Müşderileriň pikirleri",
+    ctaTitle: "Sargyt etmäge taýynmy?",
+    ctaSubtitle: "Häzir katalogu görüp, gerekli harytlary saýlaň",
+    other: "Beýleki",
+    features: [
+      { icon: 'Shield', title: 'Hil kepilligi', description: 'Ähli harytlar sertifikatly we hil kepilligi bilen' },
+      { icon: 'Sparkles', title: 'Hemişelik arzanladyşlar', description: 'Her aý täze arzanladyşlar we ýörite teklipler' },
+      { icon: 'Truck', title: 'Çalt gowşuryş', description: 'Daşkent boýunça 1-2 günde mugt gowşuryş' },
+      { icon: 'CheckCircle', title: 'Uly assortiment', description: '200+ görnüşli hojalyk harytlary bir ýerde' },
+    ],
+    reviewsList: [
+      { name: 'Aziza Karimowa', rating: 5, text: 'Örän ýokary hilli harytlar we çalt gowşuryş. Bahalar hem elýeterli. Hemmä maslahat berýärin!' },
+      { name: 'Sardor Toşmatow', rating: 5, text: 'Hemişelik müşderi. Hemişe gerekli harytlary şu ýerden alýaryn. Hyzmat ajaýyp!' },
+      { name: 'Nilufar Rahimowa', rating: 5, text: 'Uly assortiment we ýokary hilli harytlar. Arzanladyşlar hemişe bar. Sag boluň!' },
+    ]
+  },
+  ky: {
+    heroTitle: "Өзбекстандын алдыңкы чарба товарларын өндүрүүчүсү",
+    heroSubtitle: "Валиктер, щеткалар, бычактар, шыпыргылар жана күнүмдүк керек болгон сапаттуу куралдар.",
+    viewCatalog: "Каталогду көрүү",
+    contact: "Байланышуу",
+    experience: "5+ жыл тажрыйба",
+    clients: "1000+ кардар",
+    categories: "Категориялар",
+    categoriesSubtitle: "Керектүү товарларды табыңыз",
+    featuredProducts: "Эң көп сатылган товарлар",
+    featuredSubtitle: "Кардарларыбыздын сүйүктүүлөрү",
+    allProducts: "Бардык товарлар",
+    whyChooseUs: "Эмне үчүн бизди тандашат?",
+    reviews: "Кардарлардын пикирлери",
+    ctaTitle: "Буйрутма берүүгө даярсызбы?",
+    ctaSubtitle: "Азыр каталогду карап, керектүү товарларды тандаңыз",
+    other: "Башка",
+    features: [
+      { icon: 'Shield', title: 'Сапат кепилдиги', description: 'Бардык товарлар сертификатталган жана сапат кепилдиги менен' },
+      { icon: 'Sparkles', title: 'Туруктуу арзандатуулар', description: 'Ар айда жаңы арзандатуулар жана атайын сунуштар' },
+      { icon: 'Truck', title: 'Тез жеткирүү', description: 'Ташкент боюнча 1-2 күндө акысыз жеткирүү' },
+      { icon: 'CheckCircle', title: 'Чоң ассортимент', description: '200+ түрдүү чарба товарлары бир жерде' },
+    ],
+    reviewsList: [
+      { name: 'Азиза Каримова', rating: 5, text: 'Абдан сапаттуу товарлар жана тез жеткирүү. Бааларда жеткиликтүү. Баарына сунуштайм!' },
+      { name: 'Сардор Тошматов', rating: 5, text: 'Туруктуу кардармын. Ар дайым керектүү товарларды ушул жерден алам. Тейлөө мыкты!' },
+      { name: 'Нилуфар Рахимова', rating: 5, text: 'Чоң ассортимент жана сапаттуу товарлар. Арзандатуулар ар дайым бар. Рахмат!' },
+    ]
+  },
+  fa: {
+    heroTitle: "تولیدکننده پیشرو کالاهای خانگی در ازبکستان",
+    heroSubtitle: "غلتک‌ها، برس‌ها، چاقوها، جاروها و ابزارهای باکیفیت برای استفاده روزمره.",
+    viewCatalog: "مشاهده کاتالوگ",
+    contact: "تماس",
+    experience: "۵+ سال تجربه",
+    clients: "۱۰۰۰+ مشتری",
+    categories: "دسته‌ها",
+    categoriesSubtitle: "کالاهای مورد نیاز خود را پیدا کنید",
+    featuredProducts: "پرفروش‌ترین محصولات",
+    featuredSubtitle: "محصولات مورد علاقه مشتریان ما",
+    allProducts: "همه محصولات",
+    whyChooseUs: "چرا ما را انتخاب می‌کنند؟",
+    reviews: "نظرات مشتریان",
+    ctaTitle: "آماده سفارش هستید؟",
+    ctaSubtitle: "همین الان کاتالوگ را ببینید و کالاهای مورد نیاز را انتخاب کنید",
+    other: "سایر",
+    features: [
+      { icon: 'Shield', title: 'تضمین کیفیت', description: 'همه محصولات دارای گواهینامه و ضمانت کیفیت' },
+      { icon: 'Sparkles', title: 'تخفیف‌های دائمی', description: 'هر ماه تخفیف‌های جدید و پیشنهادات ویژه' },
+      { icon: 'Truck', title: 'تحویل سریع', description: 'تحویل رایگان در تاشکند در ۱-۲ روز' },
+      { icon: 'CheckCircle', title: 'مجموعه بزرگ', description: '۲۰۰+ نوع کالای خانگی در یک جا' },
+    ],
+    reviewsList: [
+      { name: 'عزیزه کریموا', rating: 5, text: 'محصولات بسیار باکیفیت و تحویل سریع. قیمت‌ها هم مناسب است. به همه توصیه می‌کنم!' },
+      { name: 'سردار توشماتوف', rating: 5, text: 'مشتری دائمی هستم. همیشه کالاهای مورد نیاز را از اینجا می‌گیرم. خدمات عالی!' },
+      { name: 'نیلوفر رحیموا', rating: 5, text: 'مجموعه بزرگ و محصولات باکیفیت. تخفیف‌ها همیشه وجود دارد. ممنون!' },
     ]
   }
 };
