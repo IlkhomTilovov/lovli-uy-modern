@@ -200,8 +200,8 @@ export const SearchAutocomplete = ({
       {/* Autocomplete Dropdown */}
       {showDropdown && (
         <div className={cn(
-          "absolute left-0 right-0 top-full z-50",
-          "bg-background border border-t-0 border-border rounded-b-lg shadow-lg",
+          "absolute left-0 right-0 top-full z-[100]",
+          "bg-background border border-t-0 border-border rounded-b-lg shadow-xl",
           "animate-fade-in overflow-hidden"
         )}>
           {isLoading ? (
