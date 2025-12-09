@@ -121,7 +121,7 @@ export const SearchAutocomplete = ({
         if (selectedIndex >= 0 && searchResults[selectedIndex]) {
           const item = searchResults[selectedIndex];
           if (item.type === 'category') {
-            navigate(`/kategoriya/${item.id}`);
+            navigate(`/kategoriya/${item.slug}`);
           } else {
             navigate(`/product/${item.id}`);
           }
@@ -227,7 +227,7 @@ export const SearchAutocomplete = ({
                       return (
                         <Link
                           key={item.id}
-                          to={`/kategoriya/${item.id}`}
+                          to={`/kategoriya/${item.slug}`}
                           onClick={handleClose}
                           className={cn(
                             "flex items-center gap-3 p-3 transition-colors",
