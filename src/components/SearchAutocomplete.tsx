@@ -16,7 +16,7 @@ interface SearchAutocompleteProps {
 
 type SearchResultItem = 
   | { type: 'category'; id: string; name: string; image: string | null; slug: string }
-  | { type: 'product'; id: string; title: string; images: string[] | null; retail_price: number; discount_price: number | null; discount_active: boolean };
+  | { type: 'product'; id: string; title: string; images: string[] | null; retail_price: number; discount_price: number | null; discount_active: boolean; categoryId?: string | null };
 
 export const SearchAutocomplete = ({ 
   className, 
@@ -57,13 +57,22 @@ export const SearchAutocomplete = ({
         slug: cat.slug
       })) || [];
 
-    // Filter products
+    // Get matching category IDs
+    const matchingCategoryIds = filteredCategories.map(cat => cat.id);
+
+    // Filter products - include products from matching categories OR products that match the search query
     const filteredProducts = products
-      ?.filter(product => 
-        product.title.toLowerCase().includes(lowerQuery) ||
-        product.description?.toLowerCase().includes(lowerQuery)
-      )
-      .slice(0, 5)
+      ?.filter(product => {
+        // Check if product matches search query directly
+        const matchesSearch = product.title.toLowerCase().includes(lowerQuery) ||
+          product.description?.toLowerCase().includes(lowerQuery);
+        
+        // Check if product belongs to a matching category
+        const belongsToMatchingCategory = product.category_id && matchingCategoryIds.includes(product.category_id);
+        
+        return matchesSearch || belongsToMatchingCategory;
+      })
+      .slice(0, 8) // Show more products since we're including category products
       .map(product => ({
         type: 'product' as const,
         id: product.id,
@@ -71,7 +80,8 @@ export const SearchAutocomplete = ({
         images: product.images,
         retail_price: product.retail_price,
         discount_price: product.discount_price,
-        discount_active: product.discount_active
+        discount_active: product.discount_active,
+        categoryId: product.category_id
       })) || [];
 
     return [...filteredCategories, ...filteredProducts];
