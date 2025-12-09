@@ -291,6 +291,26 @@ export const Navbar = () => {
               <Search className="h-5 w-5" />
             </Button>
 
+            {/* Language Switcher - Mobile */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Globe className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="z-[100] bg-background">
+                {(Object.keys(languageLabels) as Language[]).map((lang) => (
+                  <DropdownMenuItem 
+                    key={lang}
+                    onClick={() => handleLanguageChange(lang)}
+                    className={cn(language === lang && "bg-primary/10 text-primary")}
+                  >
+                    {languageLabels[lang]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
