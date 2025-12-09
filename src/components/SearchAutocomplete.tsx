@@ -200,9 +200,10 @@ export const SearchAutocomplete = ({
       {/* Autocomplete Dropdown */}
       {showDropdown && (
         <div className={cn(
-          "absolute left-0 right-0 top-full z-[100]",
+          "left-0 right-0 top-full",
           "bg-background border border-t-0 border-border rounded-b-lg shadow-xl",
-          "animate-fade-in overflow-hidden"
+          "animate-fade-in overflow-hidden",
+          isMobile ? "relative" : "absolute z-[100]"
         )}>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
