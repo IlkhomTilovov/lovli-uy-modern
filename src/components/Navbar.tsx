@@ -349,26 +349,6 @@ export const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col space-y-1">
-              {/* Mobile Language Switcher */}
-              <div className="px-4 py-3">
-                <div className="grid grid-cols-2 gap-2">
-                  {(Object.keys(languageLabels) as Language[]).map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => handleLanguageChange(lang)}
-                      className={cn(
-                        "py-2 px-3 rounded-lg text-sm font-medium transition-colors",
-                        language === lang
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {languageLabels[lang]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <Link
                 to="/"
                 onClick={() => setIsOpen(false)}
