@@ -113,6 +113,7 @@ export const CheckoutForm = ({ open, onOpenChange }: CheckoutFormProps) => {
               quantity: item.quantity,
               price_at_moment: item.price,
               subtotal: item.price * item.quantity,
+              image: item.image,
             })),
             created_at: order.created_at,
           },

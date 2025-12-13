@@ -10,6 +10,7 @@ interface OrderItem {
   quantity: number;
   price_at_moment: number;
   subtotal: number;
+  image?: string;
 }
 
 interface OrderData {
@@ -72,7 +73,71 @@ ${itemsList}
 💰 *Jami:* ${order.total_price.toLocaleString()} so'm
 `.trim();
 
-    // Send message to Telegram
+    // Collect product images
+    const productImages = order.items
+      .filter(item => item.image && item.image.startsWith('http'))
+      .map(item => item.image as string);
+
+    console.log('Product images to send:', productImages);
+
+    // If there are product images, send them as a media group first
+    if (productImages.length > 0) {
+      try {
+        if (productImages.length === 1) {
+          // Send single photo with caption
+          const photoUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+          const photoResponse = await fetch(photoUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              photo: productImages[0],
+              caption: message,
+              parse_mode: 'Markdown',
+            }),
+          });
+          const photoResult = await photoResponse.json();
+          console.log('Telegram photo response:', photoResult);
+          
+          return new Response(
+            JSON.stringify({ success: true, message_id: photoResult.result?.message_id }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          // Send multiple photos as media group
+          const media = productImages.slice(0, 10).map((photo, index) => ({
+            type: 'photo',
+            media: photo,
+            caption: index === 0 ? message : undefined,
+            parse_mode: index === 0 ? 'Markdown' : undefined,
+          }));
+
+          const mediaGroupUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMediaGroup`;
+          const mediaResponse = await fetch(mediaGroupUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              media: media,
+            }),
+          });
+          const mediaResult = await mediaResponse.json();
+          console.log('Telegram media group response:', mediaResult);
+
+          if (mediaResult.ok) {
+            return new Response(
+              JSON.stringify({ success: true, message_id: mediaResult.result?.[0]?.message_id }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      } catch (imageError) {
+        console.error('Error sending images, falling back to text:', imageError);
+        // Fall through to send text message
+      }
+    }
+
+    // Send text message (fallback or if no images)
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     
     const telegramResponse = await fetch(telegramUrl, {
