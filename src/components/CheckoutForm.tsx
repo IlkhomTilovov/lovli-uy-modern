@@ -96,6 +96,33 @@ export const CheckoutForm = ({ open, onOpenChange }: CheckoutFormProps) => {
 
       if (itemsError) throw itemsError;
 
+      // Send Telegram notification
+      try {
+        await supabase.functions.invoke('telegram-notify', {
+          body: {
+            id: order.id,
+            customer_name: data.fullName,
+            phone: data.phone,
+            region: data.region,
+            city: data.city,
+            address: data.address,
+            comment: data.comment,
+            total_price: totalPrice,
+            items: items.map(item => ({
+              product_title: item.title,
+              quantity: item.quantity,
+              price_at_moment: item.price,
+              subtotal: item.price * item.quantity,
+            })),
+            created_at: order.created_at,
+          },
+        });
+        console.log('Telegram notification sent successfully');
+      } catch (telegramError) {
+        console.error('Failed to send Telegram notification:', telegramError);
+        // Don't throw - order was successful, just notification failed
+      }
+
       setOrderId(order.id);
       setIsSuccess(true);
       
