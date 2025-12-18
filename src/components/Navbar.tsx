@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { SearchAutocomplete } from "./SearchAutocomplete";
 import { useCart } from "@/contexts/CartContext";
+import { useSiteContent } from "@/hooks/useSiteContent";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -153,6 +154,7 @@ export const Navbar = () => {
   const location = useLocation();
   const { totalItems } = useCart();
   const { data: categories } = useCategories();
+  const { branding } = useSiteContent();
   const catalogRef = useRef<HTMLDivElement>(null);
 
   const t = navTranslations[language];
@@ -198,9 +200,17 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">XM</span>
-            </div>
+            {branding?.logo ? (
+              <img 
+                src={branding.logo} 
+                alt="Logo" 
+                className="h-10 object-contain"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">XM</span>
+              </div>
+            )}
             <span className="font-bold text-xl hidden sm:inline-block">Xojalik Mollari</span>
           </Link>
 
