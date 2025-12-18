@@ -145,8 +145,13 @@ export interface FaqContent {
   items: FaqItem[];
 }
 
-type SectionKey = 'home_banner' | 'home_hero_stats' | 'home_categories' | 'home_products' | 'home_features' | 'home_reviews' | 'home_cta' | 'about' | 'contact' | 'social' | 'seo' | 'footer' | 'faq';
-type ContentData = BannerContent | HeroStatsContent | CategoriesSectionContent | ProductsSectionContent | FeaturesContent | ReviewsContent | CtaContent | AboutContent | ContactContent | SocialContent | SeoContent | FooterContent | FaqContent;
+export interface BrandingContent {
+  logo: string;
+  favicon: string;
+}
+
+type SectionKey = 'home_banner' | 'home_hero_stats' | 'home_categories' | 'home_products' | 'home_features' | 'home_reviews' | 'home_cta' | 'about' | 'contact' | 'social' | 'seo' | 'footer' | 'faq' | 'branding';
+type ContentData = BannerContent | HeroStatsContent | CategoriesSectionContent | ProductsSectionContent | FeaturesContent | ReviewsContent | CtaContent | AboutContent | ContactContent | SocialContent | SeoContent | FooterContent | FaqContent | BrandingContent;
 
 export const useSiteContent = () => {
   const queryClient = useQueryClient();
@@ -229,5 +234,6 @@ export const useSiteContent = () => {
     seo: getContent<SeoContent>('seo'),
     footer: getContent<FooterContent>('footer'),
     faq: getContent<FaqContent>('faq'),
+    branding: getContent<BrandingContent>('branding'),
   };
 };

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Save, Image, FileText, Phone, Share2, Search, 
   MessageSquare, Clock, Upload, Plus, Trash2, Loader2,
-  Home, LayoutGrid, Package, Star, Megaphone
+  Home, LayoutGrid, Package, Star, Megaphone, Palette
 } from 'lucide-react';
 import { 
   useSiteContent, 
@@ -32,7 +32,8 @@ import {
   SeoContent, 
   FooterContent, 
   FaqContent, 
-  FaqItem 
+  FaqItem,
+  BrandingContent
 } from '@/hooks/useSiteContent';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -51,11 +52,13 @@ const ICON_OPTIONS = [
 const AdminContent = () => {
   const { 
     banner, heroStats, categoriesSection, productsSection, features, reviews, cta,
-    about, contact, social, seo, footer, faq, 
+    about, contact, social, seo, footer, faq, branding,
     updateContent, isLoading, isUpdating 
   } = useSiteContent();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
   // Banner state
   const [bannerData, setBannerData] = useState<BannerContent>({
@@ -136,7 +139,13 @@ const AdminContent = () => {
 
   // FAQ state
   const [faqData, setFaqData] = useState<FaqContent>({ items: [] });
+  
+  // Branding state
+  const [brandingData, setBrandingData] = useState<BrandingContent>({ logo: '', favicon: '' });
+  
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
 
   // Load data from DB
   useEffect(() => {
@@ -153,7 +162,8 @@ const AdminContent = () => {
     if (seo) setSeoData(seo);
     if (footer) setFooterData(footer);
     if (faq) setFaqData(faq);
-  }, [banner, heroStats, categoriesSection, productsSection, features, reviews, cta, about, contact, social, seo, footer, faq]);
+    if (branding) setBrandingData(branding);
+  }, [banner, heroStats, categoriesSection, productsSection, features, reviews, cta, about, contact, social, seo, footer, faq, branding]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -185,6 +195,72 @@ const AdminContent = () => {
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const filePath = `branding/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      setBrandingData({ ...brandingData, logo: publicUrl });
+      toast({ title: "Logo yuklandi" });
+    } catch (error: unknown) {
+      toast({ 
+        title: 'Xatolik', 
+        description: error instanceof Error ? error.message : 'Logo yuklashda xatolik',
+        variant: 'destructive' 
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFavicon(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `favicon-${Date.now()}.${fileExt}`;
+      const filePath = `branding/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      setBrandingData({ ...brandingData, favicon: publicUrl });
+      toast({ title: "Favicon yuklandi" });
+    } catch (error: unknown) {
+      toast({ 
+        title: 'Xatolik', 
+        description: error instanceof Error ? error.message : 'Favicon yuklashda xatolik',
+        variant: 'destructive' 
+      });
+    } finally {
+      setUploadingFavicon(false);
     }
   };
 
@@ -367,6 +443,10 @@ const AdminContent = () => {
             <TabsTrigger value="footer" className="gap-2">
               <FileText className="w-4 h-4" />
               Footer
+            </TabsTrigger>
+            <TabsTrigger value="branding" className="gap-2">
+              <Palette className="w-4 h-4" />
+              Logo & Favicon
             </TabsTrigger>
           </TabsList>
 
@@ -1499,6 +1579,120 @@ const AdminContent = () => {
             >
               <Save className="w-4 h-4" />
               Barchasini saqlash
+            </Button>
+          </TabsContent>
+
+          {/* Branding Tab */}
+          <TabsContent value="branding" className="mt-6 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  Logo va Favicon
+                </CardTitle>
+                <CardDescription>Sayt logosi va favicon rasmlarini yuklang</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Logo Section */}
+                <div className="space-y-4">
+                  <Label className="text-lg font-semibold">Logo</Label>
+                  <div className="flex items-center gap-4">
+                    {brandingData.logo ? (
+                      <img 
+                        src={brandingData.logo} 
+                        alt="Logo" 
+                        className="h-16 object-contain rounded-lg border bg-background p-2"
+                      />
+                    ) : (
+                      <div className="h-16 w-32 border rounded-lg flex items-center justify-center bg-muted">
+                        <span className="text-muted-foreground text-sm">Logo yo'q</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      ref={logoInputRef}
+                      onChange={handleLogoUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                    >
+                      {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                      Logo yuklash
+                    </Button>
+                    {brandingData.logo && (
+                      <Button 
+                        variant="destructive" 
+                        size="icon"
+                        onClick={() => setBrandingData({ ...brandingData, logo: '' })}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Tavsiya: PNG yoki SVG format, shaffof fon bilan. Optimal o'lcham: 200x50 piksel
+                  </p>
+                </div>
+
+                {/* Favicon Section */}
+                <div className="space-y-4 pt-6 border-t">
+                  <Label className="text-lg font-semibold">Favicon</Label>
+                  <div className="flex items-center gap-4">
+                    {brandingData.favicon ? (
+                      <img 
+                        src={brandingData.favicon} 
+                        alt="Favicon" 
+                        className="h-12 w-12 object-contain rounded-lg border bg-background p-1"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 border rounded-lg flex items-center justify-center bg-muted">
+                        <span className="text-muted-foreground text-xs">Yo'q</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      ref={faviconInputRef}
+                      onChange={handleFaviconUpload}
+                      accept="image/*,.ico"
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => faviconInputRef.current?.click()}
+                      disabled={uploadingFavicon}
+                    >
+                      {uploadingFavicon ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                      Favicon yuklash
+                    </Button>
+                    {brandingData.favicon && (
+                      <Button 
+                        variant="destructive" 
+                        size="icon"
+                        onClick={() => setBrandingData({ ...brandingData, favicon: '' })}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Tavsiya: ICO, PNG yoki SVG format. Optimal o'lcham: 32x32 yoki 64x64 piksel
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button 
+              onClick={() => updateContent({ section: 'branding', data: brandingData })} 
+              disabled={isUpdating}
+              className="gap-2"
+              size="lg"
+            >
+              <Save className="w-4 h-4" />
+              Saqlash
             </Button>
           </TabsContent>
         </Tabs>
