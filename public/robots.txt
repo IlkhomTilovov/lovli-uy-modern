@@ -34,4 +34,4 @@ Disallow: /auth
 Disallow: /auth/*
 
 # Sitemap
-Sitemap: https://gsflcqydmyvuiudcbdwt.supabase.co/functions/v1/sitemap
+Sitemap: https://gsflcqydmyvuiudcbdwt.supabase.co/functions/v1/sitemap?baseUrl=https://enterr.uz
