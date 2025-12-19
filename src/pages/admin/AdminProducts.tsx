@@ -453,24 +453,79 @@ const AdminProducts = () => {
                     
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-muted-foreground text-sm">Meta sarlavha</Label>
+                        <Label className="text-muted-foreground text-sm">Meta sarlavha (Title)</Label>
                         <Input 
                           value={formData.metaTitle} 
                           onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                          placeholder="Qidiruv tizimlarida ko'rinadigan sarlavha"
+                          placeholder="Google qidiruvida ko'rinadigan sarlavha (50-60 belgi)"
                           className="h-11"
+                          maxLength={70}
                         />
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={`${
+                            formData.metaTitle.length === 0 ? 'text-muted-foreground' :
+                            formData.metaTitle.length < 30 ? 'text-yellow-600' :
+                            formData.metaTitle.length <= 60 ? 'text-green-600' :
+                            'text-red-600'
+                          }`}>
+                            {formData.metaTitle.length === 0 ? 'Tavsiya: 50-60 belgi' :
+                             formData.metaTitle.length < 30 ? '⚠️ Juda qisqa' :
+                             formData.metaTitle.length <= 60 ? '✓ Yaxshi uzunlik' :
+                             '⚠️ Juda uzun - Google kesib qo\'yadi'}
+                          </span>
+                          <span className={`font-mono ${
+                            formData.metaTitle.length > 60 ? 'text-red-600' : 'text-muted-foreground'
+                          }`}>
+                            {formData.metaTitle.length}/60
+                          </span>
+                        </div>
                       </div>
+                      
                       <div className="space-y-2">
-                        <Label className="text-muted-foreground text-sm">Meta tavsif</Label>
+                        <Label className="text-muted-foreground text-sm">Meta tavsif (Description)</Label>
                         <Textarea 
                           value={formData.metaDescription} 
                           onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                          placeholder="Qidiruv tizimlarida ko'rinadigan qisqa tavsif"
-                          rows={2}
+                          placeholder="Google natijalarida ko'rinadigan tavsif (120-160 belgi)"
+                          rows={3}
                           className="resize-none"
+                          maxLength={200}
                         />
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={`${
+                            formData.metaDescription.length === 0 ? 'text-muted-foreground' :
+                            formData.metaDescription.length < 70 ? 'text-yellow-600' :
+                            formData.metaDescription.length <= 160 ? 'text-green-600' :
+                            'text-red-600'
+                          }`}>
+                            {formData.metaDescription.length === 0 ? 'Tavsiya: 120-160 belgi' :
+                             formData.metaDescription.length < 70 ? '⚠️ Juda qisqa - ko\'proq ma\'lumot qo\'shing' :
+                             formData.metaDescription.length <= 160 ? '✓ Yaxshi uzunlik' :
+                             '⚠️ Juda uzun - Google kesib qo\'yadi'}
+                          </span>
+                          <span className={`font-mono ${
+                            formData.metaDescription.length > 160 ? 'text-red-600' : 'text-muted-foreground'
+                          }`}>
+                            {formData.metaDescription.length}/160
+                          </span>
+                        </div>
                       </div>
+
+                      {/* SEO Preview */}
+                      {(formData.metaTitle || formData.title) && (
+                        <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+                          <p className="text-xs text-muted-foreground mb-2">Google qidiruv ko'rinishi:</p>
+                          <div className="space-y-1">
+                            <p className="text-blue-600 text-base font-medium truncate hover:underline cursor-pointer">
+                              {formData.metaTitle || formData.title || 'Mahsulot nomi'}
+                            </p>
+                            <p className="text-green-700 text-xs">enterr.uz › product › {formData.sku || 'sku'}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {formData.metaDescription || formData.description || 'Mahsulot tavsifi bu yerda ko\'rinadi...'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
