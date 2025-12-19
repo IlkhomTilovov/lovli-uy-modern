@@ -15,9 +15,10 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get base URL from request or use default
+    // Get base URL from environment or request parameter
     const url = new URL(req.url)
-    const baseUrl = url.searchParams.get('baseUrl') || 'https://yoursite.com'
+    const siteUrl = Deno.env.get('SITE_URL')
+    const baseUrl = url.searchParams.get('baseUrl') || siteUrl || 'https://enter.uz'
 
     // Fetch categories
     const { data: categories } = await supabase
