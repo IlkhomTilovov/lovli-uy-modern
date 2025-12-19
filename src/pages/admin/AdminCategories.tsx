@@ -339,10 +339,27 @@ const AdminCategories = () => {
                       <Input 
                         value={formData.meta_title} 
                         onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
-                        placeholder="SEO sarlavha (60 belgigacha)"
-                        maxLength={60}
+                        placeholder="Google qidiruvida ko'rinadigan sarlavha (50-60 belgi)"
+                        maxLength={70}
                       />
-                      <p className="text-xs text-muted-foreground">{formData.meta_title.length}/60</p>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className={`${
+                          formData.meta_title.length === 0 ? 'text-muted-foreground' :
+                          formData.meta_title.length < 30 ? 'text-yellow-600' :
+                          formData.meta_title.length <= 60 ? 'text-green-600' :
+                          'text-red-600'
+                        }`}>
+                          {formData.meta_title.length === 0 ? 'Tavsiya: 50-60 belgi' :
+                           formData.meta_title.length < 30 ? '⚠️ Juda qisqa' :
+                           formData.meta_title.length <= 60 ? '✓ Yaxshi uzunlik' :
+                           '⚠️ Juda uzun'}
+                        </span>
+                        <span className={`font-mono ${
+                          formData.meta_title.length > 60 ? 'text-red-600' : 'text-muted-foreground'
+                        }`}>
+                          {formData.meta_title.length}/60
+                        </span>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -351,11 +368,44 @@ const AdminCategories = () => {
                         value={formData.meta_description} 
                         onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
                         rows={3}
-                        placeholder="SEO tavsif (160 belgigacha)"
-                        maxLength={160}
+                        placeholder="Google natijalarida ko'rinadigan tavsif (120-160 belgi)"
+                        maxLength={200}
                       />
-                      <p className="text-xs text-muted-foreground">{formData.meta_description.length}/160</p>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className={`${
+                          formData.meta_description.length === 0 ? 'text-muted-foreground' :
+                          formData.meta_description.length < 70 ? 'text-yellow-600' :
+                          formData.meta_description.length <= 160 ? 'text-green-600' :
+                          'text-red-600'
+                        }`}>
+                          {formData.meta_description.length === 0 ? 'Tavsiya: 120-160 belgi' :
+                           formData.meta_description.length < 70 ? '⚠️ Juda qisqa' :
+                           formData.meta_description.length <= 160 ? '✓ Yaxshi uzunlik' :
+                           '⚠️ Juda uzun'}
+                        </span>
+                        <span className={`font-mono ${
+                          formData.meta_description.length > 160 ? 'text-red-600' : 'text-muted-foreground'
+                        }`}>
+                          {formData.meta_description.length}/160
+                        </span>
+                      </div>
                     </div>
+
+                    {/* SEO Preview */}
+                    {(formData.meta_title || formData.name) && (
+                      <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+                        <p className="text-xs text-muted-foreground mb-2">Google qidiruv ko'rinishi:</p>
+                        <div className="space-y-1">
+                          <p className="text-blue-600 text-base font-medium truncate hover:underline cursor-pointer">
+                            {formData.meta_title || formData.name || 'Kategoriya nomi'}
+                          </p>
+                          <p className="text-green-700 text-xs">enterr.uz › kategoriya › {formData.name?.toLowerCase().replace(/\s+/g, '-') || 'slug'}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {formData.meta_description || formData.description || 'Kategoriya tavsifi bu yerda ko\'rinadi...'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
 
