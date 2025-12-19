@@ -1,21 +1,37 @@
+# Google bot
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
+# Bing bot
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
+# Yandex bot
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
+
+# Twitter bot
 User-agent: Twitterbot
 Allow: /
 
+# Facebook bot
 User-agent: facebookexternalhit
 Allow: /
 
+# All other bots
 User-agent: *
 Allow: /
+Crawl-delay: 2
 
 # Admin sahifalarni indekslamaslik
+User-agent: *
 Disallow: /admin
+Disallow: /admin/*
 Disallow: /auth
+Disallow: /auth/*
 
 # Sitemap
 Sitemap: https://gsflcqydmyvuiudcbdwt.supabase.co/functions/v1/sitemap
