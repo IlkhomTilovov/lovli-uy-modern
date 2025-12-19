@@ -26,10 +26,10 @@ Deno.serve(async (req) => {
       .eq('status', 'active')
       .order('sort_order', { ascending: true })
 
-    // Fetch products
+    // Fetch products with title for better SEO
     const { data: products } = await supabase
       .from('products')
-      .select('id, updated_at')
+      .select('id, title, updated_at, images')
       .eq('status', 'active')
 
     // Static pages
@@ -40,9 +40,9 @@ Deno.serve(async (req) => {
       { url: '/contact', priority: '0.5', changefreq: 'monthly' },
     ]
 
-    // Build XML
+    // Build XML with image namespace
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 `
 
     // Add static pages
@@ -69,15 +69,22 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Add product pages
+    // Add product pages with images
     if (products) {
       for (const product of products) {
         const lastmod = new Date(product.updated_at).toISOString().split('T')[0]
+        const images = product.images as string[] | null
+        const hasImages = images && images.length > 0
+        
         xml += `  <url>
     <loc>${baseUrl}/product/${product.id}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.7</priority>${hasImages ? `
+    <image:image>
+      <image:loc>${images[0]}</image:loc>
+      <image:title>${product.title?.replace(/[<>&'"]/g, '')}</image:title>
+    </image:image>` : ''}
   </url>
 `
       }
