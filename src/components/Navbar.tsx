@@ -208,10 +208,14 @@ export const Navbar = () => {
               />
             ) : (
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">XM</span>
+                <span className="text-primary-foreground font-bold text-xl">
+                  {branding?.siteName ? branding.siteName.charAt(0).toUpperCase() : 'XM'}
+                </span>
               </div>
             )}
-            <span className="font-bold text-xl hidden sm:inline-block">Xojalik Mollari</span>
+            <span className="font-bold text-xl hidden sm:inline-block">
+              {branding?.siteName || 'Xojalik Mollari'}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

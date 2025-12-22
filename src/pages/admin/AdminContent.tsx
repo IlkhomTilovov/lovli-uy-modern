@@ -141,7 +141,7 @@ const AdminContent = () => {
   const [faqData, setFaqData] = useState<FaqContent>({ items: [] });
   
   // Branding state
-  const [brandingData, setBrandingData] = useState<BrandingContent>({ logo: '', favicon: '' });
+  const [brandingData, setBrandingData] = useState<BrandingContent>({ logo: '', favicon: '', siteName: '' });
   
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -1588,13 +1588,26 @@ const AdminContent = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="w-5 h-5" />
-                  Logo va Favicon
+                  Sayt Branding
                 </CardTitle>
-                <CardDescription>Sayt logosi va favicon rasmlarini yuklang</CardDescription>
+                <CardDescription>Sayt nomi, logosi va favicon rasmlarini boshqaring</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Logo Section */}
+                {/* Site Name Section */}
                 <div className="space-y-4">
+                  <Label className="text-lg font-semibold">Sayt Nomi</Label>
+                  <Input 
+                    value={brandingData.siteName || ''}
+                    onChange={(e) => setBrandingData({ ...brandingData, siteName: e.target.value })}
+                    placeholder="Xojalik Mollari"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Navbar va boshqa joylarda ko'rinadigan sayt nomi
+                  </p>
+                </div>
+
+                {/* Logo Section */}
+                <div className="space-y-4 pt-6 border-t">
                   <Label className="text-lg font-semibold">Logo</Label>
                   <div className="flex items-center gap-4">
                     {brandingData.logo ? (
