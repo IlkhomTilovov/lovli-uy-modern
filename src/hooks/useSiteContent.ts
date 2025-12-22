@@ -148,6 +148,7 @@ export interface FaqContent {
 export interface BrandingContent {
   logo: string;
   favicon: string;
+  siteName: string;
 }
 
 type SectionKey = 'home_banner' | 'home_hero_stats' | 'home_categories' | 'home_products' | 'home_features' | 'home_reviews' | 'home_cta' | 'about' | 'contact' | 'social' | 'seo' | 'footer' | 'faq' | 'branding';
