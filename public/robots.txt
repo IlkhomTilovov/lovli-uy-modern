@@ -33,5 +33,8 @@ Disallow: /admin/*
 Disallow: /auth
 Disallow: /auth/*
 
-# Sitemap
+# Static sitemap (main pages)
+Sitemap: https://enterr.uz/sitemap.xml
+
+# Dynamic sitemap (all products and categories)
 Sitemap: https://gsflcqydmyvuiudcbdwt.supabase.co/functions/v1/sitemap?baseUrl=https://enterr.uz
