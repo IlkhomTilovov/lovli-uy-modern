@@ -46,7 +46,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "Tez yetkazib berish xizmati",
     relatedProducts: "O'xshash Mahsulotlar",
     home: "Bosh sahifa",
-    catalog: "Katalog"
+    catalog: "Katalog",
+    retailPrice: "Chakana narx",
+    wholesalePrice: "Ulgurji narx"
   },
   ru: {
     productNotFound: "Товар не найден",
@@ -67,7 +69,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "Услуга быстрой доставки",
     relatedProducts: "Похожие товары",
     home: "Главная",
-    catalog: "Каталог"
+    catalog: "Каталог",
+    retailPrice: "Розничная цена",
+    wholesalePrice: "Оптовая цена"
   },
   kk: {
     productNotFound: "Өнім табылмады",
@@ -88,7 +92,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "Жылдам жеткізу қызметі",
     relatedProducts: "Ұқсас өнімдер",
     home: "Басты бет",
-    catalog: "Каталог"
+    catalog: "Каталог",
+    retailPrice: "Бөлшек сауда бағасы",
+    wholesalePrice: "Көтерме баға"
   },
   tg: {
     productNotFound: "Маҳсулот ёфт нашуд",
@@ -109,7 +115,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "Хидмати таҳвили зуд",
     relatedProducts: "Маҳсулотҳои монанд",
     home: "Саҳифаи асосӣ",
-    catalog: "Каталог"
+    catalog: "Каталог",
+    retailPrice: "Нархи чаканафурӯшӣ",
+    wholesalePrice: "Нархи яклухт"
   },
   tk: {
     productNotFound: "Önüm tapylmady",
@@ -130,7 +138,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "Çalt eltip bermek hyzmaty",
     relatedProducts: "Meňzeş önümler",
     home: "Baş sahypa",
-    catalog: "Katalog"
+    catalog: "Katalog",
+    retailPrice: "Bölek satuw bahasy",
+    wholesalePrice: "Lomaý baha"
   },
   ky: {
     productNotFound: "Товар табылган жок",
@@ -151,7 +161,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "Тез жеткирүү кызматы",
     relatedProducts: "Окшош товарлар",
     home: "Башкы бет",
-    catalog: "Каталог"
+    catalog: "Каталог",
+    retailPrice: "Чекене баа",
+    wholesalePrice: "Дүң баа"
   },
   fa: {
     productNotFound: "محصول یافت نشد",
@@ -172,7 +184,9 @@ const translations: Record<Language, Record<string, string>> = {
     fastDeliveryService: "خدمات تحویل سریع",
     relatedProducts: "محصولات مشابه",
     home: "صفحه اصلی",
-    catalog: "کاتالوگ"
+    catalog: "کاتالوگ",
+    retailPrice: "قیمت خرده فروشی",
+    wholesalePrice: "قیمت عمده"
   }
 };
 
@@ -434,11 +448,38 @@ const Product = () => {
                   {translatedTitle || product.title}
                   {isTranslating && <Loader2 className="h-4 w-4 animate-spin" />}
                 </h1>
-                <div className="flex items-baseline gap-4 mb-6">
-                  <p className="text-4xl font-bold text-primary">{displayPrice.toLocaleString()} {t.currency}</p>
-                  {product.discount_active && product.discount_price && (
-                    <span className="text-muted-foreground line-through">{product.retail_price.toLocaleString()} {t.currency}</span>
-                  )}
+                {/* Prices Section */}
+                <div className="bg-secondary/30 rounded-xl p-5 border border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-lg font-semibold text-primary">$</span>
+                    <span className="text-lg font-semibold">{t.retailPrice === "Chakana narx" ? "Narxlar" : t.retailPrice === "Розничная цена" ? "Цены" : "Narxlar"}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">{t.retailPrice}</p>
+                      <div className="flex items-baseline gap-2">
+                        {product.discount_active && product.discount_price ? (
+                          <>
+                            <span className="text-2xl font-bold text-primary">{product.discount_price.toLocaleString()}</span>
+                            <span className="text-sm text-muted-foreground line-through">{product.retail_price.toLocaleString()}</span>
+                            <span className="text-sm text-muted-foreground">{t.currency}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-2xl font-bold text-primary">{product.retail_price.toLocaleString()}</span>
+                            <span className="text-sm text-muted-foreground">{t.currency}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">{t.wholesalePrice}</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-primary">{product.wholesale_price.toLocaleString()}</span>
+                        <span className="text-sm text-muted-foreground">{t.currency}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
