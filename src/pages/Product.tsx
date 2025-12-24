@@ -3,15 +3,16 @@ import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Package, Shield, Truck, Loader2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Package, Shield, Truck, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSEO } from "@/hooks/useSEO";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ProductDetailSkeleton } from "@/components/skeletons";
 import { useCart } from "@/contexts/CartContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type Language = "uz" | "ru" | "kk" | "tg" | "tk" | "ky" | "fa";
 const LANGUAGE_KEY = "site_language";
@@ -187,6 +188,10 @@ const Product = () => {
   const [translatedTitle, setTranslatedTitle] = useState<string>('');
   const [translatedDescription, setTranslatedDescription] = useState<string>('');
   const [translatedCategory, setTranslatedCategory] = useState<string>('');
+  
+  // Image lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Listen for language changes from Navbar
   useEffect(() => {
@@ -319,23 +324,98 @@ const Product = () => {
               variants={fadeInUp}
               transition={{ duration: 0.5 }}
             >
-              <div className="aspect-square rounded-2xl overflow-hidden bg-secondary border border-border">
+              <div 
+                className="aspect-square rounded-2xl overflow-hidden bg-secondary border border-border cursor-zoom-in"
+                onClick={() => {
+                  setCurrentImageIndex(0);
+                  setLightboxOpen(true);
+                }}
+              >
                 <img
                   src={product.images?.[0] || '/placeholder.svg'}
                   alt={product.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>
               {product.images && product.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-3 mt-4">
                   {product.images.slice(1, 5).map((img, index) => (
-                    <div key={index} className="aspect-square rounded-lg overflow-hidden border border-border">
-                      <img src={img} alt={`${product.title} ${index + 2}`} className="w-full h-full object-cover" />
+                    <div 
+                      key={index} 
+                      className="aspect-square rounded-lg overflow-hidden border border-border cursor-zoom-in hover:border-primary transition-colors"
+                      onClick={() => {
+                        setCurrentImageIndex(index + 1);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      <img 
+                        src={img} 
+                        alt={`${product.title} ${index + 2}`} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                      />
                     </div>
                   ))}
                 </div>
               )}
             </motion.div>
+
+            {/* Image Lightbox */}
+            <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+              <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
+                <div className="relative w-full h-full flex items-center justify-center min-h-[80vh]">
+                  <button
+                    onClick={() => setLightboxOpen(false)}
+                    className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                  
+                  {product.images && product.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : product.images!.length - 1))}
+                        className="absolute left-4 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+                      >
+                        <ChevronLeft className="h-8 w-8" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentImageIndex((prev) => (prev < product.images!.length - 1 ? prev + 1 : 0))}
+                        className="absolute right-4 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+                      >
+                        <ChevronRight className="h-8 w-8" />
+                      </button>
+                    </>
+                  )}
+                  
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentImageIndex}
+                      src={product.images?.[currentImageIndex] || '/placeholder.svg'}
+                      alt={`${product.title} - ${currentImageIndex + 1}`}
+                      className="max-w-full max-h-[85vh] object-contain"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </AnimatePresence>
+                  
+                  {product.images && product.images.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                      {product.images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            index === currentImageIndex ? 'bg-white' : 'bg-white/40 hover:bg-white/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Product Info */}
             <motion.div
