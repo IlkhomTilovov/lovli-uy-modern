@@ -4,11 +4,12 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, MapPin, Mail, Clock, Send } from "lucide-react";
+import { Phone, MapPin, Mail, Clock, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { useSiteContent } from "@/hooks/useSiteContent";
+import { supabase } from "@/integrations/supabase/client";
 
 type Language = "uz" | "ru";
 
@@ -81,6 +82,7 @@ const Contact = () => {
     email: "",
     message: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Listen for language changes from Navbar
   useEffect(() => {
@@ -145,15 +147,51 @@ const Contact = () => {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    toast({
-      title: t.toastTitle,
-      description: t.toastDescription,
-    });
+    setIsSubmitting(true);
 
-    setFormData({ name: "", phone: "", email: "", message: "" });
+    try {
+      // Create order with "Ma'lumot olmoqchi" comment
+      const commentText = `Ma'lumot olmoqchi: ${formData.message}${formData.email ? ` | Email: ${formData.email}` : ''}`;
+
+      const { error } = await supabase
+        .from('orders')
+        .insert({
+          customer_name: formData.name,
+          phone: formData.phone,
+          region: "Ma'lumot so'rovi",
+          city: "-",
+          address: "-",
+          comment: commentText,
+          total_price: 0,
+          status: 'new'
+        });
+
+      if (error) {
+        console.error('Error submitting contact form:', error);
+        toast({
+          title: language === "uz" ? "Xatolik yuz berdi" : "Произошла ошибка",
+          description: language === "uz" ? "Iltimos, qaytadan urinib ko'ring" : "Пожалуйста, попробуйте еще раз",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: t.toastTitle,
+          description: t.toastDescription,
+        });
+        setFormData({ name: "", phone: "", email: "", message: "" });
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: language === "uz" ? "Xatolik yuz berdi" : "Произошла ошибка",
+        description: language === "uz" ? "Iltimos, qaytadan urinib ko'ring" : "Пожалуйста, попробуйте еще раз",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const fadeInUp = {
@@ -349,8 +387,13 @@ const Contact = () => {
                     type="submit" 
                     className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium" 
                     size="lg"
+                    disabled={isSubmitting}
                   >
-                    <Send className="mr-2 h-4 w-4" />
+                    {isSubmitting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="mr-2 h-4 w-4" />
+                    )}
                     {t.submitButton}
                   </Button>
                 </form>
