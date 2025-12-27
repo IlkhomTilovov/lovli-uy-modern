@@ -82,21 +82,10 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers);
   const [inventoryAudits, setInventoryAudits] = useState<InventoryAudit[]>(mockInventoryAudits);
 
-  // Load from localStorage
+  // Clear old localStorage cache on mount - data should come from Supabase
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const data: StoredData = JSON.parse(stored);
-      setCategories(data.categories || mockCategories);
-      setProducts(data.products || mockProducts);
-      setOrders(data.orders || mockOrders);
-      setOrderItems(data.orderItems || mockOrderItems);
-      setWarehouseLogs(data.warehouseLogs || mockWarehouseLogs);
-      setSiteContent(data.siteContent || mockSiteContent);
-      setUsers(data.users || mockUsers);
-      setSuppliers(data.suppliers || mockSuppliers);
-      setInventoryAudits(data.inventoryAudits || mockInventoryAudits);
-    }
+    // Remove old cached ERP data to ensure fresh data from Supabase
+    localStorage.removeItem(STORAGE_KEY);
     
     // Check for logged in user
     const loggedUser = localStorage.getItem('erp_current_user');
@@ -105,11 +94,7 @@ export const ErpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    const data: StoredData = { categories, products, orders, orderItems, warehouseLogs, siteContent, users, suppliers, inventoryAudits };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [categories, products, orders, orderItems, warehouseLogs, siteContent, users, suppliers, inventoryAudits]);
+  // Don't save to localStorage anymore - data comes from Supabase
 
   // Auth - Note: This is a simplified mock auth for demo purposes only.
   // In production, use Supabase Auth (AuthContext) for all authentication.
