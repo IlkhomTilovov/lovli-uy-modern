@@ -154,7 +154,7 @@ export const Navbar = () => {
   const location = useLocation();
   const { totalItems } = useCart();
   const { data: categories } = useCategories();
-  const { branding } = useSiteContent();
+  const { branding, isLoading: isBrandingLoading } = useSiteContent();
   const catalogRef = useRef<HTMLDivElement>(null);
 
   const t = navTranslations[language];
@@ -200,22 +200,29 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
-            {branding?.logo ? (
+            {isBrandingLoading ? (
+              <>
+                <div className="w-10 h-10 bg-muted rounded-lg animate-pulse" />
+                <div className="hidden sm:block w-24 h-6 bg-muted rounded animate-pulse" />
+              </>
+            ) : branding?.logo ? (
               <img 
                 src={branding.logo} 
                 alt="Logo" 
                 className="h-10 object-contain"
               />
-            ) : (
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">
-                  {branding?.siteName ? branding.siteName.charAt(0).toUpperCase() : 'XM'}
+            ) : branding?.siteName ? (
+              <>
+                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-xl">
+                    {branding.siteName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="font-bold text-xl hidden sm:inline-block">
+                  {branding.siteName}
                 </span>
-              </div>
-            )}
-            <span className="font-bold text-xl hidden sm:inline-block">
-              {branding?.siteName || 'Xojalik Mollari'}
-            </span>
+              </>
+            ) : null}
           </Link>
 
           {/* Desktop Navigation */}
