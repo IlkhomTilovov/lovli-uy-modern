@@ -167,7 +167,7 @@ const translations: Record<Language, Record<string, string>> = {
 };
 
 export const Footer = () => {
-  const { contact, social, footer } = useSiteContent();
+  const { contact, social, footer, branding, isLoading: isBrandingLoading } = useSiteContent();
   const [language, setLanguage] = useState<Language>(getInitialLanguage);
 
   // Listen for language changes from Navbar
@@ -235,13 +235,49 @@ export const Footer = () => {
           {/* Company Info */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-1 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-primary-foreground font-bold text-2xl">XM</span>
-              </div>
-              <div>
-                <span className="font-bold text-lg block">{content.companyName}</span>
-                <span className="text-xs text-muted-foreground">{content.slogan}</span>
-              </div>
+              {isBrandingLoading ? (
+                <>
+                  <div className="w-12 h-12 bg-muted rounded-xl animate-pulse" />
+                  <div>
+                    <div className="w-28 h-5 bg-muted rounded animate-pulse mb-1" />
+                    <div className="w-20 h-3 bg-muted rounded animate-pulse" />
+                  </div>
+                </>
+              ) : branding?.logo ? (
+                <>
+                  <img 
+                    src={branding.logo} 
+                    alt="Logo" 
+                    className="h-12 object-contain"
+                  />
+                  <div>
+                    <span className="font-bold text-lg block">{branding?.siteName || content.companyName}</span>
+                    <span className="text-xs text-muted-foreground">{content.slogan}</span>
+                  </div>
+                </>
+              ) : branding?.siteName ? (
+                <>
+                  <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <span className="text-primary-foreground font-bold text-2xl">
+                      {branding.siteName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-lg block">{branding.siteName}</span>
+                    <span className="text-xs text-muted-foreground">{content.slogan}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <span className="text-primary-foreground font-bold text-2xl">XM</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-lg block">{content.companyName}</span>
+                    <span className="text-xs text-muted-foreground">{content.slogan}</span>
+                  </div>
+                </>
+              )}
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
               {content.description}
