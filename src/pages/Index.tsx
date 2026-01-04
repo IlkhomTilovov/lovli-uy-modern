@@ -10,7 +10,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSiteContent } from "@/hooks/useSiteContent";
 import { useSEO } from "@/hooks/useSEO";
-import heroBanner from "@/assets/hero-banner-new.jpg";
+import heroBanner from "@/assets/hero-banner-updated.jpg";
 import { motion } from "framer-motion";
 import { HeroSkeleton, CategoryGridSkeleton, ProductGridSkeleton } from "@/components/skeletons";
 import { LucideIcon } from "lucide-react";
